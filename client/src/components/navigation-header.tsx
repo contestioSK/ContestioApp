@@ -32,7 +32,6 @@ export default function NavigationHeader() {
     { href: "/faq", label: "FAQ" },
     { href: "/pricing", label: "Cenník" },
     { href: "/contact", label: "Kontakt" },
-    { href: "/organizer/create", label: "Vytvoriť súťaž" },
   ];
 
   return (
