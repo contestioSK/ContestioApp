@@ -2,6 +2,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { FEATURES } from '@/lib/features';
 import type { 
   FavoriteCompetition, 
   FavoriteTeam,
@@ -14,7 +15,7 @@ export function useFavoriteCompetitions() {
   
   return useQuery<(FavoriteCompetition & { competition: any })[]>({
     queryKey: ['/api/users/favorites/competitions', user?.id],
-    enabled: !!user && !authLoading,
+    enabled: FEATURES.competitions && !!user && !authLoading,
   });
 }
 
@@ -24,7 +25,7 @@ export function useFavoriteTeams() {
   
   return useQuery<(FavoriteTeam & { team: any })[]>({
     queryKey: ['/api/users/favorites/teams', user?.id],
-    enabled: !!user && !authLoading,
+    enabled: FEATURES.competitions && !!user && !authLoading,
   });
 }
 

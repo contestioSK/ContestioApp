@@ -2,6 +2,7 @@ import express, { type Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { randomUUID, createHmac } from "crypto";
+import { FEATURES } from "./features";
 import { storage } from "./storage";
 import { db } from "./db";
 import { eq, and, gt, desc, or, inArray, sql, isNotNull } from "drizzle-orm";
@@ -159,6 +160,30 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
   // Skips: webhooks, auth endpoints (have their own limits), unauthenticated requests
   app.use('/api', authenticatedApiLimiter);
 
+  // Competition feature gate — block ALL competition-related endpoints when disabled
+  if (!FEATURES.competitions) {
+    const COMPETITION_PATHS = [
+      '/api/competitions',
+      '/api/teams',
+      '/api/organizer/competitions',
+      '/api/users/favorites/competitions',
+      '/api/users/favorites/teams',
+      '/api/users/referee-assignments',
+      '/api/me/competition-history',
+      '/api/me/competition-catches',
+    ];
+    app.use((req, res, next) => {
+      const blocked = COMPETITION_PATHS.some(
+        (p) => req.path === p || req.path.startsWith(p + '/')
+      );
+      if (blocked) {
+        console.warn('[COMPETITIONS_DISABLED_ACCESS]', req.method, req.path);
+        return res.status(404).end();
+      }
+      next();
+    });
+  }
+
   // Create HTTP server
   const httpServer = createServer(app);
 
@@ -273,7 +298,11 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
   });
 
   // Helper functions for broadcasting
+  const COMPETITION_WS_TYPES = ['competition_', 'team_', 'sector_', 'leaderboard_'];
   function broadcast(data: any) {
+    if (!FEATURES.competitions && data?.type && COMPETITION_WS_TYPES.some(t => String(data.type).startsWith(t))) {
+      return;
+    }
     const message = JSON.stringify(data);
     clients.forEach((connection, ws) => {
       if (ws.readyState === WebSocket.OPEN) {
@@ -886,6 +915,21 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       
       if (!user) {
         return res.status(404).json({ message: "User not found" });
+      }
+
+      // When competitions are disabled, return a stable minimal shape
+      // — no DB queries for competition data, no undefined fields
+      if (!FEATURES.competitions) {
+        return res.json({
+          userId,
+          email: user.email,
+          availableRoles: ['user'],
+          needsRoleSelection: false,
+          refereeCompetitions: [],
+          organizerCompetitions: { active: [], completed: [] },
+          sessionMode: null,
+          sessionCompetitionId: null,
+        });
       }
 
       const now = new Date();
