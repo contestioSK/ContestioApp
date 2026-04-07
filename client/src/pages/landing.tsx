@@ -111,7 +111,7 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-6 relative z-10 w-full grid lg:grid-cols-2 gap-16 items-center">
           <div>
             <div className="inline-flex items-center gap-2 bg-teal-500/10 border border-teal-500/20 px-4 py-2 rounded-full text-xs font-black text-teal-400 mb-8 uppercase tracking-widest backdrop-blur-md">
-              <Activity size={14} /> MVP Denník v1.0
+              <Activity size={14} /> Analytický denník. Bez výhovoriek.
             </div>
 
             <h1 className="text-5xl md:text-7xl font-black text-white mb-6 tracking-tighter leading-[1.05]">
@@ -123,12 +123,15 @@ export default function Landing() {
               Zabudni na stratené fotky a zabudnuté tlaky vzduchu. Contestio je analytický denník, ktorý premení tvoje pocity pri vode na tvrdé dáta.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Link href="/api/auth/login">
-                <div className="bg-teal-500 text-[#050810] px-8 py-4 rounded-xl font-black text-lg hover:bg-teal-400 hover:-translate-y-1 transition-all flex items-center justify-center gap-2 shadow-[0_0_30px_rgba(20,184,166,0.3)] cursor-pointer">
-                  Vytvoriť účet <ChevronRight size={20} />
-                </div>
-              </Link>
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Link href="/api/auth/login">
+                  <div className="bg-teal-500 text-[#050810] px-8 py-4 rounded-xl font-black text-lg hover:bg-teal-400 hover:-translate-y-1 transition-all flex items-center justify-center gap-2 shadow-[0_0_30px_rgba(20,184,166,0.3)] cursor-pointer">
+                    Spustiť denník <ChevronRight size={20} />
+                  </div>
+                </Link>
+              </div>
+              <p className="text-xs text-slate-500">Nečakaj a začni si ukladať spomienky.</p>
             </div>
           </div>
 
@@ -274,10 +277,10 @@ export default function Landing() {
               <Users size={14} className="inline mr-2" /> Fishing Battle
             </div>
             <h2 className="text-5xl md:text-7xl font-black mb-6 leading-none tracking-tighter drop-shadow-xl">
-              Vsaď sa<br /> s kamarátom.
+              Vyzvi kamošov<br /> na súboj.
             </h2>
             <p className="text-orange-50 text-xl font-medium mb-10 max-w-md drop-shadow-md">
-              Vytvor Fishing Battle priamo v denníku. Všetci pridávajú úlovky z brehu a systém v reálnom čase prepočíta, kto vyhráva. Žiadne tabuľky, len čistý adrenalín medzi priateľmi.
+              Koniec rečiam o tom, komu sa utrhla väčšia ryba. Tabuľka neklame. Vytvor lobby, nahadzuj úlovky a sleduj, ako kamoši v reálnom čase padajú na dno rebríčka.
             </p>
             <div className="bg-black/20 backdrop-blur-sm p-6 rounded-2xl border border-white/10 flex flex-col gap-4 w-fit">
               <div className="font-bold uppercase tracking-wider text-sm opacity-80 border-b border-white/10 pb-2">Režimy Fishing Battle</div>
@@ -348,7 +351,7 @@ export default function Landing() {
             Nenechávaj úspech na náhodu.
           </h2>
           <p className="text-slate-300 mb-10 max-w-xl mx-auto text-lg">
-            Pridaj sa do Contestio MVP. Získaš systém zadarmo a pomôžeš nám formovať budúcnosť aplikácie.
+            Začni sledovať každý úlovok ako profesionál. Zdarma, hneď, bez výhovoriek.
           </p>
           <Link href="/api/auth/login">
             <div className="inline-block bg-teal-500 text-[#050810] px-12 py-5 rounded-2xl font-black text-xl hover:bg-white hover:text-black transition-all shadow-[0_0_40px_rgba(20,184,166,0.3)] hover:scale-105 cursor-pointer">
