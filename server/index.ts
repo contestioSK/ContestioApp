@@ -141,6 +141,13 @@ async function startAnnouncementScheduler() {
         log(`[SCHEDULER] Found ${unnotifiedAnnouncements.length} unnotified live announcements`);
         
         for (const announcement of unnotifiedAnnouncements) {
+          // Skip competition-linked announcements when competitions are disabled
+          if (!FEATURES.competitions && announcement.competitionId) {
+            await storage.markAnnouncementNotified(announcement.id);
+            log(`[SCHEDULER] Skipped competition announcement (competitions disabled): ${announcement.title}`);
+            continue;
+          }
+
           try {
             await notificationService.notifyOfficialAnnouncement(
               announcement.title,

@@ -1,6 +1,7 @@
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserMode, type UserMode } from "@/contexts/UserModeContext";
+import { FEATURES } from "@/lib/features";
 import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -121,7 +122,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
         </SheetHeader>
 
         <div className="overflow-y-auto flex-1 bg-slate-50/50 dark:bg-slate-950">
-          {false && (
+          {FEATURES.competitions && hasMultipleRoles && (
             <div className="px-4 pt-2 pb-2">
               <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 pl-1">
                 Režim aplikácie
