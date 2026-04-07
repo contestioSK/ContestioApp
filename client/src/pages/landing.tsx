@@ -125,7 +125,7 @@ export default function Landing() {
 
             <div className="flex flex-col gap-3">
               <div className="flex flex-col sm:flex-row gap-4">
-                <Link href="/api/auth/login">
+                <Link href="/auth/login">
                   <div className="bg-teal-500 text-[#050810] px-8 py-4 rounded-xl font-black text-lg hover:bg-teal-400 hover:-translate-y-1 transition-all flex items-center justify-center gap-2 shadow-[0_0_30px_rgba(20,184,166,0.3)] cursor-pointer">
                     Spustiť denník <ChevronRight size={20} />
                   </div>
@@ -353,7 +353,7 @@ export default function Landing() {
           <p className="text-slate-300 mb-10 max-w-xl mx-auto text-lg">
             Pridaj sa do Contestio tímu, vyskúšaj si denník a ulož si svoje spomienky na jednom mieste.
           </p>
-          <Link href="/api/auth/login">
+          <Link href="/auth/login">
             <div className="inline-block bg-teal-500 text-[#050810] px-12 py-5 rounded-2xl font-black text-xl hover:bg-white hover:text-black transition-all shadow-[0_0_40px_rgba(20,184,166,0.3)] hover:scale-105 cursor-pointer">
               Získať účet zdarma
             </div>
