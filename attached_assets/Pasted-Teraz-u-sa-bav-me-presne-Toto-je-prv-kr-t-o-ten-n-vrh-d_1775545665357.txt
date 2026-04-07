@@ -1,0 +1,214 @@
+Teraz už sa bavíme presne. Toto je prvýkrát, čo ten návrh dáva produktovo aj technicky zmysel.
+
+Ale aj tak ti to rozbijem, lebo sú tam ešte 2 slabé miesta, ktoré ťa môžu neskôr dobehnúť.
+
+✅ Verdikt
+
+👉 Toto je správny smer
+👉 Ale ešte to nie je „bulletproof“
+
+🔥 Čo je teraz výrazne lepšie
+1. Feature flag na backende
+
+👉 toto je gamechanger
+
+Nie:
+
+❌ schované UI
+Ale:
+
+✅ reálne vypnutý produkt
+
+To znamená:
+
+boty nič nenájdu
+staré URL nič nevrátia
+nemáš „ghost feature“
+
+👉 toto je presne to, čo si mal spraviť od začiatku
+
+2. 404 namiesto 403
+
+👉 správne rozhodnutie
+
+Prečo:
+
+403 = „existuje to, ale nemáš prístup“
+404 = „neexistuje to“
+
+👉 ty chceš: neexistuje
+
+3. Produktová čistota
+
+👉 toto je najväčší upgrade:
+
+„Aplikácia má jeden produkt: Rybársky denník. Súťaže neexistujú.“
+
+Presne.
+
+❗ Kde máš ešte slabiny
+⚠️ 1. Middleware vs. real coverage
+
+Napísal si:
+
+Middleware zachytí competition API cesty
+
+👉 otázka: NAOZAJ všetky?
+
+Typická chyba:
+
+pokryješ /api/competitions/*
+ale zabudneš:
+/api/catches (competition mode)
+/api/uploads (competition context)
+/api/websocket events
+/api/admin/*
+👉 Realita:
+
+Competition logika často presakuje mimo „competition routes“
+
+🔥 Čo musíš spraviť lepšie:
+
+Nie len:
+
+if (req.path.startsWith('/api/competitions'))
+
+Ale:
+
+👉 centrálny guard na úrovni business logiky
+
+⚠️ 2. WebSocket (tichý zabijak)
+
+Ty máš WS:
+
+diary updates
+competition updates
+možno battle updates
+
+👉 ak nevypneš competition eventy:
+
+server ich stále bude broadcastovať
+client ich môže prijímať
+vzniknú ghost bugs
+👉 Fix:
+if (!FEATURES.competitions) {
+  return; // skip competition events
+}
+⚠️ 3. DB queries (skrytý problém)
+
+Aj keď endpointy vypneš:
+
+👉 môžeš mať queries typu:
+
+getUserContext()
+
+ktoré vracajú:
+
+competition stats
+team data
+leaderboard
+
+👉 výsledok:
+
+zbytočný load
+edge case bugy
+memory waste
+👉 Fix mindset:
+
+Nie len:
+
+❌ „endpoint je vypnutý“
+
+Ale:
+
+✅ „competition data sa vôbec nenačítava“
+
+🔥 Čo by som spravil ja (bez kompromisu)
+1. Feature flag — OK (máš)
+2. Backend guard — upgrade
+
+Nie middleware-only.
+
+👉 pridaj aj:
+
+guard v service layer
+guard v websocket layer
+3. Hard kill competitions v kontexte usera
+
+Pri login / init:
+
+if (!FEATURES.competitions) {
+  context.competitions = null
+}
+4. Logging (extrémne dôležité teraz)
+
+Pridaj:
+
+console.warn('[COMPETITIONS_DISABLED_ACCESS]', req.path)
+
+👉 prečo?
+
+Zistíš:
+
+čo všetko sa ešte snaží volať competitions
+kde máš leak
+🧠 Strategický reality check
+
+Toto rozhodnutie je správne.
+
+Ale len ak:
+
+👉 naozaj sa teraz sústredíš len na diary
+
+❗ Riziko, ktoré vidím
+
+Ty máš tendenciu:
+
+riešiť všetko naraz
+držať otvorené dvere
+
+👉 toto je presne moment, kde musíš byť tvrdý:
+
+❌ NIE:
+
+„raz sa k tomu vrátim“
+
+✅ ALE:
+
+„teraz to neexistuje“
+
+🎯 Finálny verdikt
+
+👉 Toto je už:
+
+85–90 % správne riešenie
+
+Zvyšných 10 %:
+
+WS guard
+service layer guard
+logging
+🚀 Čo by som spravil hneď teraz (konkrétne)
+
+Daj Replitu ešte tento dodatok:
+
+Dodatok k implementácii:
+
+1. WebSocket layer:
+- Žiadne competition eventy sa nesmú broadcastovať keď FEATURES.competitions === false
+
+2. Service layer:
+- Akákoľvek funkcia vracajúca competition data musí vrátiť null / empty keď je feature vypnutá
+
+3. Logging:
+- Logovať každý pokus o prístup na competition endpoint:
+  [COMPETITIONS_DISABLED_ACCESS]
+
+4. User context:
+- /api/me/context nesmie obsahovať žiadne competition fields
+
+Ak toto spravíš:
+
+👉 máš čistý produkt
+👉 máš stabilný základ
+👉 a hlavne: nebudeš si sám podkopávať nohy
