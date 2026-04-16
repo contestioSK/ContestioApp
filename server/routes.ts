@@ -9495,6 +9495,25 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     }
   });
 
+  app.delete('/api/friend-requests/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const friendshipId = req.params.id;
+
+      const [friendship] = await db.select().from(friendships).where(eq(friendships.id, friendshipId));
+
+      if (!friendship || friendship.senderId !== userId || friendship.status !== 'pending') {
+        return res.status(403).json({ message: 'Nemáte oprávnenie' });
+      }
+
+      await storage.cancelSentFriendRequest(friendshipId, userId);
+      res.json({ message: 'Žiadosť zrušená' });
+    } catch (error) {
+      console.error('[FRIENDS] Error cancelling friend request:', error);
+      res.status(500).json({ message: 'Chyba pri rušení žiadosti' });
+    }
+  });
+
   app.delete('/api/friends/:friendId', isAuthenticated, async (req: any, res) => {
     try {
       const userId = getUserId(req);
