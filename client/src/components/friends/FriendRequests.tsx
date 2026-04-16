@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Check, X, UserCheck } from "lucide-react";
+import { Check, X, UserCheck, Clock, Inbox, Send } from "lucide-react";
 import { TacticalIcon } from "@/components/ui/tactical-icon";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -17,8 +17,13 @@ export default function FriendRequests({ userId }: { userId: string }) {
 
   if (!userId) return null;
 
-  const { data: friendRequests = [], isLoading } = useQuery<FriendshipWithUser[]>({
+  const { data: incomingRequests = [], isLoading: incomingLoading } = useQuery<FriendshipWithUser[]>({
     queryKey: ['/api/friend-requests'],
+    enabled: !!userId,
+  });
+
+  const { data: sentRequests = [], isLoading: sentLoading } = useQuery<FriendshipWithUser[]>({
+    queryKey: ['/api/friend-requests/sent'],
     enabled: !!userId,
   });
 
@@ -63,6 +68,28 @@ export default function FriendRequests({ userId }: { userId: string }) {
     },
   });
 
+  const cancelMutation = useMutation({
+    mutationFn: async (id: string) =>
+      apiRequest('DELETE', `/api/friend-requests/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/friend-requests/sent'] });
+      toast({
+        title: "Úspešne",
+        description: "Žiadosť zrušená",
+        variant: "success",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Chyba",
+        description: "Nepodarilo sa zrušiť žiadosť",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const isLoading = incomingLoading || sentLoading;
+
   if (isLoading) {
     return (
       <div className="flex justify-center py-8">
@@ -71,7 +98,10 @@ export default function FriendRequests({ userId }: { userId: string }) {
     );
   }
 
-  if (friendRequests.length === 0) {
+  const hasIncoming = incomingRequests.length > 0;
+  const hasSent = sentRequests.length > 0;
+
+  if (!hasIncoming && !hasSent) {
     return (
       <Card className="bg-card border border-slate-200 shadow-sm dark:bg-slate-800/50 dark:border-slate-700">
         <CardContent className="p-8 text-center flex flex-col items-center">
@@ -83,44 +113,126 @@ export default function FriendRequests({ userId }: { userId: string }) {
   }
 
   return (
-    <div className="space-y-3">
-      {friendRequests.map((request) => (
-        <Card key={request.friendship?.id} className="bg-card border border-slate-200 shadow-sm dark:bg-slate-800/50 dark:border-slate-700">
-          <CardContent className="p-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Avatar>
-                <AvatarImage src={request.profileImageUrl || ""} />
-                <AvatarFallback className="bg-blue-500">
-                  {(request.firstName?.[0] || "U").toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <p className="font-bold text-foreground dark:text-white">
-                {request.firstName} {request.lastName}
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                size="sm"
-                className="bg-green-600 hover:bg-green-700"
-                onClick={() => acceptMutation.mutate(request.friendship!.id)}
-                disabled={acceptMutation.isPending}
-                data-testid={`button-accept-${request.friendship?.id}`}
-              >
-                <Check className="w-4 h-4" />
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => rejectMutation.mutate(request.friendship!.id)}
-                disabled={rejectMutation.isPending}
-                data-testid={`button-reject-${request.friendship?.id}`}
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+    <div className="space-y-6">
+      {/* Incoming requests */}
+      <section className="space-y-3">
+        <div className="flex items-center gap-2">
+          <Inbox className="w-4 h-4 text-muted-foreground" strokeWidth={1.75} />
+          <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+            Prichádzajúce
+          </h2>
+          {hasIncoming && (
+            <span className="text-xs font-bold bg-amber-500 text-black px-2 py-0.5 rounded-full">
+              {incomingRequests.length}
+            </span>
+          )}
+        </div>
+
+        {hasIncoming ? (
+          <div className="space-y-3">
+            {incomingRequests.map((request) => (
+              <Card key={request.friendship?.id} className="bg-card border border-slate-200 shadow-sm dark:bg-slate-800/50 dark:border-slate-700">
+                <CardContent className="p-4 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Avatar>
+                      <AvatarImage src={request.profileImageUrl || ""} />
+                      <AvatarFallback className="bg-blue-500">
+                        {(request.firstName?.[0] || "U").toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <p className="font-bold text-foreground dark:text-white">
+                      {request.firstName} {request.lastName}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      className="bg-green-600 hover:bg-green-700"
+                      onClick={() => acceptMutation.mutate(request.friendship!.id)}
+                      disabled={acceptMutation.isPending}
+                      data-testid={`button-accept-${request.friendship?.id}`}
+                    >
+                      <Check className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => rejectMutation.mutate(request.friendship!.id)}
+                      disabled={rejectMutation.isPending}
+                      data-testid={`button-reject-${request.friendship?.id}`}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground dark:text-slate-400 italic px-1">
+            Žiadne nové žiadosti
+          </p>
+        )}
+      </section>
+
+      {/* Sent requests */}
+      <section className="space-y-3">
+        <div className="flex items-center gap-2">
+          <Send className="w-4 h-4 text-muted-foreground" strokeWidth={1.75} />
+          <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+            Odoslané
+          </h2>
+          {hasSent && (
+            <span className="text-xs font-bold bg-slate-200 dark:bg-slate-600 text-foreground dark:text-white px-2 py-0.5 rounded-full">
+              {sentRequests.length}
+            </span>
+          )}
+        </div>
+
+        {hasSent ? (
+          <div className="space-y-3">
+            {sentRequests.map((request) => (
+              <Card key={request.friendship?.id || request.id} className="bg-card border border-slate-200 shadow-sm dark:bg-slate-800/50 dark:border-slate-700">
+                <CardContent className="p-4 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Avatar>
+                      <AvatarImage src={request.profileImageUrl || ""} />
+                      <AvatarFallback className="bg-blue-500">
+                        {(request.firstName?.[0] || "U").toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="font-bold text-foreground dark:text-white">
+                        {request.firstName} {request.lastName}
+                      </p>
+                      <p className="text-xs text-amber-500 dark:text-amber-400 flex items-center gap-1 mt-0.5">
+                        <Clock className="w-3 h-3" strokeWidth={2} />
+                        Čaká na odpoveď
+                      </p>
+                    </div>
+                  </div>
+                  {request.friendship?.id && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => cancelMutation.mutate(request.friendship!.id)}
+                      disabled={cancelMutation.isPending}
+                      data-testid={`button-cancel-${request.friendship.id}`}
+                    >
+                      <X className="w-4 h-4 mr-1" />
+                      Zrušiť
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground dark:text-slate-400 italic px-1">
+            Nemáš žiadne odoslané žiadosti
+          </p>
+        )}
+      </section>
     </div>
   );
 }

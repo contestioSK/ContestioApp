@@ -385,10 +385,11 @@ export interface IStorage {
   // Friendship operations
   getUserFriends(userId: string): Promise<(User & { friendship?: Friendship })[]>;
   getFriendRequests(userId: string): Promise<(User & { friendship: Friendship })[]>;
-  getSentFriendRequests(userId: string): Promise<User[]>;
+  getSentFriendRequests(userId: string): Promise<(User & { friendship: Friendship })[]>;
   sendFriendRequest(senderId: string, recipientId: string): Promise<Friendship>;
   acceptFriendRequest(friendshipId: string): Promise<Friendship>;
   rejectFriendRequest(friendshipId: string): Promise<void>;
+  cancelSentFriendRequest(friendshipId: string, senderId: string): Promise<void>;
   removeFriend(userId: string, friendId: string): Promise<void>;
 
   // Promo codes
@@ -4408,7 +4409,7 @@ export class DatabaseStorage implements IStorage {
     }));
   }
 
-  async getSentFriendRequests(userId: string): Promise<User[]> {
+  async getSentFriendRequests(userId: string): Promise<(User & { friendship: Friendship })[]> {
     const requests = await db
       .select()
       .from(friendships)
@@ -4420,10 +4421,15 @@ export class DatabaseStorage implements IStorage {
     const recipientIds = requests.map(r => r.recipientId);
     if (recipientIds.length === 0) return [];
 
-    return db
+    const recipients = await db
       .select()
       .from(users)
       .where(inArray(users.id, recipientIds));
+
+    return recipients.map(recipient => ({
+      ...recipient,
+      friendship: requests.find(r => r.recipientId === recipient.id)!
+    }));
   }
 
   async sendFriendRequest(senderId: string, recipientId: string): Promise<Friendship> {
@@ -4463,6 +4469,16 @@ export class DatabaseStorage implements IStorage {
     await db
       .delete(friendships)
       .where(eq(friendships.id, friendshipId));
+  }
+
+  async cancelSentFriendRequest(friendshipId: string, senderId: string): Promise<void> {
+    await db
+      .delete(friendships)
+      .where(and(
+        eq(friendships.id, friendshipId),
+        eq(friendships.senderId, senderId),
+        eq(friendships.status, 'pending')
+      ));
   }
 
   async removeFriend(userId: string, friendId: string): Promise<void> {
