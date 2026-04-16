@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Play, Plus, StopCircle, MapPin } from "lucide-react";
+import { Play, Plus, StopCircle, MapPin, Calendar } from "lucide-react";
 import waterRaysBg from "@assets/water-rays-bg.png";
 import carpImage from "@assets/Gemini_Generated_Image_kur5qpkur5qpkur5-Photoroom_1769878046486.png";
 import type { DiaryTrip } from "@shared/schema";
@@ -10,8 +10,23 @@ interface FishingActionCardProps {
   onAddCatch: () => void;
   canAddCatch?: boolean;
   activeTrip?: DiaryTrip;
+  plannedTrip?: DiaryTrip;
   onEndTrip?: () => void;
   isEndingTrip?: boolean;
+}
+
+function formatTripStart(date: Date): string {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const target = new Date(date);
+  target.setHours(0, 0, 0, 0);
+
+  if (target.getTime() === tomorrow.getTime()) return "Začína zajtra";
+  const diffDays = Math.round((target.getTime() - today.getTime()) / 86400000);
+  if (diffDays > 1 && diffDays <= 7) return `Začína o ${diffDays} dní`;
+  return `Začína ${target.toLocaleDateString("sk-SK", { day: "numeric", month: "short" })}`;
 }
 
 export default function FishingActionCard({ 
@@ -19,6 +34,7 @@ export default function FishingActionCard({
   onAddCatch, 
   canAddCatch = true,
   activeTrip,
+  plannedTrip,
   onEndTrip,
   isEndingTrip = false,
 }: FishingActionCardProps) {
@@ -61,6 +77,22 @@ export default function FishingActionCard({
                 </p>
               )}
             </>
+          ) : plannedTrip ? (
+            <>
+              <div className="inline-flex items-center gap-2 bg-amber-500/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-medium text-amber-400 mb-3 md:mb-4 border border-amber-500/30">
+                <Calendar size={12} strokeWidth={2} />
+                <span>{formatTripStart(new Date(plannedTrip.startDate))}</span>
+              </div>
+              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2 md:mb-3 leading-tight">
+                {plannedTrip.name}
+              </h2>
+              {plannedTrip.location && (
+                <p className="text-slate-300 font-medium text-base md:text-lg flex items-center gap-1.5">
+                  <MapPin className="w-4 h-4 text-slate-400" strokeWidth={1.75} />
+                  {plannedTrip.location}
+                </p>
+              )}
+            </>
           ) : (
             <>
               <div className="inline-flex items-center gap-2 bg-black/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-medium text-slate-300 mb-3 md:mb-4 border border-white/10">
@@ -96,7 +128,7 @@ export default function FishingActionCard({
               data-testid="cta-start-fishing"
             >
               <Play className="w-4 h-4 md:w-5 md:h-5 mr-2" strokeWidth={1.75} />
-              <span>Začať rybačku</span>
+              <span>{plannedTrip ? "Začať teraz" : "Začať rybačku"}</span>
             </Button>
           )}
           <Button
