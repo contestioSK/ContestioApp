@@ -566,9 +566,23 @@ export default function DiaryTrips() {
   }, []);
 
   // Trip form content - reusable for both Dialog and Drawer
-  const TripFormContent = () => (
+  const TripFormContent = ({ variant = "dialog" }: { variant?: "dialog" | "drawer" }) => (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+      <form
+        onSubmit={form.handleSubmit(handleSubmit)}
+        className={
+          variant === "drawer"
+            ? "flex flex-col flex-1 min-h-0"
+            : "space-y-6"
+        }
+      >
+        <div
+          className={
+            variant === "drawer"
+              ? "flex-1 overflow-y-auto px-4 pt-2 pb-4 space-y-6"
+              : "space-y-6"
+          }
+        >
         <div className="space-y-4">
           <FormField
             control={form.control}
@@ -799,7 +813,14 @@ export default function DiaryTrips() {
           ))}
         </div>
 
-        <div className="flex justify-end gap-3 pt-4 border-t">
+        </div>
+        <div
+          className={
+            variant === "drawer"
+              ? "sticky bottom-0 left-0 right-0 flex justify-end gap-3 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] border-t bg-background"
+              : "flex justify-end gap-3 pt-4 border-t"
+          }
+        >
           <Button type="button" variant="outline" onClick={closeDialog}>
             Zrušiť
           </Button>
@@ -957,8 +978,8 @@ export default function DiaryTrips() {
           {/* Responsive Dialog (Desktop) / Drawer (Mobile) for trip form */}
           {isMobile ? (
             <Drawer open={isCreateDialogOpen || !!editingTrip} onOpenChange={(open) => !open && closeDialog()}>
-              <DrawerContent className="max-h-[90vh] overflow-y-auto">
-                <DrawerHeader className="text-left">
+              <DrawerContent className="max-h-[90vh] flex flex-col">
+                <DrawerHeader className="text-left shrink-0">
                   <DrawerTitle>
                     {editingTrip ? "Upraviť výpravu" : "Nová výprava"}
                   </DrawerTitle>
@@ -969,9 +990,7 @@ export default function DiaryTrips() {
                     }
                   </DrawerDescription>
                 </DrawerHeader>
-                <div className="px-4 pb-6">
-                  <TripFormContent />
-                </div>
+                {TripFormContent({ variant: "drawer" })}
               </DrawerContent>
             </Drawer>
           ) : (
@@ -992,7 +1011,7 @@ export default function DiaryTrips() {
                   </DialogHeader>
                 </div>
                 <div className="p-5">
-                  <TripFormContent />
+                  {TripFormContent({})}
                 </div>
               </DialogContent>
             </Dialog>
