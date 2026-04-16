@@ -49,3 +49,7 @@ APP_ORIGIN = "https://contestio.replit.app"
 [userenv.shared]
 STRIPE_PRICE_MONTHLY = "price_1TCMqFLa3APD9cgQWJO3YZKA"
 STRIPE_PRICE_YEARLY = "price_1TCMqFLa3APD9cgQ81Mb51tV"
+
+[postMerge]
+path = "scripts/post-merge.sh"
+timeoutMs = 20000
