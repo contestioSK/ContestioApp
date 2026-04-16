@@ -220,18 +220,34 @@ export default function DiaryIndex() {
     enabled: !!user
   });
 
-  // Find most recent active trip: endDate >= now AND status is not 'completed'
+  // Find most recent active trip: startDate <= now AND endDate >= now AND status is not 'completed'
   const activeTrip = useMemo(() => {
     const now = new Date();
     return trips
       .filter(t => {
         if (t.status === 'completed') return false;
+        const start = new Date(t.startDate);
+        start.setHours(0, 0, 0, 0);
         const end = new Date(t.endDate);
         end.setHours(23, 59, 59, 999);
-        return end >= now;
+        return start <= now && end >= now;
       })
       .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime())[0];
   }, [trips]);
+
+  // Find nearest planned (future) trip — only when there's no active trip
+  const plannedTrip = useMemo(() => {
+    if (activeTrip) return undefined;
+    const now = new Date();
+    return trips
+      .filter(t => {
+        if (t.status === 'completed') return false;
+        const start = new Date(t.startDate);
+        start.setHours(0, 0, 0, 0);
+        return start > now;
+      })
+      .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())[0];
+  }, [trips, activeTrip]);
 
   // End active trip mutation
   const endTripMutation = useMutation({
@@ -658,6 +674,7 @@ export default function DiaryIndex() {
               onAddCatch={() => setIsCreateCatchOpen(true)}
               canAddCatch={!limits || limits.canCreate}
               activeTrip={activeTrip}
+              plannedTrip={plannedTrip}
               onEndTrip={() => activeTrip && endTripMutation.mutate(activeTrip.id)}
               isEndingTrip={endTripMutation.isPending}
             />
