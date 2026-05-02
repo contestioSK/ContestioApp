@@ -6,7 +6,7 @@ import { useState } from "react";
 import { 
   ChevronLeft, ChevronRight, X,
   MapPin, Calendar, Thermometer, Wind, Droplets, Gauge,
-  Target, Ruler, Fish, Image
+  Target, Ruler, Fish, Image, AlertCircle, Loader2
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -42,10 +42,24 @@ function SimpleRow({
   );
 }
 
-function getPhotoUrl(photo: string | { url?: string; id?: string } | undefined): string | null {
+type PhotoStatus = 'processing' | 'ready' | 'failed';
+
+interface SharedPhoto {
+  url: string | null;
+  status: PhotoStatus;
+  id?: string;
+}
+
+function normalizePhoto(
+  photo: string | { url?: string; id?: string; status?: PhotoStatus } | undefined,
+): SharedPhoto | null {
   if (!photo) return null;
-  if (typeof photo === 'string') return photo;
-  return photo.url || null;
+  if (typeof photo === 'string') {
+    // Legacy plain-string entries are treated as ready (already persisted URLs)
+    return { url: photo, status: 'ready' };
+  }
+  const status: PhotoStatus = photo.status ?? (photo.url ? 'ready' : 'processing');
+  return { url: photo.url ?? null, status, id: photo.id };
 }
 
 export default function SharedCatch() {
@@ -87,11 +101,14 @@ export default function SharedCatch() {
     );
   }
 
-  const photoUrls = catch_.photos
-    ? (catch_.photos as any[])
-        .map(p => getPhotoUrl(p))
-        .filter((url): url is string => url !== null)
+  // Render every photo (including processing/failed) so a missing photo never
+  // shows up as a silent gap. Owner uploaded N photos → viewer sees N tiles.
+  const sharedPhotos: SharedPhoto[] = catch_.photos
+    ? ((catch_.photos as any[])
+        .map(normalizePhoto)
+        .filter((p): p is SharedPhoto => p !== null))
     : [];
+  const activePhoto: SharedPhoto | undefined = sharedPhotos[activeImage];
 
   const hasWeatherData = catch_.airTemp || catch_.waterTemp || catch_.windSpeed || catch_.airPressure;
   const hasGpsData = catch_.latitude || catch_.longitude;
@@ -102,22 +119,44 @@ export default function SharedCatch() {
       <div className="relative">
         {/* Photo Section */}
         <div className="relative aspect-[4/3] bg-slate-900">
-          {photoUrls.length > 0 ? (
+          {sharedPhotos.length > 0 && activePhoto ? (
             <>
-              <img
-                src={photoUrls[activeImage]}
-                alt={getFishTypeLabel(catch_.fishType)}
-                className="w-full h-full object-cover cursor-pointer"
-                onClick={() => setIsLightboxOpen(true)}
-              />
-              
+              {activePhoto.status === 'ready' && activePhoto.url ? (
+                <img
+                  src={activePhoto.url}
+                  alt={getFishTypeLabel(catch_.fishType)}
+                  className="w-full h-full object-cover cursor-pointer"
+                  onClick={() => setIsLightboxOpen(true)}
+                />
+              ) : activePhoto.status === 'processing' ? (
+                <div
+                  className="w-full h-full flex flex-col items-center justify-center gap-3 bg-slate-900 px-6 text-center"
+                  data-testid="shared-photo-processing"
+                >
+                  <Loader2 className="w-10 h-10 text-orange-500 animate-spin" strokeWidth={1.75} />
+                  <p className="text-white text-sm font-medium">Fotka sa ešte spracúva...</p>
+                  <p className="text-slate-400 text-xs">Skús stránku načítať za chvíľu znova.</p>
+                </div>
+              ) : (
+                <div
+                  className="w-full h-full flex flex-col items-center justify-center gap-3 bg-slate-900 px-6 text-center"
+                  data-testid="shared-photo-failed"
+                >
+                  <AlertCircle className="w-10 h-10 text-red-400" strokeWidth={1.75} />
+                  <p className="text-white text-sm font-medium">Fotka sa nenahrala</p>
+                  <p className="text-slate-400 text-xs">
+                    Majiteľ úlovku ju môže nahrať znova zo svojho denníka.
+                  </p>
+                </div>
+              )}
+
               {/* Photo navigation */}
-              {photoUrls.length > 1 && (
+              {sharedPhotos.length > 1 && (
                 <>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      setActiveImage((prev) => (prev === 0 ? photoUrls.length - 1 : prev - 1));
+                      setActiveImage((prev) => (prev === 0 ? sharedPhotos.length - 1 : prev - 1));
                     }}
                     className="absolute left-4 top-1/2 -translate-y-1/2 p-2 text-white z-20 transition-opacity hover:opacity-80 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
                   >
@@ -126,14 +165,14 @@ export default function SharedCatch() {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      setActiveImage((prev) => (prev === photoUrls.length - 1 ? 0 : prev + 1));
+                      setActiveImage((prev) => (prev === sharedPhotos.length - 1 ? 0 : prev + 1));
                     }}
                     className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-white z-20 transition-opacity hover:opacity-80 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
                   >
                     <ChevronRight size={28} strokeWidth={2.5} />
                   </button>
                   <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-black/40 backdrop-blur-md rounded-full text-white text-xs font-medium z-20">
-                    {activeImage + 1} / {photoUrls.length}
+                    {activeImage + 1} / {sharedPhotos.length}
                   </div>
                 </>
               )}
@@ -298,8 +337,8 @@ export default function SharedCatch() {
         </div>
       </div>
 
-      {/* Lightbox */}
-      {isLightboxOpen && photoUrls.length > 0 && (
+      {/* Lightbox — only opens for ready photos */}
+      {isLightboxOpen && activePhoto?.status === 'ready' && activePhoto.url && (
         <div 
           className="fixed inset-0 z-50 bg-black flex items-center justify-center"
           onClick={() => setIsLightboxOpen(false)}
@@ -312,18 +351,18 @@ export default function SharedCatch() {
           </button>
           
           <img
-            src={photoUrls[activeImage]}
+            src={activePhoto.url}
             alt={getFishTypeLabel(catch_.fishType)}
             className="max-w-full max-h-full object-contain"
             onClick={(e) => e.stopPropagation()}
           />
           
-          {photoUrls.length > 1 && (
+          {sharedPhotos.length > 1 && (
             <>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  setActiveImage((prev) => (prev === 0 ? photoUrls.length - 1 : prev - 1));
+                  setActiveImage((prev) => (prev === 0 ? sharedPhotos.length - 1 : prev - 1));
                 }}
                 className="absolute left-4 top-1/2 -translate-y-1/2 p-2 text-white z-50 transition-opacity hover:opacity-80 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
               >
@@ -332,14 +371,14 @@ export default function SharedCatch() {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  setActiveImage((prev) => (prev === photoUrls.length - 1 ? 0 : prev + 1));
+                  setActiveImage((prev) => (prev === sharedPhotos.length - 1 ? 0 : prev + 1));
                 }}
                 className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-white z-50 transition-opacity hover:opacity-80 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
               >
                 <ChevronRight size={32} strokeWidth={2.5} />
               </button>
               <div className="absolute bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 bg-white/10 backdrop-blur-md rounded-full text-white text-sm font-medium">
-                {activeImage + 1} / {photoUrls.length}
+                {activeImage + 1} / {sharedPhotos.length}
               </div>
             </>
           )}
