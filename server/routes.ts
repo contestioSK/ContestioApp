@@ -419,6 +419,24 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
                 let finalStatus = result.status;
                 let finalError = result.error;
 
+                // Contract: original is mandatory, variants are best-effort.
+                // If the queue reports `failed` but the catch already has a
+                // valid Firebase original URL persisted (from the synchronous
+                // upload step), the photo is still viewable at full
+                // resolution. Don't downgrade it to a failed UI state — only
+                // variants are missing.
+                if (
+                  finalStatus === 'failed' &&
+                  isFirebaseHostedUrl(photo.url) &&
+                  isFirebaseHostedUrl(photo.originalUrl)
+                ) {
+                  console.warn(
+                    `[PhotoQueue] Variants failed for photo ${result.photoId} but Firebase original is intact — keeping status='ready'`
+                  );
+                  finalStatus = 'ready';
+                  finalError = undefined;
+                }
+
                 // Invariant: status 'ready' requires a Firebase-hosted URL
                 if (finalStatus === 'ready' && !isFirebaseHostedUrl(newUrl)) {
                   console.error('[IMAGE_UPLOAD_FAILED]', {
