@@ -1,0 +1,358 @@
+ako by si navrhol systém na ukladanie fotiek ty? a teraz zabudni že mám nejakú firebase, ako by si to vyriešil stabilne a robustne aby to nepadalo? 
+
+Dobre.
+Teraz sa bavíme o skutočnej architektúre, nie o „nejako to uploaduje“.
+
+A poviem ti rovno:
+
+👉 Ty nepotrebuješ „photo upload systém“.
+Ty potrebuješ fault-tolerant media pipeline.
+
+Lebo rybársky denník bez fotiek je mŕtvy produkt.
+
+Fotka NIE JE doplnok.
+Fotka JE produkt.
+
+Najväčšia chyba ktorú teraz robíš
+
+Máš:
+
+app server
+upload
+processing
+storage
+websockety
+retry queue
+
+v jednom procese.
+
+To je extrémne krehké.
+
+Jeden memory spike.
+Jedna auth chyba.
+Jeden restart.
+
+A polovica pipeline sa rozpadne.
+
+Ako by som to navrhol ja
+GOLDEN RULE
+
+👉 Upload nikdy nesmie byť závislý od backend procesu.
+
+Backend nesmie:
+
+držať image buffery
+resizeovať 6 variantov inline
+uploadovať na storage synchronne
+držať queue v RAM
+
+To je presne cesta do pekla.
+
+ROBUSTNÁ ARCHITEKTÚRA
+1. STORAGE = S3 kompatibilné object storage
+
+Nie Firebase.
+
+Použil by som:
+
+Najlepšia voľba:
+Cloudflare R2
+
+Prečo:
+
+lacné
+stabilné
+bez egress fees
+S3 compatible
+extrémne jednoduché
+
+Alternatíva:
+
+Backblaze B2
+AWS S3
+2. CLIENT UPLOAD → PRIAMO DO STORAGE
+
+Toto je kritický bod.
+
+Nie:
+
+client → backend → storage
+
+Ale:
+
+client → storage
+
+Backend iba vydá podpísaný upload URL.
+
+Flow
+Krok 1
+
+Frontend:
+
+POST /api/photos/presign
+
+Backend:
+
+vytvorí photoId
+vygeneruje presigned upload URL
+uloží draft záznam do DB
+
+Vracia:
+
+{
+  "photoId": "...",
+  "uploadUrl": "...",
+  "publicUrl": "..."
+}
+Krok 2
+
+Frontend uploadne fotku PRIAMO do storage.
+
+Backend nič nebufferuje.
+
+Žiadny RAM spike.
+Žiadny Multer chaos.
+Žiadny server bottleneck.
+
+3. IMAGE PROCESSING = ASYNCHRONNÝ WORKER
+
+Nie hlavný Node server.
+
+Samostatný worker.
+
+Worker stack
+Queue:
+BullMQ + Redis
+
+alebo:
+
+Cloudflare Queues
+Worker:
+Sharp
+1 job = 1 image
+Výhoda
+
+Keď processing padne:
+
+appka stále žije
+API stále žije
+upload stále funguje
+
+To je obrovský rozdiel.
+
+4. ORIGINÁL JE POSVÄTNÝ
+
+Nikdy:
+
+neprepisovať originál
+nemazať originál
+neservovať temp súbory
+Správna štruktúra
+/photos/
+  originals/
+    userId/photoId.jpg
+
+  variants/
+    userId/photoId-200.webp
+    userId/photoId-800.webp
+5. DATABASE MODEL
+
+Nie JSON chaos.
+
+Normálna tabuľka.
+
+photos
+- id
+- user_id
+- status
+- original_url
+- processed_at
+- failed_reason
+
+A:
+
+photo_variants
+- photo_id
+- width
+- format
+- url
+Prečo?
+
+Lebo JSONB field je peklo:
+
+indexovanie
+querying
+migrations
+repair scripts
+analytics
+6. STATUS MODEL
+
+Toto je KRITICKÉ.
+
+UPLOADING
+PROCESSING
+READY
+FAILED
+
+Nie žiadne:
+
+ready + empty URL
+
+To je architektonický zločin.
+
+7. UI MUSÍ BYŤ STAVOVÝ SYSTÉM
+
+Nie:
+
+img src || fallback
+
+Ale:
+
+explicitný rendering
+uploading
+
+spinner
+
+processing
+
+blur placeholder
+
+failed
+
+retry UI
+
+ready
+
+image
+
+8. RETRY
+
+Nie random retry chaos.
+
+Retry policy
+NETWORK FAIL
+
+retry x3
+
+AUTH FAIL
+
+NO RETRY
+
+INVALID IMAGE
+
+NO RETRY
+
+9. EXIF
+
+EXIF strip:
+
+worker layer
+nie upload layer
+
+Prečo?
+
+Lebo upload musí byť FAST.
+
+10. CDN
+
+Storage bez CDN = chyba.
+
+R2 + Cloudflare CDN:
+
+hotovo
+globálne cache
+lacné
+11. ČO BY SOM JA SPRAVIL PRE PRIVODE
+
+Úprimne?
+
+TVOJA IDEÁLNA VERZIA
+Frontend
+
+React + TanStack Query
+
+API
+
+Node/Express
+
+Upload
+
+Presigned URL
+
+Storage
+
+Cloudflare R2
+
+Queue
+
+BullMQ + Redis
+
+Processing worker
+
+samostatný Node worker
+
+CDN
+
+Cloudflare
+
+Metadata
+
+Postgres
+
+PREČO JE TOTO LEPŠIE?
+
+Lebo:
+
+backend nie je bottleneck
+upload nezabije server
+processing crash nezabije appku
+storage outage sa dá graceful handleovať
+retry systém je kontrolovaný
+scale je jednoduchý
+A teraz tvrdá pravda
+
+To čo máš teraz:
+
+je veľmi slušné MVP
+ale nie production-grade media architecture
+
+A presne preto si narazil:
+
+broken images
+race conditions
+retry storms
+websocket chaos
+RAM pressure
+fallback peklo
+
+To nie je „bug“.
+
+To je:
+👉 limit monolitického upload systému.
+
+Čo by som robil ja na tvojom mieste
+TERAZ
+
+Neprerábaj všetko.
+
+To by bol ego refactor.
+
+Správny krok:
+FÁZA 1
+
+Stabilizuj existujúci systém.
+
+FÁZA 2
+
+Migruj upload flow na:
+
+presigned uploads
+R2
+worker
+
+Postupne.
+
+Lebo inak
+
+Skončíš v:
+👉 „3 mesiace refactorujem infra namiesto budovania produktu“
