@@ -881,63 +881,57 @@ export default function CatchFormDialog({
       } catch {
         // Non-JSON response (rare); leave defaults so we fall through to error path.
       }
+
+      // Atomic contract: either ALL photos uploaded to Firebase, or NONE.
+      // The backend returns 502 with no `photos` payload on any failure.
+      if (!uploadResponse.ok) {
+        const totalAttempted = resizedPhotos.length;
+        throw new Error(
+          totalAttempted === 1
+            ? 'Fotografiu sa nepodarilo nahrať do cloudu. Úlovok je uložený, fotku skús nahrať znova cez „Upraviť".'
+            : `Fotografie sa nepodarilo nahrať do cloudu (žiadna z ${totalAttempted} sa neuložila). Úlovok je uložený, fotky skús nahrať znova cez „Upraviť".`,
+        );
+      }
+
       const uploadedPhotos: UploadedPhoto[] = Array.isArray(uploadResult.photos)
         ? uploadResult.photos
         : [];
-      const failedPhotos: string[] = Array.isArray(uploadResult.failedPhotos)
-        ? uploadResult.failedPhotos
-        : [];
 
-      // 502 = backend storage failure, all photos rejected
-      if (!uploadResponse.ok) {
-        const totalAttempted = resizedPhotos.length;
-        const failedCount = failedPhotos.length || totalAttempted;
+      // Backend OK but no photos in payload → treat as failure to avoid silent loss
+      if (uploadedPhotos.length === 0) {
         throw new Error(
-          failedCount === 1
-            ? 'Fotografiu sa nepodarilo nahrať do cloudu. Úlovok je uložený, fotku skús nahrať znova cez „Upraviť".'
-            : `${failedCount} fotografií sa nepodarilo nahrať do cloudu. Úlovok je uložený, fotky skús nahrať znova cez „Upraviť".`,
+          'Server vrátil prázdnu odpoveď. Úlovok je uložený, fotky skús nahrať znova cez „Upraviť".',
         );
       }
 
-      // Some photos uploaded, some failed (partial success)
-      if (uploadedPhotos.length > 0) {
-        const patchResponse = await fetch(
-          `/api/diary/catches/${catchId}/photos`,
-          {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ photos: uploadedPhotos }),
-            credentials: "include",
-          },
+      // Attach all uploaded photos to the catch
+      const patchResponse = await fetch(
+        `/api/diary/catches/${catchId}/photos`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ photos: uploadedPhotos }),
+          credentials: "include",
+        },
+      );
+
+      if (!patchResponse.ok) {
+        throw new Error(
+          "Fotografie sa nahrali do cloudu, ale nepodarilo sa ich pripojiť k úlovku. Skús to prosím znova.",
         );
-
-        if (!patchResponse.ok) {
-          throw new Error(
-            "Fotografie sa nahrali do cloudu, ale nepodarilo sa ich pripojiť k úlovku. Skús to prosím znova.",
-          );
-        }
-
-        queryClient.invalidateQueries({
-          queryKey: ["/api/diary/catches/all"],
-        });
       }
 
-      // Honest user feedback based on actual outcome
-      if (failedPhotos.length > 0 && uploadedPhotos.length > 0) {
-        toast({
-          title: "Časť fotografií zlyhala",
-          description: `${uploadedPhotos.length} z ${uploadedPhotos.length + failedPhotos.length} fotografií bolo nahraných. Zvyšné skús nahrať znova cez „Upraviť".`,
-          variant: "destructive",
-        });
-      } else if (uploadedPhotos.length > 0) {
-        toast({
-          title: "Fotky nahraté do cloudu",
-          description:
-            uploadedPhotos.length === 1
-              ? "Fotka sa optimalizuje na pozadí."
-              : `${uploadedPhotos.length} fotografií sa optimalizuje na pozadí.`,
-        });
-      }
+      queryClient.invalidateQueries({
+        queryKey: ["/api/diary/catches/all"],
+      });
+
+      toast({
+        title: "Fotky nahraté do cloudu",
+        description:
+          uploadedPhotos.length === 1
+            ? "Fotka sa optimalizuje na pozadí."
+            : `${uploadedPhotos.length} fotografií sa optimalizuje na pozadí.`,
+      });
     } catch (error) {
       console.error("Background photo upload error:", error);
       const message =
