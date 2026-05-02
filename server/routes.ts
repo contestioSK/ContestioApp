@@ -6833,77 +6833,115 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
         return res.status(500).json({ message: "Priečinok pre fotografie neexistuje" });
       }
 
-      // Sanitize each photo (EXIF strip) before serving URL — processing happens in background
-      const photos = [];
-      const failedPhotos = [];
-      
+      // Pre-flight: Firebase must be configured. No local fallback.
+      if (!isFirebaseConfigured()) {
+        console.error(`[PhotoUpload] Firebase not configured — refusing upload for user ${userId}`);
+        // Cleanup all incoming temp files since we won't process them
+        for (const file of (req.files as any[])) {
+          try { await fsPromises.unlink(file.path); } catch {}
+        }
+        return res.status(502).json({
+          message: "Cloudové úložisko fotiek nie je dostupné. Skús to prosím neskôr.",
+        });
+      }
+
+      // Atomic upload semantics:
+      //   • All photos must reach Firebase OR the whole request fails.
+      //   • Any per-file failure triggers rollback: every successful Firebase blob
+      //     uploaded earlier in this request is deleted to avoid orphans.
+      //   • On rollback, response is HTTP 502 with `failedPhotos` listing the
+      //     filenames that failed sanitization or Firebase upload.
+      //   • The frontend never receives a partially attachable `photos` payload.
+      const photos: Array<{
+        id: string;
+        url: string;
+        status: 'processing';
+        originalUrl: string;
+        processingStartedAt: string;
+        _processingInfo: {
+          userId: string;
+          originalPath: string;
+          originalFilename: string;
+          outputBasePath: string;
+        };
+      }> = [];
+      const uploadedFirebasePaths: string[] = []; // for rollback
+      const sanitizedTempPaths: string[] = [];   // for rollback (in case of mid-batch failure)
+      const failedPhotos: string[] = [];
+
+      const rollback = async (reason: string) => {
+        console.warn(`[PhotoUpload] Rolling back partial upload for user ${userId}: ${reason}`);
+        // Delete every Firebase blob we already uploaded in this request
+        await Promise.all(
+          uploadedFirebasePaths.map((p) =>
+            deleteFromFirebase(p).catch((err) =>
+              console.warn(`[PhotoUpload] Rollback: failed to delete ${p}:`, err?.message),
+            ),
+          ),
+        );
+        // Clean up sanitized temp files left behind
+        await Promise.all(
+          sanitizedTempPaths.map((p) =>
+            fsPromises.unlink(p).catch(() => {}),
+          ),
+        );
+      };
+
       for (const file of req.files as any[]) {
         const photoId = randomUUID();
         const baseFilename = `${photoId}`;
         // Always produce a .jpg — sanitizeToFile re-encodes as JPEG regardless of input format
         const sanitizedFilename = `${baseFilename}-original.jpg`;
         const sanitizedPath = path.join(diaryPhotosDir, sanitizedFilename);
-        
+
         console.log(`[PhotoUpload] Sanitizing file: ${file.originalname} (${file.size} bytes), temp: ${file.path}`);
-        
+
         // Check if source temp file exists
         if (!existsSync(file.path)) {
           console.error(`[PhotoUpload] Source temp file doesn't exist: ${file.path}`);
           failedPhotos.push(file.originalname);
-          continue;
+          break;
         }
-        
+
         // Sanitize: strip EXIF, auto-rotate, re-encode as JPEG
-        // sanitizeToFile throws on decode failure (corrupt/unsupported file)
         try {
           await ImageService.sanitizeToFile(file.path, sanitizedPath);
         } catch (sanitizeError: any) {
           console.error(`[PhotoUpload] Sanitization failed for ${file.originalname}:`, sanitizeError.message);
-          // Clean up temp file
           try { await fsPromises.unlink(file.path); } catch {}
           failedPhotos.push(file.originalname);
-          continue;
+          break;
         }
-        
-        // Delete RAW temp AFTER successful sanitization (confirmed by sanitizeToFile's own size check)
+        sanitizedTempPaths.push(sanitizedPath);
+
+        // Delete RAW temp AFTER successful sanitization
         try {
           await fsPromises.unlink(file.path);
         } catch (unlinkError) {
           console.warn(`[PhotoUpload] Could not delete temp file ${file.path}:`, unlinkError);
-          // Non-fatal — temp will be cleaned up by OS eventually
         }
-        
+
         // Final verification
         if (!existsSync(sanitizedPath)) {
           console.error(`[PhotoUpload] Sanitized file missing at: ${sanitizedPath}`);
           failedPhotos.push(file.originalname);
-          continue;
+          break;
         }
-        
+
         const destStats = await fsPromises.stat(sanitizedPath);
         console.log(`[PhotoUpload] Sanitized successfully: ${sanitizedPath} (${destStats.size} bytes)`);
 
-        // Firebase is the single source of truth for photo URLs.
-        // No local fallback — if Firebase upload fails, the photo upload fails honestly.
-        if (!isFirebaseConfigured()) {
-          console.error(`[PhotoUpload] Firebase not configured — cannot store photo for user ${userId}`);
-          try { await fsPromises.unlink(sanitizedPath); } catch {}
-          failedPhotos.push(file.originalname);
-          continue;
-        }
-
+        const firebaseOriginalPath = `diary_photos/${userId}/${photoId}/sanitized-original.jpg`;
         let immediateUrl: string;
         try {
-          const firebaseOriginalPath = `diary_photos/${userId}/${photoId}/sanitized-original.jpg`;
           const fbResult = await uploadToFirebase(sanitizedPath, firebaseOriginalPath, 'image/jpeg');
           immediateUrl = fbResult.publicUrl;
+          uploadedFirebasePaths.push(firebaseOriginalPath);
           console.log(`[PhotoUpload] Original uploaded to Firebase: ${firebaseOriginalPath}`);
         } catch (fbError: any) {
           console.error(`[PhotoUpload] Firebase upload failed for ${file.originalname}:`, fbError?.message);
-          // Clean up the sanitized temp — no point keeping it if we can't store it
-          try { await fsPromises.unlink(sanitizedPath); } catch {}
           failedPhotos.push(file.originalname);
-          continue;
+          break;
         }
 
         photos.push({
@@ -6916,32 +6954,27 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
             userId,
             originalPath: sanitizedPath,
             originalFilename: sanitizedFilename,
-            outputBasePath: path.join(diaryPhotosDir, baseFilename)
-          }
+            outputBasePath: path.join(diaryPhotosDir, baseFilename),
+          },
         });
       }
 
-      if (photos.length === 0) {
-        console.error(`[PhotoUpload] All photos failed to upload for user: ${userId}`);
-        // 502 Bad Gateway — the storage backend (Firebase) failed
-        return res.status(502).json({
-          message: "Nepodarilo sa uložiť žiadnu fotografiu. Skúste to prosím znova.",
-          failedPhotos
-        });
-      }
-
+      // Atomic contract: any failure in this batch fails the whole request.
       if (failedPhotos.length > 0) {
-        console.warn(`[PhotoUpload] Some photos failed: ${failedPhotos.join(', ')}`);
+        await rollback(`failed photos: ${failedPhotos.join(', ')}`);
+        return res.status(502).json({
+          message: failedPhotos.length === (req.files as any[]).length
+            ? "Nepodarilo sa uložiť žiadnu fotografiu. Skús to prosím znova."
+            : `Nepodarilo sa uložiť všetky fotky (${failedPhotos.length} z ${(req.files as any[]).length} zlyhalo). Žiadna fotka nebola uložená — skús to prosím znova.`,
+          failedPhotos,
+        });
       }
 
-      console.log(`[PhotoUpload] Upload complete for user ${userId}: ${photos.length} successful, ${failedPhotos.length} failed`);
+      console.log(`[PhotoUpload] Upload complete for user ${userId}: ${photos.length} successful (atomic)`);
 
       res.json({
         photos,
-        message: failedPhotos.length > 0
-          ? `Nahraných ${photos.length} fotiek, ${failedPhotos.length} zlyhalo`
-          : `Nahraných ${photos.length} fotiek, optimalizácia prebieha na pozadí...`,
-        failedPhotos: failedPhotos.length > 0 ? failedPhotos : undefined
+        message: `Nahraných ${photos.length} fotiek, optimalizácia prebieha na pozadí...`,
       });
       
     } catch (error) {
