@@ -861,40 +861,71 @@ export default function CatchFormDialog({
         credentials: "include",
       });
 
+      const uploadResult = await uploadResponse
+        .json()
+        .catch(() => ({}) as any);
+      const uploadedPhotos: any[] = uploadResult?.photos || [];
+      const failedPhotos: string[] = uploadResult?.failedPhotos || [];
+
+      // 502 = backend storage failure, all photos rejected
       if (!uploadResponse.ok) {
-        throw new Error("Failed to upload photos");
+        const totalAttempted = resizedPhotos.length;
+        const failedCount = failedPhotos.length || totalAttempted;
+        throw new Error(
+          failedCount === 1
+            ? 'Fotografiu sa nepodarilo nahrať do cloudu. Úlovok je uložený, fotku skús nahrať znova cez „Upraviť".'
+            : `${failedCount} fotografií sa nepodarilo nahrať do cloudu. Úlovok je uložený, fotky skús nahrať znova cez „Upraviť".`,
+        );
       }
 
-      const uploadResult = await uploadResponse.json();
-      const uploadedPhotos = uploadResult.photos || [];
+      // Some photos uploaded, some failed (partial success)
+      if (uploadedPhotos.length > 0) {
+        const patchResponse = await fetch(
+          `/api/diary/catches/${catchId}/photos`,
+          {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ photos: uploadedPhotos }),
+            credentials: "include",
+          },
+        );
 
-      // Add photos to catch via PATCH endpoint
-      const patchResponse = await fetch(
-        `/api/diary/catches/${catchId}/photos`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ photos: uploadedPhotos }),
-          credentials: "include",
-        },
-      );
+        if (!patchResponse.ok) {
+          throw new Error(
+            "Fotografie sa nahrali do cloudu, ale nepodarilo sa ich pripojiť k úlovku. Skús to prosím znova.",
+          );
+        }
 
-      if (!patchResponse.ok) {
-        throw new Error("Failed to attach photos to catch");
+        queryClient.invalidateQueries({
+          queryKey: ["/api/diary/catches/all"],
+        });
       }
 
-      // Refresh catch list to show uploaded photos
-      queryClient.invalidateQueries({ queryKey: ["/api/diary/catches/all"] });
-
-      toast({
-        title: "Fotky nahrané!",
-        description: "Fotky sa optimalizujú na pozadí a onedlho sa zobrazia.",
-      });
+      // Honest user feedback based on actual outcome
+      if (failedPhotos.length > 0 && uploadedPhotos.length > 0) {
+        toast({
+          title: "Časť fotografií zlyhala",
+          description: `${uploadedPhotos.length} z ${uploadedPhotos.length + failedPhotos.length} fotografií bolo nahraných. Zvyšné skús nahrať znova cez „Upraviť".`,
+          variant: "destructive",
+        });
+      } else if (uploadedPhotos.length > 0) {
+        toast({
+          title: "Fotky nahraté do cloudu",
+          description:
+            uploadedPhotos.length === 1
+              ? "Fotka sa optimalizuje na pozadí."
+              : `${uploadedPhotos.length} fotografií sa optimalizuje na pozadí.`,
+        });
+      }
     } catch (error) {
       console.error("Background photo upload error:", error);
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Úlovok je uložený, ale fotografie sa nepodarilo nahrať. Skús to prosím znova cez „Upraviť".';
       toast({
-        title: "Chyba pri nahrávaní fotografií",
-        description: "Úlovok je uložený, ale fotografie sa nepodarilo nahrať",
+        title: "Fotky sa nenahrali",
+        description: message,
         variant: "destructive",
       });
     }
