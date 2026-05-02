@@ -12,11 +12,27 @@ export interface PhotoJob {
   originalPath: string;
   originalFilename: string;
   outputBasePath: string;
+  /**
+   * Firebase URL of the original photo if it was already uploaded
+   * synchronously by the upload endpoint (the common case). When set, the
+   * background processor will SKIP the redundant Firebase re-upload of
+   * the original and only generate variants — saves time, cost, and
+   * eliminates a class of false-failed states caused by transient
+   * Firebase issues during re-upload of an already-persisted original.
+   */
+  existingOriginalUrl?: string;
   priority: number;
   createdAt: Date;
   attempts: number;
   maxAttempts: number;
 }
+
+const QUEUE_FIREBASE_URL_PREFIXES = [
+  'https://storage.googleapis.com/',
+  'https://firebasestorage.googleapis.com/',
+];
+const isQueueFirebaseHostedUrl = (u: unknown): u is string =>
+  typeof u === 'string' && QUEUE_FIREBASE_URL_PREFIXES.some((p) => u.startsWith(p));
 
 export interface PhotoProcessingResult {
   photoId: string;
@@ -120,8 +136,19 @@ export class PhotoJobQueue extends EventEmitter {
       const baseFilename = path.parse(job.originalFilename).name;
       let originalUrl: string | undefined;
 
-      // Upload sanitized original to Firebase (originalPath is always a sanitized JPEG — no raw/EXIF)
-      if (isFirebaseConfigured()) {
+      // Skip redundant Firebase re-upload of the original when the upload
+      // endpoint already persisted it synchronously and handed us the URL.
+      // The original is the contract — duplicating the upload here just adds
+      // failure surface (network blips during background processing would
+      // otherwise downgrade an already-good photo). Variants stay best-effort.
+      if (isQueueFirebaseHostedUrl(job.existingOriginalUrl)) {
+        originalUrl = job.existingOriginalUrl;
+        console.log(
+          `[PhotoQueue] Reusing synchronously-uploaded Firebase original for photo ${job.photoId}`
+        );
+      } else if (isFirebaseConfigured()) {
+        // Fallback path: no synchronous upload happened (legacy callers /
+        // future code paths). Upload sanitized original to Firebase here.
         try {
           const originalStoragePath = `diary_photos/${job.userId}/${job.photoId}/sanitized-original.jpg`;
           const result = await uploadToFirebase(job.originalPath, originalStoragePath, 'image/jpeg');
