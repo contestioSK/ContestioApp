@@ -31,8 +31,36 @@ export interface UploadResult {
 }
 
 /**
+ * Permanent errors that retrying cannot fix:
+ *   - invalid_grant / unauthorized_client → broken service account credentials
+ *   - 404 bucket not found → storage bucket missing or wrong name
+ *   - 403 permission denied → service account missing Storage Admin role
+ * These should fail fast so the user sees an honest failure instead of waiting
+ * 7+ seconds for retries that will never succeed.
+ */
+function isPermanentFirebaseError(err: any): boolean {
+  const message = String(err?.message || '').toLowerCase();
+  const code = err?.code;
+  const status = err?.status;
+
+  if (message.includes('invalid_grant')) return true;
+  if (message.includes('unauthorized_client')) return true;
+  if (message.includes('account not found')) return true;
+  if (message.includes('bucket does not exist')) return true;
+  if (message.includes('does not exist') && message.includes('bucket')) return true;
+  if (code === 401 || code === 403) return true;
+  if (status === 401 || status === 403) return true;
+  // Bucket-level 404 (not object 404) — Firebase throws { code: 404 } for both,
+  // but message contains "bucket" only for missing bucket
+  if ((code === 404 || status === 404) && message.includes('bucket')) return true;
+
+  return false;
+}
+
+/**
  * Retry helper with exponential backoff.
  * Attempts: 1s delay → 2s delay → final failure.
+ * Permanent errors (auth/bucket) fail fast without retry.
  */
 async function withRetry<T>(
   fn: () => Promise<T>,
@@ -45,6 +73,16 @@ async function withRetry<T>(
       return await fn();
     } catch (err: any) {
       lastError = err;
+
+      if (isPermanentFirebaseError(err)) {
+        console.error('[IMAGE_UPLOAD_FAILED]', {
+          label,
+          reason: err?.message || 'Unknown error',
+          classification: 'permanent — not retrying',
+        });
+        throw err;
+      }
+
       if (attempt < maxAttempts) {
         const delayMs = 1000 * Math.pow(2, attempt - 1);
         console.warn(
