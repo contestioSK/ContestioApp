@@ -202,18 +202,12 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
   
   const clients = new Map<WebSocket, ClientConnection>();
   
-  // Roles allowed to use WebSocket.
-  // - 'referee' / 'organizer' / 'admin' need live competition events
-  // - 'user' (diary users) need live photo-processed events for their own catches
-  //   (scaling is fine here: each diary user only listens to events about their
-   //  own data; competition viewers are anonymous public sessions and do not
-  //   reach this gate at all because they don't authenticate).
+  // 'user' is included so diary users get owner-targeted photo-processed
+  // events for their own catches; broadcasts are scoped per-user.
   const WS_ALLOWED_ROLES = ['referee', 'organizer', 'admin', 'user'];
 
-  // Firebase-host whitelist for any URL we accept as a "ready" photo URL.
-  // Single source of truth, used by both PATCH /catches/:id/photos and the
-  // queue → DB writeback path so a non-Firebase HTTPS URL can never be
-  // persisted with status='ready'.
+  // Firebase-host whitelist — single source of truth used by both
+  // PATCH /catches/:id/photos and the queue → DB writeback path.
   const FIREBASE_URL_PREFIXES = [
     'https://storage.googleapis.com/',
     'https://firebasestorage.googleapis.com/',
@@ -359,38 +353,27 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
   (async () => {
     const { photoJobQueue } = await import('./photo-job-queue');
     
-    // Listen for photo processing completion
     photoJobQueue.on('photoProcessed', async (result: any) => {
       console.log(`[PhotoQueue] Photo processed, broadcasting update for photo ${result.photoId}`);
 
-      // Derived from the catch row below — used to scope the WS broadcast to
-      // the photo owner only (never to other authenticated users).
       let ownerUserId: string | null = null;
-      // Canonical post-normalization photo object — what we actually wrote
-      // to the DB. The WS broadcast must reflect THIS, not the raw queue
-      // result, so connected clients converge on the same final state as
-      // a fresh fetch would return.
       let canonicalPhoto: any | null = null;
 
       try {
-        // Find catch that contains this photo by photoId (not by catchId)
         const db = (await import('./db')).db;
         const { diaryCatches, diaryTrips } = await import('@shared/schema');
         const { sql, eq } = await import('drizzle-orm');
-        
-        // Search for catch containing this photoId
+
         const catches = await db
           .select()
           .from(diaryCatches)
           .where(sql`photos::jsonb @> ${JSON.stringify([{id: result.photoId}])}::jsonb`)
           .limit(1);
-        
+
         if (catches.length > 0) {
           const currentCatch = catches[0];
 
-          // Derive owner: prefer angler.userId (always set when our own
-          // upload code creates the catch), fall back to trip.ownerUserId
-          // for catches whose angler payload is missing the userId field.
+          // Owner: prefer angler.userId, fall back to trip.ownerUserId.
           const anglerOwner = (currentCatch.angler as any)?.userId;
           if (typeof anglerOwner === 'string' && anglerOwner.length > 0) {
             ownerUserId = anglerOwner;
@@ -402,21 +385,15 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
               .limit(1);
             if (trip.length > 0) ownerUserId = trip[0].ownerUserId;
           }
-          
+
           if (currentCatch.photos) {
-            // Parse photos array
-            const photos = Array.isArray(currentCatch.photos) 
-              ? currentCatch.photos 
+            const photos = Array.isArray(currentCatch.photos)
+              ? currentCatch.photos
               : JSON.parse(currentCatch.photos as any);
-            
-            // Update the specific photo
+
             const updatedPhotos = photos.map((photo: any) => {
               if (typeof photo === 'object' && photo.id === result.photoId) {
-                // Accept the new URL only if it points at a Firebase-hosted
-                // bucket. This keeps the contract symmetrical with the PATCH
-                // endpoint: any HTTPS URL from a non-Firebase host is treated
-                // as untrusted and ignored, so it can never be persisted as
-                // a "ready" photo URL.
+                // Only Firebase-hosted URLs are accepted (mirrors PATCH guard).
                 const newUrl = isFirebaseHostedUrl(result.url)
                   ? result.url
                   : photo.url;
@@ -424,33 +401,29 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
                 let finalStatus = result.status;
                 let finalError = result.error;
 
-                // Contract: original is mandatory, variants are best-effort.
-                // If the queue reports `failed` but the catch already has a
-                // valid Firebase original URL persisted (from the synchronous
-                // upload step), the photo is still viewable at full
-                // resolution. Don't downgrade it to a failed UI state — only
-                // variants are missing.
+                // Recovery: queue-failed but a valid Firebase original is
+                // already persisted → photo is serveable, keep 'ready'.
                 if (
                   finalStatus === 'failed' &&
                   isFirebaseHostedUrl(photo.url) &&
                   isFirebaseHostedUrl(photo.originalUrl)
                 ) {
                   console.warn(
-                    `[PhotoQueue] Variants failed for photo ${result.photoId} but Firebase original is intact — keeping status='ready'`
+                    `[PhotoQueue] Variants failed for photo ${result.photoId}, original intact — keeping ready`
                   );
                   finalStatus = 'ready';
                   finalError = undefined;
                 }
 
-                // Invariant: status 'ready' requires a Firebase-hosted URL
+                // Invariant: ready requires Firebase-hosted URL.
                 if (finalStatus === 'ready' && !isFirebaseHostedUrl(newUrl)) {
                   console.error('[IMAGE_UPLOAD_FAILED]', {
                     photoId: result.photoId,
-                    reason: 'ready status without Firebase-hosted URL — forcing to failed',
+                    reason: 'ready without Firebase URL — forcing failed',
                     url: newUrl,
                   });
                   finalStatus = 'failed';
-                  finalError = 'Invalid state: ready without Firebase-hosted URL';
+                  finalError = 'Invalid state: ready without Firebase URL';
                 }
 
                 const merged = {
@@ -489,21 +462,14 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
         console.error(`[PhotoQueue] Failed to update photo in database:`, error);
       }
       
-      // Owner-targeted broadcast: send the result ONLY to the catch owner.
-      // Diary photo events contain private data (URLs, catch identifiers)
-      // and must never leak to other authenticated WS clients. If we cannot
-      // determine the owner, drop the broadcast rather than fan-out leak.
+      // Owner-only broadcast — diary photo events carry private URLs.
       if (!ownerUserId) {
         console.warn(
-          `[PhotoQueue] Skipping WS broadcast for photo ${result.photoId} — owner could not be resolved`
+          `[PhotoQueue] Skipping WS broadcast for photo ${result.photoId} — owner unresolved`
         );
         return;
       }
-      // Prefer the canonical post-normalization photo object so connected
-      // clients see the exact same status/url that was persisted to the DB
-      // (e.g. queue 'failed' → DB 'ready' when original was already intact).
-      // Fall back to the raw queue result only if the DB-write step bailed
-      // before producing a canonical object.
+      // Prefer canonical photo so clients converge on the same state the DB holds.
       const broadcastPayload = canonicalPhoto
         ? {
             type: 'diary_photo_processed',
@@ -6924,7 +6890,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
         return res.status(500).json({ message: "Priečinok pre fotografie neexistuje" });
       }
 
-      // Pre-flight: Firebase must be configured. No local fallback.
+      // Firebase required — no local fallback.
       if (!isFirebaseConfigured()) {
         console.error(`[PhotoUpload] Firebase not configured — refusing upload for user ${userId}`);
         // Cleanup all incoming temp files since we won't process them
@@ -6936,13 +6902,8 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
         });
       }
 
-      // Atomic upload semantics:
-      //   • All photos must reach Firebase OR the whole request fails.
-      //   • Any per-file failure triggers rollback: every successful Firebase blob
-      //     uploaded earlier in this request is deleted to avoid orphans.
-      //   • On rollback, response is HTTP 502 with `failedPhotos` listing the
-      //     filenames that failed sanitization or Firebase upload.
-      //   • The frontend never receives a partially attachable `photos` payload.
+      // Atomic: all-or-nothing per request. Per-file failure → rollback
+      // every Firebase blob already uploaded in this batch + temps, return 502.
       const photos: Array<{
         id: string;
         url: string;
@@ -6962,7 +6923,6 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
 
       const rollback = async (reason: string) => {
         console.warn(`[PhotoUpload] Rolling back partial upload for user ${userId}: ${reason}`);
-        // Delete every Firebase blob we already uploaded in this request
         await Promise.all(
           uploadedFirebasePaths.map((p) =>
             deleteFromFirebase(p).catch((err) =>
@@ -6970,18 +6930,10 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
             ),
           ),
         );
-        // Clean up sanitized temp files left behind
         await Promise.all(
-          sanitizedTempPaths.map((p) =>
-            fsPromises.unlink(p).catch(() => {}),
-          ),
+          sanitizedTempPaths.map((p) => fsPromises.unlink(p).catch(() => {})),
         );
-        // Operational hygiene: also wipe every multer temp from this request.
-        // Files processed before the break already had their RAW temp deleted
-        // (line ~7010), so unlink will be a no-op (ENOENT). Files that hadn't
-        // been reached when the break fired still have their RAW temp on disk
-        // — this pass cleans those up so partial-batch failures never leak
-        // unprocessed temp files into attached_assets.
+        // Wipe any multer temps still on disk (unprocessed before break).
         await Promise.all(
           ((req.files as any[]) ?? []).map((f) =>
             fsPromises.unlink(f.path).catch(() => {}),
@@ -8172,14 +8124,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       const existingPhotos = catch_.photos || [];
       const newPhotos = req.body.photos || [];
 
-      // Reject non-Firebase URLs — Firebase is the single source of truth.
-      // Photos must come from POST /api/diary/photos/upload which guarantees HTTPS Firebase URLs.
-      // Both Firebase Storage URL hosts are accepted:
-      //   - https://storage.googleapis.com/<bucket>/<path>           (Admin SDK default)
-      //   - https://firebasestorage.googleapis.com/<bucket>/<path>   (Firebase web SDK style)
-      // Validation is applied to `url`, `originalUrl`, AND every `variants[*].url`
-      // so a partially-tampered payload cannot smuggle a non-Firebase URL into
-      // the JSONB column under any field.
+      // Reject non-Firebase URLs on every URL field (url, originalUrl, variants[*].url).
       for (const photo of newPhotos) {
         const urlsToCheck: Array<{ field: string; value: unknown }> = [
           { field: 'url', value: photo?.url },
@@ -8194,8 +8139,6 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
           }
         }
         for (const { field, value } of urlsToCheck) {
-          // Allow undefined/null for optional fields; only reject if the field
-          // is present and not a Firebase-hosted URL.
           if (value === undefined || value === null) continue;
           if (!isFirebaseHostedUrl(value)) {
             console.error(
@@ -8231,9 +8174,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
             originalPath: photo._processingInfo.originalPath,
             originalFilename: photo._processingInfo.originalFilename,
             outputBasePath: photo._processingInfo.outputBasePath,
-            // Pass through the Firebase URL of the original from the
-            // synchronous upload step so the queue can SKIP a redundant
-            // re-upload. Validated Firebase-hosted by PATCH above.
+            // Skip queue's redundant re-upload of the already-persisted original.
             existingOriginalUrl: photo.originalUrl,
             priority: 5,
             maxAttempts: 3
