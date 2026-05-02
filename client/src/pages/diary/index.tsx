@@ -594,6 +594,13 @@ export default function DiaryIndex() {
       const newPhoto = uploadJson.photos?.[0];
       if (!newPhoto) throw new Error('Žiadna fotka v odpovedi');
 
+      // Cache the retry File against the NEW server-assigned photoId so a
+      // second-round failure can still retry from memory. Drop the old
+      // failed entry to free the reference.
+      const { photoFileCache } = await import('@/lib/photo-file-cache');
+      photoFileCache.delete(String(photoId));
+      if (newPhoto.id) photoFileCache.set(String(newPhoto.id), newFile);
+
       // Step 2: Fetch current catch photos from server (strict — abort on any failure)
       const catchRes = await fetch(`/api/diary/catches/${catchId}`, { credentials: 'include' });
       if (!catchRes.ok) {
