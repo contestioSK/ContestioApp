@@ -202,8 +202,24 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
   
   const clients = new Map<WebSocket, ClientConnection>();
   
-  // Roles allowed to use WebSocket (viewers use polling + cache instead)
-  const WS_ALLOWED_ROLES = ['referee', 'organizer', 'admin'];
+  // Roles allowed to use WebSocket.
+  // - 'referee' / 'organizer' / 'admin' need live competition events
+  // - 'user' (diary users) need live photo-processed events for their own catches
+  //   (scaling is fine here: each diary user only listens to events about their
+   //  own data; competition viewers are anonymous public sessions and do not
+  //   reach this gate at all because they don't authenticate).
+  const WS_ALLOWED_ROLES = ['referee', 'organizer', 'admin', 'user'];
+
+  // Firebase-host whitelist for any URL we accept as a "ready" photo URL.
+  // Single source of truth, used by both PATCH /catches/:id/photos and the
+  // queue → DB writeback path so a non-Firebase HTTPS URL can never be
+  // persisted with status='ready'.
+  const FIREBASE_URL_PREFIXES = [
+    'https://storage.googleapis.com/',
+    'https://firebasestorage.googleapis.com/',
+  ];
+  const isFirebaseHostedUrl = (u: unknown): u is string =>
+    typeof u === 'string' && FIREBASE_URL_PREFIXES.some((p) => u.startsWith(p));
   
   wss.on('connection', async (ws, req) => {
     // Initialize connection
@@ -372,23 +388,27 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
             // Update the specific photo
             const updatedPhotos = photos.map((photo: any) => {
               if (typeof photo === 'object' && photo.id === result.photoId) {
-                // Use result.url only if it's a confirmed HTTPS Firebase URL
-                const newUrl = (result.url && result.url.startsWith('https://'))
+                // Accept the new URL only if it points at a Firebase-hosted
+                // bucket. This keeps the contract symmetrical with the PATCH
+                // endpoint: any HTTPS URL from a non-Firebase host is treated
+                // as untrusted and ignored, so it can never be persisted as
+                // a "ready" photo URL.
+                const newUrl = isFirebaseHostedUrl(result.url)
                   ? result.url
                   : photo.url;
 
                 let finalStatus = result.status;
                 let finalError = result.error;
 
-                // Invariant: status 'ready' requires an HTTPS URL
-                if (finalStatus === 'ready' && (!newUrl || !newUrl.startsWith('https://'))) {
+                // Invariant: status 'ready' requires a Firebase-hosted URL
+                if (finalStatus === 'ready' && !isFirebaseHostedUrl(newUrl)) {
                   console.error('[IMAGE_UPLOAD_FAILED]', {
                     photoId: result.photoId,
-                    reason: 'ready status without HTTPS URL — forcing to failed',
+                    reason: 'ready status without Firebase-hosted URL — forcing to failed',
                     url: newUrl,
                   });
                   finalStatus = 'failed';
-                  finalError = 'Invalid state: ready without HTTPS URL';
+                  finalError = 'Invalid state: ready without Firebase-hosted URL';
                 }
 
                 return {
