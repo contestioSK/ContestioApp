@@ -6882,19 +6882,28 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
         
         const destStats = await fsPromises.stat(sanitizedPath);
         console.log(`[PhotoUpload] Sanitized successfully: ${sanitizedPath} (${destStats.size} bytes)`);
-        
-        // Synchronously upload sanitized original to Firebase before returning response.
-        // This guarantees the URL in DB survives redeployments (no local path dependency).
-        let immediateUrl = `/attached_assets/diary_photos/${userId}/${sanitizedFilename}`; // local fallback
-        if (isFirebaseConfigured()) {
-          try {
-            const firebaseOriginalPath = `diary_photos/${userId}/${photoId}/sanitized-original.jpg`;
-            const fbResult = await uploadToFirebase(sanitizedPath, firebaseOriginalPath, 'image/jpeg');
-            immediateUrl = fbResult.publicUrl;
-            console.log(`[PhotoUpload] Original uploaded to Firebase: ${firebaseOriginalPath}`);
-          } catch (fbError: any) {
-            console.warn(`[PhotoUpload] Firebase sync upload failed, using local fallback:`, fbError?.message);
-          }
+
+        // Firebase is the single source of truth for photo URLs.
+        // No local fallback — if Firebase upload fails, the photo upload fails honestly.
+        if (!isFirebaseConfigured()) {
+          console.error(`[PhotoUpload] Firebase not configured — cannot store photo for user ${userId}`);
+          try { await fsPromises.unlink(sanitizedPath); } catch {}
+          failedPhotos.push(file.originalname);
+          continue;
+        }
+
+        let immediateUrl: string;
+        try {
+          const firebaseOriginalPath = `diary_photos/${userId}/${photoId}/sanitized-original.jpg`;
+          const fbResult = await uploadToFirebase(sanitizedPath, firebaseOriginalPath, 'image/jpeg');
+          immediateUrl = fbResult.publicUrl;
+          console.log(`[PhotoUpload] Original uploaded to Firebase: ${firebaseOriginalPath}`);
+        } catch (fbError: any) {
+          console.error(`[PhotoUpload] Firebase upload failed for ${file.originalname}:`, fbError?.message);
+          // Clean up the sanitized temp — no point keeping it if we can't store it
+          try { await fsPromises.unlink(sanitizedPath); } catch {}
+          failedPhotos.push(file.originalname);
+          continue;
         }
 
         photos.push({
@@ -6914,21 +6923,24 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
 
       if (photos.length === 0) {
         console.error(`[PhotoUpload] All photos failed to upload for user: ${userId}`);
-        return res.status(500).json({ 
+        // 502 Bad Gateway — the storage backend (Firebase) failed
+        return res.status(502).json({
           message: "Nepodarilo sa uložiť žiadnu fotografiu. Skúste to prosím znova.",
-          failedPhotos 
+          failedPhotos
         });
       }
-      
+
       if (failedPhotos.length > 0) {
         console.warn(`[PhotoUpload] Some photos failed: ${failedPhotos.join(', ')}`);
       }
 
       console.log(`[PhotoUpload] Upload complete for user ${userId}: ${photos.length} successful, ${failedPhotos.length} failed`);
-      
-      res.json({ 
+
+      res.json({
         photos,
-        message: `Nahraných ${photos.length} fotiek, optimalizácia prebieha na pozadí...`,
+        message: failedPhotos.length > 0
+          ? `Nahraných ${photos.length} fotiek, ${failedPhotos.length} zlyhalo`
+          : `Nahraných ${photos.length} fotiek, optimalizácia prebieha na pozadí...`,
         failedPhotos: failedPhotos.length > 0 ? failedPhotos : undefined
       });
       
@@ -8024,7 +8036,19 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       // Get existing photos and new photos from request
       const existingPhotos = catch_.photos || [];
       const newPhotos = req.body.photos || [];
-      
+
+      // Reject non-Firebase URLs — Firebase is the single source of truth.
+      // Photos must come from POST /api/diary/photos/upload which guarantees HTTPS Firebase URLs.
+      for (const photo of newPhotos) {
+        const url = photo?.url;
+        if (!url || typeof url !== 'string' || !url.startsWith('https://storage.googleapis.com/')) {
+          console.error(`[PhotoAttach] Rejected non-Firebase URL for catch ${catchId}:`, url);
+          return res.status(400).json({
+            message: "Neplatná URL fotografie — fotky musia byť uložené v cloude.",
+          });
+        }
+      }
+
       // Merge photos (remove _processingInfo from stored data)
       const cleanPhotos = newPhotos.map((photo: any) => {
         const { _processingInfo, ...cleanPhoto } = photo;
