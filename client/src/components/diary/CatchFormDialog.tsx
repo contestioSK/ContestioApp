@@ -855,17 +855,38 @@ export default function CatchFormDialog({
         formData.append("photos", photo);
       });
 
+      type UploadedPhoto = {
+        id: string;
+        url: string;
+        status: "processing" | "ready" | "failed";
+        originalUrl?: string;
+        processingStartedAt?: string;
+        _processingInfo?: Record<string, unknown>;
+      };
+      type UploadResponse = {
+        photos?: UploadedPhoto[];
+        failedPhotos?: string[];
+        message?: string;
+      };
+
       const uploadResponse = await fetch("/api/diary/photos/upload", {
         method: "POST",
         body: formData,
         credentials: "include",
       });
 
-      const uploadResult = await uploadResponse
-        .json()
-        .catch(() => ({}) as any);
-      const uploadedPhotos: any[] = uploadResult?.photos || [];
-      const failedPhotos: string[] = uploadResult?.failedPhotos || [];
+      let uploadResult: UploadResponse = {};
+      try {
+        uploadResult = (await uploadResponse.json()) as UploadResponse;
+      } catch {
+        // Non-JSON response (rare); leave defaults so we fall through to error path.
+      }
+      const uploadedPhotos: UploadedPhoto[] = Array.isArray(uploadResult.photos)
+        ? uploadResult.photos
+        : [];
+      const failedPhotos: string[] = Array.isArray(uploadResult.failedPhotos)
+        ? uploadResult.failedPhotos
+        : [];
 
       // 502 = backend storage failure, all photos rejected
       if (!uploadResponse.ok) {

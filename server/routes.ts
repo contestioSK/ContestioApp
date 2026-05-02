@@ -8039,9 +8039,19 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
 
       // Reject non-Firebase URLs — Firebase is the single source of truth.
       // Photos must come from POST /api/diary/photos/upload which guarantees HTTPS Firebase URLs.
+      // Both Firebase Storage URL hosts are accepted:
+      //   - https://storage.googleapis.com/<bucket>/<path>           (Admin SDK default)
+      //   - https://firebasestorage.googleapis.com/<bucket>/<path>   (Firebase web SDK style)
+      const FIREBASE_URL_PREFIXES = [
+        'https://storage.googleapis.com/',
+        'https://firebasestorage.googleapis.com/',
+      ];
       for (const photo of newPhotos) {
         const url = photo?.url;
-        if (!url || typeof url !== 'string' || !url.startsWith('https://storage.googleapis.com/')) {
+        const isValidFirebaseUrl =
+          typeof url === 'string' &&
+          FIREBASE_URL_PREFIXES.some((p) => url.startsWith(p));
+        if (!isValidFirebaseUrl) {
           console.error(`[PhotoAttach] Rejected non-Firebase URL for catch ${catchId}:`, url);
           return res.status(400).json({
             message: "Neplatná URL fotografie — fotky musia byť uložené v cloude.",
