@@ -8158,12 +8158,33 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
         return cleanPhoto;
       });
       const allPhotos = [...existingPhotos, ...cleanPhotos];
-      
-      // Update catch with new photos
-      const updatedCatch = await storage.updateDiaryCatch(catchId, { photos: allPhotos }, userId);
-      
-      // NOW queue background processing jobs for new photos
-      // This happens AFTER photos are attached to catch, preventing race condition
+
+      // Compensating cleanup: if attach to catch fails, delete the originals
+      // we just uploaded in POST /upload so they don't become orphaned blobs.
+      const orphanCleanup = async (reason: string) => {
+        const paths = newPhotos
+          .filter((p: any) => p?.id && p?._processingInfo?.userId)
+          .map((p: any) => `diary_photos/${p._processingInfo.userId}/${p.id}/sanitized-original.jpg`);
+        if (paths.length === 0) return;
+        console.warn(`[PhotoAttach] Cleaning up ${paths.length} orphaned originals for catch ${catchId}: ${reason}`);
+        await Promise.all(
+          paths.map((p: string) =>
+            deleteFromFirebase(p).catch((err) =>
+              console.warn(`[PhotoAttach] Orphan cleanup failed for ${p}:`, err?.message),
+            ),
+          ),
+        );
+      };
+
+      let updatedCatch;
+      try {
+        updatedCatch = await storage.updateDiaryCatch(catchId, { photos: allPhotos }, userId);
+      } catch (storageError) {
+        await orphanCleanup('storage.updateDiaryCatch threw');
+        throw storageError;
+      }
+
+      // Queue background processing AFTER attach succeeds (prevents race).
       const { photoJobQueue } = await import('./photo-job-queue');
       for (const photo of newPhotos) {
         if (photo._processingInfo && photo.status === 'processing') {
@@ -8174,7 +8195,6 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
             originalPath: photo._processingInfo.originalPath,
             originalFilename: photo._processingInfo.originalFilename,
             outputBasePath: photo._processingInfo.outputBasePath,
-            // Skip queue's redundant re-upload of the already-persisted original.
             existingOriginalUrl: photo.originalUrl,
             priority: 5,
             maxAttempts: 3
@@ -8182,7 +8202,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
           console.log(`[PhotoQueue] Queued processing for photo ${photo.id} in catch ${catchId}`);
         }
       }
-      
+
       res.json(updatedCatch);
     } catch (error) {
       console.error("Error adding photos to catch:", error);
