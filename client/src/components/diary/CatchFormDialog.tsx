@@ -822,8 +822,8 @@ export default function CatchFormDialog({
             // 3. If there are photos, upload them in background
             if (photosToUpload.length > 0) {
               toast({
-                title: "✅ Úlovok uložený!",
-                description: `${photosToUpload.length} ${photosToUpload.length === 1 ? "fotografia sa nahráva" : "fotografie sa nahrávajú"} na pozadí...`,
+                title: "Úlovok uložený (zatiaľ bez fotiek)",
+                description: `${photosToUpload.length} ${photosToUpload.length === 1 ? "fotografia sa nahráva" : "fotografie sa nahrávajú"} na pozadí — dáme vedieť keď budú hotové.`,
                 variant: "success" as any,
               });
 
