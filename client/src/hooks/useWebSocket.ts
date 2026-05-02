@@ -231,12 +231,7 @@ export function useWebSocket(onMessage?: (data: WebSocketMessage) => void) {
                   duration: 6000,
                 });
               }
-              // NOTE: do NOT call onMessage(data) here — the post-switch
-              // dispatcher below already forwards every event to the
-              // caller-provided onMessage. Calling it twice caused
-              // CatchDetailSheet/diary subscribers to handle the same
-              // photo-processed event twice (duplicate cache writes,
-              // duplicate retry-button flips).
+              // post-switch dispatcher below forwards onMessage; don't double-fire.
               break;
 
             default:
