@@ -6976,6 +6976,17 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
             fsPromises.unlink(p).catch(() => {}),
           ),
         );
+        // Operational hygiene: also wipe every multer temp from this request.
+        // Files processed before the break already had their RAW temp deleted
+        // (line ~7010), so unlink will be a no-op (ENOENT). Files that hadn't
+        // been reached when the break fired still have their RAW temp on disk
+        // — this pass cleans those up so partial-batch failures never leak
+        // unprocessed temp files into attached_assets.
+        await Promise.all(
+          ((req.files as any[]) ?? []).map((f) =>
+            fsPromises.unlink(f.path).catch(() => {}),
+          ),
+        );
       };
 
       for (const file of req.files as any[]) {
@@ -8220,6 +8231,10 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
             originalPath: photo._processingInfo.originalPath,
             originalFilename: photo._processingInfo.originalFilename,
             outputBasePath: photo._processingInfo.outputBasePath,
+            // Pass through the Firebase URL of the original from the
+            // synchronous upload step so the queue can SKIP a redundant
+            // re-upload. Validated Firebase-hosted by PATCH above.
+            existingOriginalUrl: photo.originalUrl,
             priority: 5,
             maxAttempts: 3
           });
