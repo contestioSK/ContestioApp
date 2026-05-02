@@ -6862,6 +6862,11 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       next();
     });
   }, async (req: any, res) => {
+    // Lifted to function scope so the outer unexpected-exception catch can
+    // best-effort wipe any Firebase blobs / temp files we managed to create
+    // before the throw — preventing orphan blobs from unhandled errors.
+    const uploadedFirebasePaths: string[] = [];
+    const sanitizedTempPaths: string[] = [];
     try {
       const userId = req.user?.id || req.user?.claims?.sub;
       const catchId = req.body.catchId; // Optional: for queuing jobs with catch context
@@ -6917,8 +6922,6 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
           outputBasePath: string;
         };
       }> = [];
-      const uploadedFirebasePaths: string[] = []; // for rollback
-      const sanitizedTempPaths: string[] = [];   // for rollback (in case of mid-batch failure)
       const failedPhotos: string[] = [];
 
       const rollback = async (reason: string) => {
@@ -7033,6 +7036,20 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       
     } catch (error) {
       console.error("[PhotoUpload] Unexpected error:", error);
+      // Best-effort orphan cleanup for unhandled exceptions.
+      await Promise.all(
+        uploadedFirebasePaths.map((p) =>
+          deleteFromFirebase(p).catch(() => {}),
+        ),
+      );
+      await Promise.all(
+        sanitizedTempPaths.map((p) => fsPromises.unlink(p).catch(() => {})),
+      );
+      await Promise.all(
+        ((req.files as any[]) ?? []).map((f) =>
+          fsPromises.unlink(f.path).catch(() => {}),
+        ),
+      );
       res.status(500).json({ message: "Chyba pri nahrávaní fotografií" });
     }
   });
