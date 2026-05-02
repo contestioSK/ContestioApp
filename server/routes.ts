@@ -362,12 +362,16 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     // Listen for photo processing completion
     photoJobQueue.on('photoProcessed', async (result: any) => {
       console.log(`[PhotoQueue] Photo processed, broadcasting update for photo ${result.photoId}`);
-      
+
+      // Derived from the catch row below — used to scope the WS broadcast to
+      // the photo owner only (never to other authenticated users).
+      let ownerUserId: string | null = null;
+
       try {
         // Find catch that contains this photo by photoId (not by catchId)
         const db = (await import('./db')).db;
-        const { diaryCatches } = await import('@shared/schema');
-        const { sql } = await import('drizzle-orm');
+        const { diaryCatches, diaryTrips } = await import('@shared/schema');
+        const { sql, eq } = await import('drizzle-orm');
         
         // Search for catch containing this photoId
         const catches = await db
@@ -378,6 +382,21 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
         
         if (catches.length > 0) {
           const currentCatch = catches[0];
+
+          // Derive owner: prefer angler.userId (always set when our own
+          // upload code creates the catch), fall back to trip.ownerUserId
+          // for catches whose angler payload is missing the userId field.
+          const anglerOwner = (currentCatch.angler as any)?.userId;
+          if (typeof anglerOwner === 'string' && anglerOwner.length > 0) {
+            ownerUserId = anglerOwner;
+          } else if (currentCatch.tripId) {
+            const trip = await db
+              .select({ ownerUserId: diaryTrips.ownerUserId })
+              .from(diaryTrips)
+              .where(eq(diaryTrips.id, currentCatch.tripId))
+              .limit(1);
+            if (trip.length > 0) ownerUserId = trip[0].ownerUserId;
+          }
           
           if (currentCatch.photos) {
             // Parse photos array
@@ -445,8 +464,17 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
         console.error(`[PhotoQueue] Failed to update photo in database:`, error);
       }
       
-      // Broadcast photo processing result to the user
-      broadcastToAuthenticated({
+      // Owner-targeted broadcast: send the result ONLY to the catch owner.
+      // Diary photo events contain private data (URLs, catch identifiers)
+      // and must never leak to other authenticated WS clients. If we cannot
+      // determine the owner, drop the broadcast rather than fan-out leak.
+      if (!ownerUserId) {
+        console.warn(
+          `[PhotoQueue] Skipping WS broadcast for photo ${result.photoId} — owner could not be resolved`
+        );
+        return;
+      }
+      broadcastToUsers([ownerUserId], {
         type: 'diary_photo_processed',
         photoId: result.photoId,
         catchId: result.catchId,
