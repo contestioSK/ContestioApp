@@ -904,6 +904,20 @@ export default function CatchFormDialog({
         );
       }
 
+      // Cache each original `File` against its server-assigned photoId so that
+      // if the background variant pipeline later marks the photo as failed,
+      // the slider's "Skúsiť znovu" button can retry with the in-memory File
+      // (no file picker). Files persist for the current tab session.
+      // Correlation is by index: backend processes `req.files` in order and
+      // returns `photos` in the same order — same as `resizedPhotos`.
+      const { photoFileCache } = await import('@/lib/photo-file-cache');
+      uploadedPhotos.forEach((up, i) => {
+        const sourceFile = resizedPhotos[i] ?? photos[i];
+        if (up?.id && sourceFile) {
+          photoFileCache.set(String(up.id), sourceFile);
+        }
+      });
+
       // Attach all uploaded photos to the catch
       const patchResponse = await fetch(
         `/api/diary/catches/${catchId}/photos`,

@@ -15,6 +15,7 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import type { DiaryCatch } from "@shared/schema";
 import { SimplePhotoSlider } from "@/components/diary/SimplePhotoSlider";
+import { photoFileCache } from "@/lib/photo-file-cache";
 
 export interface CatchDetailSheetProps {
   catchData: DiaryCatch | null;
@@ -69,6 +70,7 @@ export function CatchDetailSheet({
                 photos={catchData.photos} 
                 onPhotoClick={handlePhotoClick}
                 onRetryPhoto={handleRetryPhoto}
+                originalFiles={photoFileCache.map}
               />
             ) : (
               <div className="w-full min-h-48 bg-gradient-to-b from-slate-800 to-slate-900 flex items-center justify-center">
