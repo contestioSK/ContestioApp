@@ -17,9 +17,18 @@ interface PhotoCarouselProps {
   photos: (string | PhotoObject)[];
   onPhotoClick: (photo: string, index: number) => void;
   onRetryPhoto?: (photoId: string, file: File) => Promise<boolean> | void;
+  /**
+   * Optional map of photoId -> original `File` still in memory (e.g. from the
+   * upload that just failed). When present, the failed-state UI renders a
+   * direct "Skúsiť znovu" button that retries the existing File without asking
+   * the user to pick a new one. When absent (typical post-navigation case),
+   * the UI falls back to the explicit "Pôvodný súbor stratený, nahraj fotku
+   * znova" message + file picker.
+   */
+  originalFiles?: Map<string, File> | Record<string, File>;
 }
 
-export function PhotoCarousel({ photos, onPhotoClick, onRetryPhoto }: PhotoCarouselProps) {
+export function PhotoCarousel({ photos, onPhotoClick, onRetryPhoto, originalFiles }: PhotoCarouselProps) {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false });
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [retryingIds, setRetryingIds] = useState<Set<string>>(new Set());
@@ -121,10 +130,44 @@ export function PhotoCarousel({ photos, onPhotoClick, onRetryPhoto }: PhotoCarou
     return photo.status || null;
   };
 
+  const getOriginalFile = useCallback((photoId: string): File | undefined => {
+    if (!originalFiles) return undefined;
+    if (originalFiles instanceof Map) return originalFiles.get(photoId);
+    return originalFiles[photoId];
+  }, [originalFiles]);
+
+  const startRetryWithFile = useCallback(async (photoId: string, file: File) => {
+    if (!onRetryPhoto) return;
+    setRetryingIds(prev => new Set(prev).add(photoId));
+    try {
+      const result = await onRetryPhoto(photoId, file);
+      if (result === false) {
+        setRetryingIds(prev => {
+          const next = new Set(prev);
+          next.delete(photoId);
+          return next;
+        });
+      }
+    } catch {
+      setRetryingIds(prev => {
+        const next = new Set(prev);
+        next.delete(photoId);
+        return next;
+      });
+    }
+  }, [onRetryPhoto]);
+
   const handleRetryClick = useCallback((e: React.MouseEvent, photoId: string) => {
     e.stopPropagation();
+    const inMemoryFile = getOriginalFile(photoId);
+    if (inMemoryFile) {
+      // Retry directly with the original File still in memory
+      void startRetryWithFile(photoId, inMemoryFile);
+      return;
+    }
+    // No in-memory File — open file picker so user can re-select
     fileInputRefs.current[photoId]?.click();
-  }, []);
+  }, [getOriginalFile, startRetryWithFile]);
 
   const handleFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>, photoId: string) => {
     const file = e.target.files?.[0];
@@ -198,34 +241,41 @@ export function PhotoCarousel({ photos, onPhotoClick, onRetryPhoto }: PhotoCarou
                     <span className="text-white text-sm">Nahrávam...</span>
                   </div>
                 )}
-                {status === 'failed' && !isRetrying && (
-                  <div
-                    className="absolute inset-0 bg-slate-900/90 flex flex-col items-center justify-center gap-3"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <AlertCircle className="w-8 h-8 text-red-400" />
-                    <p className="text-white text-sm font-medium">Nepodarilo sa nahrať</p>
-                    {onRetryPhoto && (
-                      <>
-                        <button
-                          type="button"
-                          onClick={(e) => handleRetryClick(e, photoId)}
-                          className="flex items-center gap-1.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-                        >
-                          <RefreshCw className="w-4 h-4" />
-                          Nahradiť
-                        </button>
-                        <input
-                          ref={el => { fileInputRefs.current[photoId] = el; }}
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) => handleFileChange(e, photoId)}
-                        />
-                      </>
-                    )}
-                  </div>
-                )}
+                {status === 'failed' && !isRetrying && (() => {
+                  const hasInMemoryFile = !!getOriginalFile(photoId);
+                  return (
+                    <div
+                      className="absolute inset-0 bg-slate-900/90 flex flex-col items-center justify-center gap-3 px-4 text-center"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <AlertCircle className="w-8 h-8 text-red-400" />
+                      <p className="text-white text-sm font-medium">
+                        {hasInMemoryFile
+                          ? 'Nepodarilo sa nahrať'
+                          : 'Pôvodný súbor stratený, nahraj fotku znova'}
+                      </p>
+                      {onRetryPhoto && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={(e) => handleRetryClick(e, photoId)}
+                            className="flex items-center gap-1.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+                          >
+                            <RefreshCw className="w-4 h-4" />
+                            {hasInMemoryFile ? 'Skúsiť znovu' : 'Vybrať fotku'}
+                          </button>
+                          <input
+                            ref={el => { fileInputRefs.current[photoId] = el; }}
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => handleFileChange(e, photoId)}
+                          />
+                        </>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
             );
           })}

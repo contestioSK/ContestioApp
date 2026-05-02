@@ -132,23 +132,37 @@ export class PhotoJobQueue extends EventEmitter {
         }
       }
 
-      // Process image with ImageService (pass userId and photoId for Firebase path organization)
-      const imageMetadata = await ImageService.processImage(
-        job.originalPath,
-        job.outputBasePath,
-        baseFilename,
-        undefined, // urlBasePath - auto-detected
-        job.userId,
-        job.photoId
-      );
+      // Variant generation is degrade-gracefully: if it fails but we already have
+      // a confirmed Firebase original URL, the photo is still serveable at full
+      // resolution — only thumbnails/responsive sizes are missing.
+      let imageMetadata: Awaited<ReturnType<typeof ImageService.processImage>> | null = null;
+      try {
+        imageMetadata = await ImageService.processImage(
+          job.originalPath,
+          job.outputBasePath,
+          baseFilename,
+          undefined, // urlBasePath - auto-detected
+          job.userId,
+          job.photoId,
+        );
+      } catch (variantError: any) {
+        console.warn(
+          `[PhotoQueue] Variant generation failed for photo ${job.photoId} — falling back to original. Reason:`,
+          variantError?.message,
+        );
+      }
 
       // Get best variant (prefer WebP 800w)
-      const bestVariant = ImageService.getBestVariantForWidth(imageMetadata.variants, 800, 'webp') ||
-                          ImageService.getBestVariantForWidth(imageMetadata.variants, 800, 'jpeg') ||
-                          imageMetadata.variants[0];
+      const variants = imageMetadata?.variants ?? [];
+      const bestVariant =
+        ImageService.getBestVariantForWidth(variants, 800, 'webp') ||
+        ImageService.getBestVariantForWidth(variants, 800, 'jpeg') ||
+        variants[0];
 
-      // Only clean up local temp file AFTER Firebase upload and variants are successfully created
-      if (imageMetadata.variants && imageMetadata.variants.length > 0) {
+      // Only clean up local temp file AFTER variants are successfully created.
+      // If variants failed but we have originalUrl, we still keep the local temp
+      // (best-effort) since processing may be retried.
+      if (variants.length > 0) {
         await ImageService.cleanupTempFile(job.originalPath);
       } else {
         console.warn(`[PhotoQueue] No variants created for ${job.photoId}, keeping original`);
@@ -161,6 +175,8 @@ export class PhotoJobQueue extends EventEmitter {
         originalUrl?.startsWith('https://') ? originalUrl :
         null;
 
+      // status === 'ready' is acceptable as long as ANY HTTPS URL exists
+      // (variants OR original). status === 'failed' only when both failed.
       if (!resolvedUrl) {
         console.error('[IMAGE_UPLOAD_FAILED]', {
           photoId: job.photoId,
@@ -177,11 +193,15 @@ export class PhotoJobQueue extends EventEmitter {
         status: resolvedUrl ? 'ready' : 'failed',
         url: resolvedUrl || '',
         originalUrl,
-        variants: imageMetadata.variants,
-        placeholder: imageMetadata.placeholder,
-        error: resolvedUrl ? undefined : 'Firebase upload produced no valid HTTPS URL'
+        variants,
+        placeholder: imageMetadata?.placeholder,
+        error: resolvedUrl ? undefined : 'Firebase upload produced no valid HTTPS URL',
       };
     } catch (error: any) {
+      // We reach this branch only if Firebase original upload itself threw
+      // synchronously (rare — wrapped in try/catch above) or some non-recoverable
+      // I/O error happened. If by this point originalUrl was already obtained,
+      // we still want to publish a 'ready' result instead of 'failed'.
       console.error('[IMAGE_UPLOAD_FAILED]', {
         photoId: job.photoId,
         userId: job.userId,
