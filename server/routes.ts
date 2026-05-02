@@ -366,6 +366,11 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       // Derived from the catch row below — used to scope the WS broadcast to
       // the photo owner only (never to other authenticated users).
       let ownerUserId: string | null = null;
+      // Canonical post-normalization photo object — what we actually wrote
+      // to the DB. The WS broadcast must reflect THIS, not the raw queue
+      // result, so connected clients converge on the same final state as
+      // a fresh fetch would return.
+      let canonicalPhoto: any | null = null;
 
       try {
         // Find catch that contains this photo by photoId (not by catchId)
@@ -448,7 +453,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
                   finalError = 'Invalid state: ready without Firebase-hosted URL';
                 }
 
-                return {
+                const merged = {
                   ...photo,
                   status: finalStatus,
                   url: newUrl,
@@ -457,6 +462,8 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
                   placeholder: result.placeholder || photo.placeholder,
                   error: finalError
                 };
+                canonicalPhoto = merged;
+                return merged;
               }
               return photo;
             });
@@ -492,16 +499,34 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
         );
         return;
       }
-      broadcastToUsers([ownerUserId], {
-        type: 'diary_photo_processed',
-        photoId: result.photoId,
-        catchId: result.catchId,
-        status: result.status,
-        url: result.url,
-        variants: result.variants,
-        placeholder: result.placeholder,
-        error: result.error
-      });
+      // Prefer the canonical post-normalization photo object so connected
+      // clients see the exact same status/url that was persisted to the DB
+      // (e.g. queue 'failed' → DB 'ready' when original was already intact).
+      // Fall back to the raw queue result only if the DB-write step bailed
+      // before producing a canonical object.
+      const broadcastPayload = canonicalPhoto
+        ? {
+            type: 'diary_photo_processed',
+            photoId: result.photoId,
+            catchId: result.catchId,
+            status: canonicalPhoto.status,
+            url: canonicalPhoto.url,
+            originalUrl: canonicalPhoto.originalUrl,
+            variants: canonicalPhoto.variants,
+            placeholder: canonicalPhoto.placeholder,
+            error: canonicalPhoto.error,
+          }
+        : {
+            type: 'diary_photo_processed',
+            photoId: result.photoId,
+            catchId: result.catchId,
+            status: result.status,
+            url: result.url,
+            variants: result.variants,
+            placeholder: result.placeholder,
+            error: result.error,
+          };
+      broadcastToUsers([ownerUserId], broadcastPayload);
     });
     
     console.log('[PhotoQueue] Background photo processing initialized');
@@ -8141,20 +8166,35 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       // Both Firebase Storage URL hosts are accepted:
       //   - https://storage.googleapis.com/<bucket>/<path>           (Admin SDK default)
       //   - https://firebasestorage.googleapis.com/<bucket>/<path>   (Firebase web SDK style)
-      const FIREBASE_URL_PREFIXES = [
-        'https://storage.googleapis.com/',
-        'https://firebasestorage.googleapis.com/',
-      ];
+      // Validation is applied to `url`, `originalUrl`, AND every `variants[*].url`
+      // so a partially-tampered payload cannot smuggle a non-Firebase URL into
+      // the JSONB column under any field.
       for (const photo of newPhotos) {
-        const url = photo?.url;
-        const isValidFirebaseUrl =
-          typeof url === 'string' &&
-          FIREBASE_URL_PREFIXES.some((p) => url.startsWith(p));
-        if (!isValidFirebaseUrl) {
-          console.error(`[PhotoAttach] Rejected non-Firebase URL for catch ${catchId}:`, url);
-          return res.status(400).json({
-            message: "Neplatná URL fotografie — fotky musia byť uložené v cloude.",
-          });
+        const urlsToCheck: Array<{ field: string; value: unknown }> = [
+          { field: 'url', value: photo?.url },
+          { field: 'originalUrl', value: photo?.originalUrl },
+        ];
+        if (Array.isArray(photo?.variants)) {
+          for (let i = 0; i < photo.variants.length; i++) {
+            urlsToCheck.push({
+              field: `variants[${i}].url`,
+              value: photo.variants[i]?.url,
+            });
+          }
+        }
+        for (const { field, value } of urlsToCheck) {
+          // Allow undefined/null for optional fields; only reject if the field
+          // is present and not a Firebase-hosted URL.
+          if (value === undefined || value === null) continue;
+          if (!isFirebaseHostedUrl(value)) {
+            console.error(
+              `[PhotoAttach] Rejected non-Firebase URL for catch ${catchId} on field ${field}:`,
+              value
+            );
+            return res.status(400).json({
+              message: 'Neplatná URL fotografie — fotky musia byť uložené v cloude.',
+            });
+          }
         }
       }
 
