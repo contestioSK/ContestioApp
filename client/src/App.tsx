@@ -86,9 +86,9 @@ function Router() {
     if (!user) return;
 
     if (location === "/") {
-      const returnTo = localStorage.getItem('privode_returnTo');
+      const returnTo = localStorage.getItem('contestio_returnTo');
       if (returnTo && returnTo.startsWith('/') && !returnTo.startsWith('//')) {
-        localStorage.removeItem('privode_returnTo');
+        localStorage.removeItem('contestio_returnTo');
         setLocation(returnTo);
         return;
       }

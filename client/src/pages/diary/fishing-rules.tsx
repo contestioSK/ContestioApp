@@ -228,7 +228,7 @@ export default function FishingRulesPage() {
   // State with localStorage persistence
   const [activeSection, setActiveSection] = useState<QuickLinkType>(() => {
     try {
-      const saved = localStorage.getItem('privode_active_fishing_tab');
+      const saved = localStorage.getItem('contestio_active_fishing_tab');
       return (saved as QuickLinkType) || "sizes";
     } catch {
       return "sizes";
@@ -241,7 +241,7 @@ export default function FishingRulesPage() {
   // Persist activeSection to localStorage
   useEffect(() => {
     try {
-      localStorage.setItem('privode_active_fishing_tab', activeSection);
+      localStorage.setItem('contestio_active_fishing_tab', activeSection);
     } catch {
       // Ignore localStorage errors
     }
