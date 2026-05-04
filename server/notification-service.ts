@@ -19,7 +19,7 @@ if (!vapidPublicKey || !vapidPrivateKey) {
 
 try {
   webpush.setVapidDetails(
-    'mailto:admin@contestio.app',
+    'mailto:admin@privode.eu',
     vapidPublicKey,
     vapidPrivateKey
   );

@@ -15,7 +15,7 @@ export default function Register() {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6" data-testid="text-register-title">
-            Zaregistruj sa do Contestio
+            Zaregistruj sa do PriVode
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
             Vyber si typ účtu, ktorý najlepšie vyhovuje tvojim potrebám.

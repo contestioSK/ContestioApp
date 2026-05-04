@@ -159,7 +159,7 @@ export function BadgeCelebrationModal({ badge, onClose }: BadgeCelebrationModalP
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `contestio-${badge.badgeType}-${badge.tier}.png`;
+    link.download = `privode-${badge.badgeType}-${badge.tier}.png`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -171,7 +171,7 @@ export function BadgeCelebrationModal({ badge, onClose }: BadgeCelebrationModalP
 
     try {
       const imageBlob = await generateShareImage();
-      const shareText = `🏆 Práve som získal odznak "${badgeName}" na Contestio!`;
+      const shareText = `🏆 Práve som získal odznak "${badgeName}" na PriVode!`;
 
       if (!isTouchDevice) {
         if (imageBlob) {
@@ -190,15 +190,15 @@ export function BadgeCelebrationModal({ badge, onClose }: BadgeCelebrationModalP
         }
 
         if (canShareFiles) {
-          const file = new File([imageBlob], 'contestio-badge.png', { type: 'image/png' });
+          const file = new File([imageBlob], 'privode-badge.png', { type: 'image/png' });
           await navigator.share({
-            title: 'Môj nový odznak na Contestio',
+            title: 'Môj nový odznak na PriVode',
             text: shareText,
             files: [file],
           });
         } else {
           await navigator.share({
-            title: 'Môj nový odznak na Contestio',
+            title: 'Môj nový odznak na PriVode',
             text: shareText,
           });
         }
@@ -283,11 +283,11 @@ export function BadgeCelebrationModal({ badge, onClose }: BadgeCelebrationModalP
             {tierInfo?.description || badgeDef?.description || "Gratulujeme k dosiahnutiu tohto míľnika!"}
           </p>
 
-          {/* Contestio Branding */}
+          {/* PriVode Branding */}
           <div className="flex items-center justify-center pt-3 border-t border-slate-800">
             <img
               src={contestioLogo}
-              alt="Contestio"
+              alt="PriVode"
               className="h-5 opacity-70 brightness-0 invert"
               crossOrigin="anonymous"
             />

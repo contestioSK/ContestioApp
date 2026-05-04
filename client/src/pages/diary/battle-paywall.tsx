@@ -92,7 +92,7 @@ export default function BattlePaywall() {
           <div className="text-center mb-16 pt-8">
             <Badge className="mb-6 bg-amber-500/10 text-amber-400 border border-amber-500/20 px-3 py-1">
               <TacticalIconInline icon={Crown} variant="amber" size="sm" />
-              <span className="ml-1.5">Contestio Battle League</span>
+              <span className="ml-1.5">PriVode Battle League</span>
             </Badge>
             
             <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tight text-foreground mb-6 leading-tight">
@@ -275,7 +275,7 @@ export default function BattlePaywall() {
             <div className="inline-block p-1 md:p-1.5 rounded-xl bg-card/95 backdrop-blur-xl border border-border shadow-2xl max-w-md md:max-w-none mx-auto">
               <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 px-3 md:px-6 py-2 md:py-3">
                  <div className="text-left hidden md:block">
-                   <div className="text-sm font-bold text-foreground uppercase">Contestio Premium</div>
+                   <div className="text-sm font-bold text-foreground uppercase">PriVode Premium</div>
                    <div className="text-[10px] text-muted-foreground">Zrušiteľné kedykoľvek</div>
                  </div>
                  

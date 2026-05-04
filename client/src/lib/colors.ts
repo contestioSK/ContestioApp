@@ -1,5 +1,5 @@
 /**
- * Contestio Design System - Color Palette
+ * PriVode Design System - Color Palette
  * 
  * 10 farieb optimalizovaných pre dark aj light mode.
  * Dark mode: odtiene 500 (sýtejšie, neónový efekt)

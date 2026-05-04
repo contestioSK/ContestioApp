@@ -21,7 +21,7 @@ export default function AboutUs() {
         {/* Main Content */}
         <div className="mb-8">
           <p className="text-base md:text-lg leading-relaxed text-foreground text-center max-w-3xl mx-auto">
-            Contestio je digitálny rybársky denník, ktorý mení spôsob, akým rybári zaznamenávajú, analyzujú a prežívajú svoje výpravy. Naším cieľom je priniesť do rybárstva dáta, prehľadnosť a motiváciu – pre každého, kto chce byť pri vode lepší.
+            PriVode je digitálny rybársky denník, ktorý mení spôsob, akým rybári zaznamenávajú, analyzujú a prežívajú svoje výpravy. Naším cieľom je priniesť do rybárstva dáta, prehľadnosť a motiváciu – pre každého, kto chce byť pri vode lepší.
           </p>
         </div>
 
@@ -33,7 +33,7 @@ export default function AboutUs() {
               <h2 className="text-xl md:text-2xl font-bold text-foreground">Rybársky denník</h2>
             </div>
             <p className="text-base leading-relaxed mb-3 text-muted-foreground">
-              Contestio ti umožní:
+              PriVode ti umožní:
             </p>
             <ul className="space-y-1.5 text-sm text-muted-foreground mb-5">
               <li className="flex items-start">
@@ -128,7 +128,7 @@ export default function AboutUs() {
           <CardContent className="p-6">
             <TacticalIcon icon={Award} variant="amber" size="sm" showLabel={false} className="mx-auto mb-4" />
             <p className="text-base md:text-lg font-semibold text-foreground max-w-3xl mx-auto leading-relaxed" data-testid="text-tagline">
-              Contestio stavia na vášni pre rybárstvo, inováciách a komunite. Sme tu preto, aby sme slovenským rybárom dali nový rozmer zážitku pri vode.
+              PriVode stavia na vášni pre rybárstvo, inováciách a komunite. Sme tu preto, aby sme slovenským rybárom dali nový rozmer zážitku pri vode.
             </p>
           </CardContent>
         </Card>

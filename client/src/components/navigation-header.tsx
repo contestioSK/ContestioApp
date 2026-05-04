@@ -45,7 +45,7 @@ export default function NavigationHeader() {
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center" data-testid="link-home">
-              <img src={contestioLogo} alt="Contestio" className="h-7" />
+              <img src={contestioLogo} alt="PriVode" className="h-7" />
             </Link>
           </div>
           

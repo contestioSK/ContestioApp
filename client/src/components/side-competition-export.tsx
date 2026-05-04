@@ -173,7 +173,7 @@ export default function SideCompetitionExport({
           </div>
 
           <div className="mt-4 pt-3 border-t border-white/10 text-center">
-            <span className="text-white/40 text-xs">contestio.sk</span>
+            <span className="text-white/40 text-xs">privode.eu</span>
           </div>
         </div>
 

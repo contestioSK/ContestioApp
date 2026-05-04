@@ -193,7 +193,7 @@ export const teams = pgTable("teams", {
 export const teamMembers = pgTable("team_members", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   teamId: uuid("team_id").notNull().references(() => teams.id),
-  userId: varchar("user_id").references(() => users.id), // Optional: linked Contestio account for notifications
+  userId: varchar("user_id").references(() => users.id), // Optional: linked PriVode account for notifications
   name: varchar("name", { length: 255 }).notNull(),
   email: varchar("email"),
   phone: varchar("phone"),

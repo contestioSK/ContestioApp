@@ -60,7 +60,7 @@ export default function Contact() {
             Kontaktujte nás
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            Máš otázky o platforme Contestio? Radi ti pomôžeme s čímkoľvek potrebuješ.
+            Máš otázky o platforme PriVode? Radi ti pomôžeme s čímkoľvek potrebuješ.
           </p>
           <div className="w-24 h-1 bg-gradient-to-r from-primary to-primary/60 mx-auto mt-6 rounded-full"></div>
         </div>
@@ -82,8 +82,8 @@ export default function Contact() {
                       </div>
                       <div>
                         <h3 className="font-semibold text-foreground mb-2">Email</h3>
-                        <p className="text-muted-foreground">info@contestio.sk</p>
-                        <p className="text-muted-foreground">podpora@contestio.sk</p>
+                        <p className="text-muted-foreground">info@privode.eu</p>
+                        <p className="text-muted-foreground">podpora@privode.eu</p>
                       </div>
                     </div>
                   </CardContent>
@@ -113,7 +113,7 @@ export default function Contact() {
                       <div>
                         <h3 className="font-semibold text-foreground mb-2">Adresa</h3>
                         <p className="text-muted-foreground">
-                          Contestio s.r.o.<br />
+                          PriVode s.r.o.<br />
                           Hlavná ulica 123<br />
                           010 01 Žilina<br />
                           Slovenská republika
@@ -316,7 +316,7 @@ export default function Contact() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
-                href="mailto:podpora@contestio.sk"
+                href="mailto:podpora@privode.eu"
                 className="inline-flex items-center justify-center px-6 py-3 bg-primary text-primary-foreground font-semibold rounded-lg hover:bg-primary/90 transition-colors"
                 data-testid="button-support-email"
               >
