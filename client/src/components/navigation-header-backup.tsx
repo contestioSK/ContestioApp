@@ -78,7 +78,7 @@ export default function NavigationHeader() {
           {/* Logo and Brand */}
           <div className="flex items-center space-x-4">
             <Link href="/" className="flex items-center" data-testid="link-home">
-              <img src={theme === 'dark' ? contestioLogo : contestioLogoDark} alt="Contestio" className="h-8" />
+              <img src={theme === 'dark' ? contestioLogo : contestioLogoDark} alt="PriVode" className="h-8" />
             </Link>
           </div>
           

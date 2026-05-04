@@ -122,7 +122,7 @@ export function PremiumUpsellModal({ isOpen, onClose, trigger }: PremiumUpsellMo
                 <TacticalIcon icon={Crown} variant="amber" size="lg" showLabel={false} />
               </div>
               <DialogTitle className="text-2xl font-bold text-center bg-gradient-to-r from-amber-200 via-amber-400 to-amber-200 bg-clip-text text-transparent">
-                Lovte bez obmedzení s Contestio Premium
+                Lovte bez obmedzení s PriVode Premium
               </DialogTitle>
               <div className="flex justify-center mt-3">
                 <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-red-500/10 text-red-400 border border-red-500/30">

@@ -37,7 +37,7 @@ app.use(helmet({
         "wss:", 
         "ws:",
         "https://api.openweathermap.org", // Weather API
-        "https://*.contestio.sk", // Own domains
+        "https://*.privode.eu", // Own domains
         "https://*.replit.app", // Replit production domains
         "https://*.replit.dev", // Replit dev domains
       ],
@@ -57,9 +57,9 @@ app.use(helmet({
 
 // Security: CORS configuration
 const allowedOrigins = [
-  'https://contestio.sk', 
-  'https://www.contestio.sk',
-  'https://contestio.replit.app',
+  'https://privode.eu', 
+  'https://www.privode.eu',
+  'https://privode.replit.app',
   'http://localhost:5000', 
   'http://127.0.0.1:5000'
 ];

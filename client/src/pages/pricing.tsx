@@ -112,7 +112,7 @@ export default function Pricing() {
       cta: "Vybrať balík",
       features: [
         "Všetko z Pro +",
-        "Branding (logo, farby, subdoména contestio.sk/nazovpreteku)",
+        "Branding (logo, farby, subdoména privode.eu/nazovpreteku)",
         "Pokročilé štatistiky a grafy",
         "👨‍⚖️ **Neobmedzený počet rozhodcov**",
         "Prístup pre médiá a live výsledky",
@@ -218,7 +218,7 @@ export default function Pricing() {
 
   const handlePlanSelect = (planId: string) => {
     if (planId === 'enterprise') {
-      window.location.href = 'mailto:info@contestio.sk?subject=Záujem o Enterprise balík&body=Dobrý deň,%0A%0AMám záujem o Enterprise balík pre našu organizáciu.%0A%0AĎakujem';
+      window.location.href = 'mailto:info@privode.eu?subject=Záujem o Enterprise balík&body=Dobrý deň,%0A%0AMám záujem o Enterprise balík pre našu organizáciu.%0A%0AĎakujem';
     } else {
       window.location.href = `/organizer/create?plan=${planId}`;
     }
@@ -685,7 +685,7 @@ export default function Pricing() {
               <Button 
                 variant="outline" 
                 size="lg"
-                onClick={() => window.location.href = 'mailto:info@contestio.sk?subject=Otázka o cenníku'}
+                onClick={() => window.location.href = 'mailto:info@privode.eu?subject=Otázka o cenníku'}
                 data-testid="button-contact-pricing"
               >
                 Napísať tímu

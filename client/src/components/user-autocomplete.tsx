@@ -139,7 +139,7 @@ export function UserAutocomplete({
           <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
             <span className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/50 px-2 py-0.5 rounded-full">
               <Check className="w-3 h-3" />
-              Contestio
+              PriVode
             </span>
             <button
               type="button"
@@ -175,7 +175,7 @@ export function UserAutocomplete({
                   <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                 </div>
                 <span className="text-xs text-primary bg-primary/10 px-2 py-0.5 rounded-full shrink-0">
-                  Contestio
+                  PriVode
                 </span>
               </button>
             ))}
@@ -185,7 +185,7 @@ export function UserAutocomplete({
 
       {!selectedUserId && query.length >= 2 && !isLoading && results.length === 0 && (
         <p className="text-xs text-muted-foreground mt-1">
-          Používateľ nebude dostávať notifikácie (nemá účet v Contestio)
+          Používateľ nebude dostávať notifikácie (nemá účet v PriVode)
         </p>
       )}
     </div>

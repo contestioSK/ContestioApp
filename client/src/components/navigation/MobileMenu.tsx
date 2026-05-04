@@ -109,12 +109,12 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
             <SheetTitle className="sr-only">Menu</SheetTitle>
             <img 
               src={contestioLogo} 
-              alt="Contestio" 
+              alt="PriVode" 
               className="h-7 w-auto hidden dark:block" 
             />
             <img 
               src={contestioLogoDark} 
-              alt="Contestio" 
+              alt="PriVode" 
               className="h-7 w-auto dark:hidden" 
             />
             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Tvoj rybársky spoločník</p>

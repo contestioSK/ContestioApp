@@ -94,7 +94,7 @@ export default function SharedCatch() {
             onClick={() => window.location.href = '/'}
             className="mt-4 bg-orange-500 hover:bg-orange-600 text-white"
           >
-            Prejsť na Contestio
+            Prejsť na PriVode
           </Button>
         </div>
       </div>
@@ -184,14 +184,14 @@ export default function SharedCatch() {
           )}
         </div>
 
-        {/* Contestio branding */}
+        {/* PriVode branding */}
         <div className="absolute top-4 left-4 z-30">
           <a 
             href="/" 
             className="inline-flex items-center gap-2 px-3 py-1.5 bg-black/30 backdrop-blur-md rounded-full text-white text-sm font-bold hover:bg-black/50 transition-colors"
           >
             <Fish size={16} className="text-orange-500" />
-            Contestio
+            PriVode
           </a>
         </div>
       </div>
@@ -324,14 +324,14 @@ export default function SharedCatch() {
           {/* CTA */}
           <div className="mt-12 text-center">
             <p className="text-muted-foreground text-sm mb-4">
-              Zdieľané cez Contestio - rybársky denník
+              Zdieľané cez PriVode - rybársky denník
             </p>
             <a 
               href="/" 
               className="inline-flex items-center gap-2 px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl transition-colors"
             >
               <Fish size={18} />
-              Vyskúšať Contestio
+              Vyskúšať PriVode
             </a>
           </div>
         </div>

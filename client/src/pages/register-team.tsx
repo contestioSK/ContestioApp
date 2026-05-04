@@ -29,7 +29,7 @@ const teamRegistrationSchema = z.object({
     role: z.enum(["captain", "member"]),
     email: z.string().optional().refine((val) => !val || z.string().email().safeParse(val).success, "Zadajte platný e-mail"),
     phone: z.string().optional(),
-    userId: z.string().optional().nullable(), // Linked Contestio account
+    userId: z.string().optional().nullable(), // Linked PriVode account
   })).min(1, "Aspoň jeden člen tímu je povinný").max(6, "Maximálne 6 členov je povolených"),
 });
 
@@ -221,7 +221,7 @@ export default function RegisterTeam() {
           <div className="flex justify-between items-center h-16">
             <Link href="/">
               <div className="flex items-center space-x-2 cursor-pointer">
-                <img src={logoImage} alt="Contestio" className="h-8 w-auto" />
+                <img src={logoImage} alt="PriVode" className="h-8 w-auto" />
               </div>
             </Link>
           </div>

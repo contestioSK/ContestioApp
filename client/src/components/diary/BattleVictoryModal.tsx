@@ -122,7 +122,7 @@ export function BattleVictoryModal({ stats, onClose }: BattleVictoryModalProps) 
       }
 
       const safeBattleName = stats.battleName.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
-      const fileName = `contestio-victory-${safeBattleName}.png`;
+      const fileName = `privode-victory-${safeBattleName}.png`;
       const file = new File([blob], fileName, { type: 'image/png' });
 
       if (isTouchDevice && navigator.share && navigator.canShare?.({ files: [file] })) {
@@ -253,11 +253,11 @@ export function BattleVictoryModal({ stats, onClose }: BattleVictoryModalProps) 
             </div>
           </div>
 
-          {/* Contestio Branding */}
+          {/* PriVode Branding */}
           <div className="flex items-center justify-center pt-3 border-t border-slate-800">
             <img 
               src={contestioLogo} 
-              alt="Contestio" 
+              alt="PriVode" 
               className="h-5 opacity-70 brightness-0 invert"
               crossOrigin="anonymous"
             />
@@ -287,7 +287,7 @@ export function BattleVictoryModal({ stats, onClose }: BattleVictoryModalProps) 
           {!stats.isPremium && (
             <div className="text-[10px] text-slate-500 flex items-center justify-center gap-1.5 opacity-70">
               <Lock className="w-3 h-3" />
-              <span>Zdieľané s Contestio vodoznakom</span>
+              <span>Zdieľané s PriVode vodoznakom</span>
             </div>
           )}
           

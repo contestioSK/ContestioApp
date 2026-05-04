@@ -2279,7 +2279,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       const appOrigin = process.env.APP_ORIGIN || 
         (process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : 
         (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}` : 
-        'https://contestio.sk'));
+        'https://privode.eu'));
 
       // Create Stripe Checkout Session
       const session = await stripe.checkout.sessions.create({
@@ -2288,7 +2288,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
             price_data: {
               currency: 'eur',
               product_data: {
-                name: `Contestio ${planPrice.name}`,
+                name: `PriVode ${planPrice.name}`,
                 description: `Súťaž: ${existingCompetition.name}`,
               },
               unit_amount: planPrice.amount,
@@ -2409,7 +2409,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       const appOrigin = process.env.APP_ORIGIN || 
         (process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : 
         (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}` : 
-        'https://contestio.sk'));
+        'https://privode.eu'));
 
       // Create Stripe Checkout Session for subscription
       const session = await stripe.checkout.sessions.create({
@@ -2488,7 +2488,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       const appOrigin = process.env.APP_ORIGIN || 
         (process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : 
         (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}` : 
-        'https://contestio.sk'));
+        'https://privode.eu'));
 
       const portalSession = await stripe.billingPortal.sessions.create({
         customer: subscription.stripeCustomerId,
@@ -2650,7 +2650,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
             const appOrigin = process.env.APP_ORIGIN || 
               (process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : 
               (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}` : 
-              'https://contestio.sk'));
+              'https://privode.eu'));
             const dashboardUrl = `${appOrigin}/organizer/competition/${competitionId}`;
             
             emailService.sendPaymentConfirmationEmail(

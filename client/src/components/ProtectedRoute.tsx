@@ -29,7 +29,7 @@ export default function ProtectedRoute({ children, roles, redirectTo }: Protecte
     if (redirectTo) {
       const currentPath = window.location.pathname + window.location.search;
       if (currentPath !== '/' && currentPath !== redirectTo) {
-        localStorage.setItem('contestio_returnTo', currentPath);
+        localStorage.setItem('privode_returnTo', currentPath);
       }
       return <Redirect to={redirectTo} />;
     }

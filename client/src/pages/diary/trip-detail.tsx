@@ -1033,7 +1033,7 @@ export default function TripDetail() {
               <div className="flex justify-center pt-8 border-t border-slate-200 dark:border-slate-700/30">
                 <img 
                   src={contestioLogo} 
-                  alt="Contestio" 
+                  alt="PriVode" 
                   className="h-12 object-contain"
                   crossOrigin="anonymous"
                 />

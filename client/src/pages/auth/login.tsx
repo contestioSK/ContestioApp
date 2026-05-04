@@ -72,11 +72,11 @@ export default function LoginPage() {
       
       toast({
         title: "Prihlásenie úspešné!",
-        description: "Vitajte späť v Contestio.",
+        description: "Vitajte späť v PriVode.",
       });
       
-      const returnTo = localStorage.getItem('contestio_returnTo');
-      localStorage.removeItem('contestio_returnTo');
+      const returnTo = localStorage.getItem('privode_returnTo');
+      localStorage.removeItem('privode_returnTo');
       const safeReturn = returnTo && returnTo.startsWith('/') && !returnTo.startsWith('//') ? returnTo : null;
       window.location.href = safeReturn || "/diary";
     },

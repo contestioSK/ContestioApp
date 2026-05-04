@@ -33,7 +33,7 @@ async function getResendCredentials() {
     }
     return {
       apiKey: connectionSettings.settings.api_key,
-      fromEmail: connectionSettings.settings.from_email || 'info@contestio.sk'
+      fromEmail: connectionSettings.settings.from_email || 'info@privode.eu'
     };
   } catch (error) {
     console.error('[EmailService] Failed to get Resend credentials:', error);
@@ -64,7 +64,7 @@ function getAppOrigin(): string {
     const firstDomain = process.env.REPLIT_DOMAINS.split(',')[0];
     return `https://${firstDomain}`;
   }
-  return 'https://contestio.sk';
+  return 'https://privode.eu';
 }
 
 const APP_ORIGIN = getAppOrigin();
@@ -177,7 +177,7 @@ class EmailService {
     if (this.useSMTP && this.transporter) {
       try {
         const result = await this.transporter.sendMail({
-          from: process.env.SMTP_FROM || 'info@contestio.sk',
+          from: process.env.SMTP_FROM || 'info@privode.eu',
           to: options.to,
           subject: options.subject,
           html: options.html,
@@ -203,7 +203,7 @@ class EmailService {
     const encodedToken = encodeURIComponent(verificationToken);
     const verificationUrl = `${APP_ORIGIN}/auth/verify-email?token=${encodedToken}`;
     
-    const subject = 'Potvrď svoju e-mailovú adresu | Contestio';
+    const subject = 'Potvrď svoju e-mailovú adresu | PriVode';
     const html = this.generateVerificationEmailTemplate(firstName, verificationUrl);
 
     return this.sendEmail({
@@ -221,7 +221,7 @@ class EmailService {
     const encodedToken = encodeURIComponent(resetToken);
     const resetUrl = `${APP_ORIGIN}/auth/reset-password?token=${encodedToken}`;
     
-    const subject = 'Reset your Contestio password';
+    const subject = 'Reset your PriVode password';
     const html = this.generatePasswordResetEmailTemplate(firstName, resetUrl);
 
     return this.sendEmail({
@@ -251,7 +251,7 @@ class EmailService {
         <head>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1">
-          <title>Potvrď svoju e-mailovú adresu | Contestio</title>
+          <title>Potvrď svoju e-mailovú adresu | PriVode</title>
           <style>
             body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f8fafc; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -270,12 +270,12 @@ class EmailService {
         <body>
           <div class="container">
             <div class="header">
-              <h1 style="margin: 0; font-size: 28px;">🎣 Contestio</h1>
+              <h1 style="margin: 0; font-size: 28px;">🎣 PriVode</h1>
             </div>
             <div class="content">
               <p style="font-size: 18px;">Ahoj <strong>${escapedFirstName}</strong>,</p>
               
-              <p>vitaj v <strong>Contestio</strong> 👋<br>
+              <p>vitaj v <strong>PriVode</strong> 👋<br>
               tvoj účet bol úspešne vytvorený. Aby sme ho mohli aktivovať, potrebujeme potvrdiť tvoju e-mailovú adresu.</p>
               
               <p>👉 <strong>Stačí kliknúť na tlačidlo nižšie:</strong></p>
@@ -289,13 +289,13 @@ class EmailService {
                 <ul>
                   <li>rybárskemu denníku a záznamom úlovkov,</li>
                   <li>sledovaniu obľúbených súťaží a tímov,</li>
-                  <li>štatistikám, cieľom a ďalším funkciám Contestio.</li>
+                  <li>štatistikám, cieľom a ďalším funkciám PriVode.</li>
                 </ul>
               </div>
               
               <p>⏱️ Odkaz je platný <strong>24 hodín</strong>.</p>
               
-              <p style="color: #6b7280; font-size: 14px;">Ak si sa do Contestio neregistroval ty, tento e-mail môžeš pokojne ignorovať.</p>
+              <p style="color: #6b7280; font-size: 14px;">Ak si sa do PriVode neregistroval ty, tento e-mail môžeš pokojne ignorovať.</p>
               
               <div class="divider"></div>
               
@@ -305,12 +305,12 @@ class EmailService {
               </div>
               
               <p style="font-size: 14px; color: #6b7280;">V prípade otázok nás kontaktuj na<br>
-              📩 <a href="mailto:support@contestio.sk" style="color: #0ea5e9;"><strong>support@contestio.sk</strong></a></p>
+              📩 <a href="mailto:support@privode.eu" style="color: #0ea5e9;"><strong>support@privode.eu</strong></a></p>
             </div>
             <div class="footer">
               <p style="margin: 0 0 8px 0;">Vidíme sa na vode 🎣</p>
-              <p style="margin: 0; font-weight: bold;">Tím Contestio</p>
-              <p style="margin: 16px 0 0 0; font-size: 12px; color: #9ca3af;">© 2024 Contestio. Všetky práva vyhradené.</p>
+              <p style="margin: 0; font-weight: bold;">Tím PriVode</p>
+              <p style="margin: 16px 0 0 0; font-size: 12px; color: #9ca3af;">© 2024 PriVode. Všetky práva vyhradené.</p>
             </div>
           </div>
         </body>
@@ -326,7 +326,7 @@ class EmailService {
         <head>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1">
-          <title>Reset your Contestio password</title>
+          <title>Reset your PriVode password</title>
           <style>
             body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -344,7 +344,7 @@ class EmailService {
             </div>
             <div class="content">
               <h2>Hi ${escapedFirstName}!</h2>
-              <p>We received a request to reset your Contestio account password.</p>
+              <p>We received a request to reset your PriVode account password.</p>
               <div class="warning">
                 <strong>⚠️ Security Notice:</strong> If you didn't request this password reset, please ignore this email and your password will remain unchanged.
               </div>
@@ -355,7 +355,7 @@ class EmailService {
               <p><strong>This reset link will expire in 24 hours for security reasons.</strong></p>
             </div>
             <div class="footer">
-              <p>© 2024 Contestio. All rights reserved.</p>
+              <p>© 2024 PriVode. All rights reserved.</p>
               <p>This is an automated email, please do not reply.</p>
             </div>
           </div>
@@ -370,7 +370,7 @@ class EmailService {
     competitionName: string,
     setupUrl: string
   ): Promise<boolean> {
-    const subject = `🎣 Contestio – Registrácia súťaže bola prijatá`;
+    const subject = `🎣 PriVode – Registrácia súťaže bola prijatá`;
     const html = this.generateRegistrationConfirmationTemplate(competitionName, setupUrl);
 
     return this.sendEmail({
@@ -438,7 +438,7 @@ class EmailService {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Contestio – Pripomienka</title>
+  <title>PriVode – Pripomienka</title>
 </head>
 <body style="margin:0; padding:0; background-color:#0c1f28; font-family: Arial, Helvetica, sans-serif; color:#ffffff;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#0c1f28; padding:40px 0;">
@@ -449,7 +449,7 @@ class EmailService {
           <tr>
             <td style="padding:32px 32px 20px; text-align:center;">
               <h1 style="margin:0; font-size:28px; letter-spacing:0.5px;">
-                🎣 Contestio
+                🎣 PriVode
               </h1>
               <p style="margin:8px 0 0; font-size:13px; color:#94a3b8; text-transform:uppercase; letter-spacing:2px;">
                 Pripomienka
@@ -487,7 +487,7 @@ class EmailService {
                 Keď bude všetko pripravené, v deň pretekov už len klikneš na „Spustiť súťaž" a ide sa na vec.
               </p>
               <p style="margin-top:24px;">
-                Tím Contestio 🎣
+                Tím PriVode 🎣
               </p>
             </td>
           </tr>
@@ -515,7 +515,7 @@ class EmailService {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Contestio – Registrácia súťaže</title>
+  <title>PriVode – Registrácia súťaže</title>
 </head>
 <body style="margin:0; padding:0; background-color:#0c1f28; font-family: Arial, Helvetica, sans-serif; color:#ffffff;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#0c1f28; padding:40px 0;">
@@ -526,7 +526,7 @@ class EmailService {
           <tr>
             <td style="padding:32px 32px 20px; text-align:center;">
               <h1 style="margin:0; font-size:28px; letter-spacing:0.5px;">
-                🎣 Contestio
+                🎣 PriVode
               </h1>
               <p style="margin:8px 0 0; font-size:13px; color:#94a3b8; text-transform:uppercase; letter-spacing:2px;">
                 Registrácia súťaže prijatá
@@ -568,7 +568,7 @@ class EmailService {
                 Ak budeš čokoľvek potrebovať, sme tu pre teba.
               </p>
               <p style="margin-top:24px;">
-                Tím Contestio 🎣
+                Tím PriVode 🎣
               </p>
             </td>
           </tr>
@@ -596,7 +596,7 @@ class EmailService {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Contestio – Zajtra štartuje súťaž</title>
+  <title>PriVode – Zajtra štartuje súťaž</title>
 </head>
 <body style="margin:0; padding:0; background-color:#0c1f28; font-family: Arial, Helvetica, sans-serif; color:#ffffff;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#0c1f28; padding:40px 0;">
@@ -607,7 +607,7 @@ class EmailService {
           <tr>
             <td style="padding:32px 32px 20px; text-align:center;">
               <h1 style="margin:0; font-size:28px; letter-spacing:0.5px;">
-                🎣 Contestio
+                🎣 PriVode
               </h1>
               <p style="margin:8px 0 0; font-size:13px; color:#94a3b8; text-transform:uppercase; letter-spacing:2px;">
                 Zajtra štartuje súťaž
@@ -654,7 +654,7 @@ class EmailService {
                 Držíme palce, nech prebehne všetko hladko!
               </p>
               <p style="margin-top:24px;">
-                Tím Contestio 🎣
+                Tím PriVode 🎣
               </p>
             </td>
           </tr>
@@ -683,7 +683,7 @@ class EmailService {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Contestio – Platba úspešná</title>
+  <title>PriVode – Platba úspešná</title>
 </head>
 <body style="margin:0; padding:0; background-color:#0c1f28; font-family: Arial, Helvetica, sans-serif; color:#ffffff;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#0c1f28; padding:40px 0;">
@@ -694,7 +694,7 @@ class EmailService {
           <tr>
             <td style="padding:32px 32px 20px; text-align:center;">
               <h1 style="margin:0; font-size:28px; letter-spacing:0.5px;">
-                🎣 Contestio
+                🎣 PriVode
               </h1>
               <p style="margin:8px 0 0; font-size:13px; color:#94a3b8; text-transform:uppercase; letter-spacing:2px;">
                 Platba úspešná
@@ -761,7 +761,7 @@ class EmailService {
                 🎣 Držíme palce, nech sa súťaž vydarí!
               </p>
               <p style="margin-top:24px;">
-                Tím Contestio
+                Tím PriVode
               </p>
             </td>
           </tr>
@@ -805,7 +805,7 @@ class EmailService {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Contestio – Pozvánka rozhodcu</title>
+  <title>PriVode – Pozvánka rozhodcu</title>
 </head>
 <body style="margin:0; padding:0; background-color:#0c1f28; font-family: Arial, Helvetica, sans-serif; color:#ffffff;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#0c1f28; padding:40px 0;">
@@ -816,7 +816,7 @@ class EmailService {
           <tr>
             <td style="padding:32px 32px 20px; text-align:center;">
               <h1 style="margin:0; font-size:28px; letter-spacing:0.5px;">
-                🎣 Contestio
+                🎣 PriVode
               </h1>
               <p style="margin:8px 0 0; font-size:13px; color:#94a3b8; text-transform:uppercase; letter-spacing:2px;">
                 Pozvánka rozhodcu
@@ -841,7 +841,7 @@ class EmailService {
                 </ul>
               </div>
               <p style="font-size:15px; line-height:1.6; color:#94a3b8;">
-                Pre prijatie pozvania sa zaregistrujte v systéme Contestio.
+                Pre prijatie pozvania sa zaregistrujte v systéme PriVode.
               </p>
               <div style="text-align:center; margin:32px 0;">
                 <a href="${registerUrl}"
@@ -853,7 +853,7 @@ class EmailService {
                 Po registrácii vás organizátor pridá do súťaže ako rozhodcu.
               </p>
               <p style="margin-top:24px;">
-                Tím Contestio 🎣
+                Tím PriVode 🎣
               </p>
             </td>
           </tr>

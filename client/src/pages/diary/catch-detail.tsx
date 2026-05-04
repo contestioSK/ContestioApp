@@ -159,7 +159,7 @@ export default function CatchDetail() {
     }
     if (!overrides.hideBait && catchData.bait) text += `\n🎯 Návnada: ${catchData.bait}`;
     
-    text += `\n\nZdieľané cez Contestio`;
+    text += `\n\nZdieľané cez PriVode`;
     return text;
   };
 

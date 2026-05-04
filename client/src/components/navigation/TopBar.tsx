@@ -49,7 +49,7 @@ export default function TopBar() {
             >
               <img 
                 src={theme === 'dark' ? contestioLogo : contestioLogoDark} 
-                alt="Contestio" 
+                alt="PriVode" 
                 className="h-8 md:h-9" 
               />
             </button>
