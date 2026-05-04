@@ -463,7 +463,7 @@ export default function CreateCompetition() {
             <h2 className="text-xl font-bold text-white mb-2">Prihlásenie potrebné</h2>
             <p className="text-slate-400 mb-6">Pre vytvorenie súťaže sa musíš prihlásiť.</p>
             <Button onClick={() => {
-              localStorage.setItem('contestio_returnTo', window.location.pathname + window.location.search);
+              localStorage.setItem('privode_returnTo', window.location.pathname + window.location.search);
               setLocation('/auth/login');
             }} className="bg-orange-500 hover:bg-orange-600 text-white font-bold w-full h-12 rounded-xl">
               Prihlásiť sa
