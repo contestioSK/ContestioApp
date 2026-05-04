@@ -10,7 +10,7 @@ export default function Terms() {
         {/* Header */}
         <div className="mb-12">
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Podmienky Používania Aplikácie Contestio
+            Podmienky Používania Aplikácie PriVode
           </h1>
           <p className="text-gray-400">
             Platnosť od: 12. Október 2025
@@ -27,7 +27,7 @@ export default function Terms() {
             </h2>
             <div className="space-y-3 text-sm md:text-base leading-relaxed">
               <p>
-                <strong className="text-white">1.1.</strong> Tieto Podmienky používania (ďalej len "Podmienky") upravujú práva a povinnosti medzi prevádzkovateľom a používateľmi pri používaní aplikácie Contestio (ďalej len "Aplikácia").
+                <strong className="text-white">1.1.</strong> Tieto Podmienky používania (ďalej len "Podmienky") upravujú práva a povinnosti medzi prevádzkovateľom a používateľmi pri používaní aplikácie PriVode (ďalej len "Aplikácia").
               </p>
               <p>
                 <strong className="text-white">1.2.</strong> Prevádzkovateľom Aplikácie je Ľubomír Šulek, IČO: 44648499, so sídlom Majakovského 13027/11, 08001 Prešov (ďalej len "Prevádzkovateľ").
@@ -141,7 +141,7 @@ export default function Terms() {
                 <strong className="text-white">7.2.</strong> Prevádzkovateľ si vyhradzuje právo na zmenu týchto Podmienok. O podstatných zmenách bude Používateľa informovať vopred.
               </p>
               <p>
-                <strong className="text-white">7.3.</strong> V prípade otázok nás kontaktujte na e-mailovej adrese: <a href="mailto:gdpr@contestio.sk" className="text-emerald-400 hover:text-emerald-300 transition-colors">gdpr@contestio.sk</a>.
+                <strong className="text-white">7.3.</strong> V prípade otázok nás kontaktujte na e-mailovej adrese: <a href="mailto:gdpr@privode.eu" className="text-emerald-400 hover:text-emerald-300 transition-colors">gdpr@privode.eu</a>.
               </p>
             </div>
           </section>

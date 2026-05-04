@@ -104,7 +104,7 @@ export default function FishingActionCard({
               </h2>
               <p className="text-slate-300 font-medium text-base md:text-lg">
                 Začni rybačku alebo si rýchlo zapíš úlovok.
-                <span className="hidden md:inline"><br />Contestio sa postará o zvyšok.</span>
+                <span className="hidden md:inline"><br />PriVode sa postará o zvyšok.</span>
               </p>
             </>
           )}

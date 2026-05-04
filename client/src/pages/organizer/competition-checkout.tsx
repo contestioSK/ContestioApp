@@ -323,7 +323,7 @@ export default function CompetitionCheckout() {
                       className="w-full mt-4"
                       onClick={(e) => {
                         e.stopPropagation();
-                        window.location.href = 'mailto:info@contestio.sk?subject=Záujem o Enterprise balík';
+                        window.location.href = 'mailto:info@privode.eu?subject=Záujem o Enterprise balík';
                       }}
                     >
                       Kontaktujte nás
@@ -401,7 +401,7 @@ export default function CompetitionCheckout() {
             </Button>
           ) : (
             <Button
-              onClick={() => window.location.href = 'mailto:info@contestio.sk?subject=Záujem o Enterprise balík'}
+              onClick={() => window.location.href = 'mailto:info@privode.eu?subject=Záujem o Enterprise balík'}
               className="bg-gray-700 hover:bg-gray-800 text-white order-1 sm:order-2"
             >
               Kontaktujte nás

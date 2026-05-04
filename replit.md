@@ -32,7 +32,7 @@ Preferred communication style: Simple, everyday language.
 - **Authentication**: Session-based authentication with Replit Auth.
 - **Design System**: Unified 10-color palette for consistent visualization (`client/src/lib/colors.ts`). Dark mode uses shade 500, Light mode uses shade 600.
 
-### Contestio Obsidian Ember v2.0 Design Manual (January 2025)
+### PriVode Obsidian Ember v2.0 Design Manual (January 2025)
 **Philosophy**: Profesionálny rybársky prístroj. Farba = Význam. UI = Ticho.
 
 **Color Tokens:**

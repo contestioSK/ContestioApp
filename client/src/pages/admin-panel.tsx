@@ -3784,7 +3784,7 @@ export default function AdminPanel() {
                                             <Input placeholder="moja-sutaz" {...field} data-testid="input-subdomain" />
                                           </FormControl>
                                           <p className="text-sm text-muted-foreground">
-                                            Bude dostupná na: {field.value || 'moja-sutaz'}.contestio.sk
+                                            Bude dostupná na: {field.value || 'moja-sutaz'}.privode.eu
                                           </p>
                                           <FormMessage />
                                         </FormItem>
@@ -4622,7 +4622,7 @@ export default function AdminPanel() {
                                             <Input placeholder="moja-sutaz" {...field} data-testid="input-edit-subdomain" />
                                           </FormControl>
                                           <FormDescription>
-                                            Bude dostupná na: {field.value || 'moja-sutaz'}.contestio.sk
+                                            Bude dostupná na: {field.value || 'moja-sutaz'}.privode.eu
                                           </FormDescription>
                                           <FormMessage />
                                         </FormItem>

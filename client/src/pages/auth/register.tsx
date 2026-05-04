@@ -171,14 +171,14 @@ export default function RegisterPage() {
                 <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center transform -rotate-6 shadow-lg shadow-orange-500/20">
                   <Fish className="text-white w-6 h-6" />
                 </div>
-                <span className="text-2xl font-black italic text-white tracking-tighter">CONTESTIO</span>
+                <span className="text-2xl font-black italic text-white tracking-tighter">PRIVODE</span>
               </div>
             </div>
             <CardTitle className="text-3xl font-black text-white uppercase tracking-tighter italic" data-testid="text-register-title">
               Začni loviť trofeje
             </CardTitle>
             <CardDescription className="text-slate-400 font-medium">
-              Pridaj sa do Contestio arény a súťaž s kamarátmi.
+              Pridaj sa do PriVode a súťaž s kamarátmi.
             </CardDescription>
           </CardHeader>
           
@@ -215,7 +215,7 @@ export default function RegisterPage() {
                   render={({ field }) => (
                     <FormItem className="space-y-3">
                       <FormLabel className="text-xs font-black uppercase tracking-widest text-slate-500">
-                        Čo chceš robiť v Contestio?
+                        Čo chceš robiť v PriVode?
                       </FormLabel>
                       <div className="grid grid-cols-2 gap-3">
                         <div

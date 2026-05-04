@@ -1,5 +1,5 @@
-// Contestio Service Worker for Push Notifications
-const CACHE_NAME = 'contestio-v1';
+// PriVode Service Worker for Push Notifications
+const CACHE_NAME = 'privode-v1';
 const urlsToCache = [
   '/'
 ];
@@ -50,16 +50,16 @@ self.addEventListener('push', (event) => {
     try {
       notificationData = event.data.json();
     } catch (e) {
-      notificationData = { title: 'Contestio', body: event.data.text() };
+      notificationData = { title: 'PriVode', body: event.data.text() };
     }
   }
   
   // Default notification options
   const options = {
-    body: notificationData.body || 'Nová notifikácia z Contestio',
+    body: notificationData.body || 'Nová notifikácia z PriVode',
     icon: '/favicon.ico',
     badge: '/favicon.ico',
-    tag: notificationData.tag || 'contestio-notification',
+    tag: notificationData.tag || 'privode-notification',
     data: {
       url: notificationData.url || '/',
       competitionId: notificationData.competitionId,
@@ -83,7 +83,7 @@ self.addEventListener('push', (event) => {
 
   event.waitUntil(
     self.registration.showNotification(
-      notificationData.title || 'Contestio',
+      notificationData.title || 'PriVode',
       options
     )
   );

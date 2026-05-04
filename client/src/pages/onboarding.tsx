@@ -229,7 +229,7 @@ export default function Onboarding() {
               </div>
               <h1 className="text-2xl font-bold mb-2">Aká je tvoja hlavná misia?</h1>
               <p className="text-muted-foreground">
-                Povedz nám, prečo si tu. Contestio ti podľa toho nastaví úvodnú obrazovku.
+                Povedz nám, prečo si tu. PriVode ti podľa toho nastaví úvodnú obrazovku.
               </p>
             </div>
 

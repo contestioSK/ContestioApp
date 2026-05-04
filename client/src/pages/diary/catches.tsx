@@ -76,7 +76,7 @@ type FreemiumLimits = {
   limit: number;
 };
 
-// Function to get fish variant based on fish type - mapped to Contestio palette
+// Function to get fish variant based on fish type - mapped to PriVode palette
 const getFishVariant = (fishType?: string): "amber" | "emerald" | "purple" | "cyan" | "rose" | "orange" | "blue" => {
   if (!fishType) return "blue";
   

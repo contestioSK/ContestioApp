@@ -10,7 +10,7 @@ export default function Privacy() {
         {/* Header */}
         <div className="mb-12">
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Zásady Ochrany Osobných Údajov Aplikácie Contestio
+            Zásady Ochrany Osobných Údajov Aplikácie PriVode
           </h1>
           <p className="text-gray-400">
             Platnosť od: 12. Október 2025
@@ -27,7 +27,7 @@ export default function Privacy() {
             </h2>
             <div className="space-y-3 text-sm md:text-base leading-relaxed">
               <p>
-                Prevádzkovateľom vašich osobných údajov je <strong className="text-white">Ľubomír Šulek, IČO: 44648499</strong>, so sídlom Majakovského 13027/11, 08001 Prešov (ďalej len "Prevádzkovateľ" alebo "my"). V prípade otázok týkajúcich sa ochrany osobných údajov nás môžete kontaktovať na e-mailovej adrese: <a href="mailto:gdpr@contestio.sk" className="text-emerald-400 hover:text-emerald-300 transition-colors">gdpr@contestio.sk</a>.
+                Prevádzkovateľom vašich osobných údajov je <strong className="text-white">Ľubomír Šulek, IČO: 44648499</strong>, so sídlom Majakovského 13027/11, 08001 Prešov (ďalej len "Prevádzkovateľ" alebo "my"). V prípade otázok týkajúcich sa ochrany osobných údajov nás môžete kontaktovať na e-mailovej adrese: <a href="mailto:gdpr@privode.eu" className="text-emerald-400 hover:text-emerald-300 transition-colors">gdpr@privode.eu</a>.
               </p>
             </div>
           </section>

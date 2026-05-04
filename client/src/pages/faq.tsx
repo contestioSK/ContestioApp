@@ -70,7 +70,7 @@ export default function FAQ() {
       description: "Vytvorenie účtu, prihlásenie a nastavenie profilu",
       items: [
         {
-          question: "Musím mať účet, aby som používal Contestio?",
+          question: "Musím mať účet, aby som používal PriVode?",
           answer: "Áno. Registrácia je nutná pre vedenie rybárskeho denníka."
         },
         {
@@ -90,15 +90,15 @@ export default function FAQ() {
       description: "Kompatibilita zariadení, offline režim a integrácie",
       items: [
         {
-          question: "Na akých zariadeniach funguje Contestio?",
-          answer: "Contestio funguje na PC, tabletoch aj mobiloch. Aplikácia je responzívna, takže ju môžeš používať priamo v prehliadači alebo ako webovú appku."
+          question: "Na akých zariadeniach funguje PriVode?",
+          answer: "PriVode funguje na PC, tabletoch aj mobiloch. Aplikácia je responzívna, takže ju môžeš používať priamo v prehliadači alebo ako webovú appku."
         },
         {
           question: "Bude dostupná aj mobilná aplikácia?",
           answer: "Áno, v ďalšej fáze vývoja pripravujeme aj natívnu aplikáciu pre Android a iOS."
         },
         {
-          question: "Potrebujem internet, aby som používal Contestio?",
+          question: "Potrebujem internet, aby som používal PriVode?",
           answer: "Väčšina funkcií vyžaduje pripojenie, ale zápis do rybárskeho denníka je možný aj offline (synchronizácia prebehne po pripojení)."
         }
       ]
@@ -117,7 +117,7 @@ export default function FAQ() {
             Často kladené otázky
           </h1>
           <p className="text-base md:text-lg text-muted-foreground max-w-3xl mx-auto">
-            Nájdite odpovede na najčastejšie otázky o platforme Contestio
+            Nájdite odpovede na najčastejšie otázky o platforme PriVode
           </p>
           <div className="w-20 h-1 bg-primary mx-auto mt-4 rounded-full"></div>
         </div>
@@ -253,7 +253,7 @@ export default function FAQ() {
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <a
-                href="mailto:info@contestio.sk"
+                href="mailto:info@privode.eu"
                 className="inline-flex items-center justify-center px-5 py-2.5 bg-primary text-primary-foreground text-sm font-semibold rounded-lg hover:bg-primary/90 transition-colors"
                 data-testid="button-email-contact"
               >

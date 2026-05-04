@@ -17,7 +17,7 @@ export function SocialShareButtons({
   url,
   title,
   text,
-  hashtags = ["contestio", "fishing", "rybolov"],
+  hashtags = ["privode", "fishing", "rybolov"],
   compact = false,
   showLabels = true,
 }: SocialShareButtonsProps) {
