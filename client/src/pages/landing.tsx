@@ -1,429 +1,812 @@
 import { useState } from "react";
 import { Link } from "wouter";
 import {
-  Menu, X, ChevronRight,
-  Fish, Calendar, CloudRain, Check, AlertCircle, Activity,
-  Map as MapIcon, Target, Users,
+  Menu, X, Check, ChevronDown, ChevronRight,
+  Fish, Camera, MapPin, BarChart2, Waves, Shield,
+  Clock, Zap, Star, Lock,
 } from "lucide-react";
 
-import contestioLogo from "@assets/figma/logo.png";
+const TEAL = "#1FB6A6";
+const PRIMARY = "#0B1C2F";
 
-const topoPattern = `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M54.627 0l.83.83v58.34l-.83.83H.83l-.83-.83V.83L.83 0h53.797zm-1.889 1.889H2.718v54.334h50.02V1.889zM19.125 15.688a2.625 2.625 0 110-5.25 2.625 2.625 0 010 5.25zm0-1.5a1.125 1.125 0 100-2.25 1.125 1.125 0 000 2.25zm19.125 21.375a2.625 2.625 0 110-5.25 2.625 2.625 0 010 5.25zm0-1.5a1.125 1.125 0 100-2.25 1.125 1.125 0 000 2.25z' fill='%2314B8A6' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E")`;
+function PhoneFrame({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  return (
+    <div className={`relative ${className}`} style={{ width: 220, flexShrink: 0 }}>
+      <div
+        className="relative rounded-[2.5rem] overflow-hidden border-4 shadow-2xl"
+        style={{
+          borderColor: "#1a2e42",
+          backgroundColor: "#071525",
+          height: 440,
+          boxShadow: "0 30px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(31,182,166,0.15)",
+        }}
+      >
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-20 h-5 bg-[#071525] rounded-b-2xl z-10 flex items-center justify-center">
+          <div className="w-10 h-1 bg-[#1a2e42] rounded-full" />
+        </div>
+        <div className="w-full h-full overflow-hidden">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+function AppScreenCatch() {
+  return (
+    <div className="p-4 pt-8 h-full flex flex-col gap-3" style={{ backgroundColor: "#071525" }}>
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-xs font-semibold text-white/70">Môj denník</span>
+        <span className="text-xs" style={{ color: TEAL }}>+ Úlovok</span>
+      </div>
+      {[
+        { fish: "Zubáč veľkoočí", weight: "3.2 kg", len: "72 cm", date: "24. 4. 2024", color: "#1FB6A6" },
+        { fish: "Kapor rybničný", weight: "6.8 kg", len: "64 cm", date: "18. 4. 2024", color: "#38bdf8" },
+        { fish: "Šťuka severná", weight: "2.1 kg", len: "58 cm", date: "10. 4. 2024", color: "#a78bfa" },
+      ].map((c, i) => (
+        <div key={i} className="rounded-xl p-3 border border-white/5" style={{ backgroundColor: "#0f2135" }}>
+          <div className="flex items-center gap-2 mb-1">
+            <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ backgroundColor: c.color + "20" }}>
+              <Fish size={12} style={{ color: c.color }} />
+            </div>
+            <span className="text-xs font-semibold text-white">{c.fish}</span>
+          </div>
+          <div className="flex gap-3 ml-8">
+            <span className="text-xs" style={{ color: c.color }}>{c.weight}</span>
+            <span className="text-xs text-white/40">{c.len}</span>
+            <span className="text-xs text-white/30">{c.date}</span>
+          </div>
+        </div>
+      ))}
+      <div className="rounded-xl p-3 border border-white/5 opacity-50" style={{ backgroundColor: "#0f2135" }}>
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 rounded-lg bg-white/5" />
+          <div className="h-2 w-24 bg-white/10 rounded" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AppScreenTrip() {
+  return (
+    <div className="p-4 pt-8 h-full flex flex-col gap-3" style={{ backgroundColor: "#071525" }}>
+      <div className="text-xs font-semibold text-white/70 mb-1">Výprava</div>
+      <div className="rounded-xl overflow-hidden" style={{ backgroundColor: "#0f2135", height: 100 }}>
+        <div className="w-full h-full flex items-end p-3">
+          <div className="w-full flex items-end gap-1 h-14">
+            {[40, 60, 30, 80, 55, 90, 45, 70].map((h, i) => (
+              <div key={i} className="flex-1 rounded-t" style={{ height: `${h}%`, backgroundColor: i === 5 ? TEAL : TEAL + "40" }} />
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        {[
+          { label: "Úlovkov", val: "7", color: TEAL },
+          { label: "Váha", val: "18.4 kg", color: "#38bdf8" },
+          { label: "Nástraha", val: "Boilies", color: "#a78bfa" },
+          { label: "Tlak", val: "1014 hPa", color: "#fb923c" },
+        ].map((s, i) => (
+          <div key={i} className="rounded-xl p-2 border border-white/5" style={{ backgroundColor: "#0f2135" }}>
+            <div className="text-xs text-white/40">{s.label}</div>
+            <div className="text-sm font-semibold" style={{ color: s.color }}>{s.val}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function AppScreenStats() {
+  return (
+    <div className="p-4 pt-8 h-full flex flex-col gap-3" style={{ backgroundColor: "#071525" }}>
+      <div className="text-xs font-semibold text-white/70 mb-1">Štatistiky</div>
+      <div className="space-y-2">
+        {[
+          { label: "Celková váha", val: "142.6 kg", pct: 80 },
+          { label: "Výpravy", val: "24", pct: 60 },
+          { label: "Druhov rýb", val: "11", pct: 45 },
+          { label: "Najlepší mesiac", val: "Apríl", pct: 90 },
+        ].map((s, i) => (
+          <div key={i} className="rounded-xl p-3 border border-white/5" style={{ backgroundColor: "#0f2135" }}>
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-xs text-white/50">{s.label}</span>
+              <span className="text-xs font-semibold" style={{ color: TEAL }}>{s.val}</span>
+            </div>
+            <div className="h-1 rounded-full bg-white/10">
+              <div className="h-1 rounded-full" style={{ width: `${s.pct}%`, backgroundColor: TEAL }} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function Landing() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">("monthly");
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   const navItems = [
     { href: "/about-us", label: "O nás" },
-    { href: "/faq", label: "FAQ" },
     { href: "/pricing", label: "Cenník" },
+    { href: "/faq", label: "FAQ" },
     { href: "/contact", label: "Kontakt" },
   ];
 
+  const features = [
+    {
+      icon: <Camera size={22} />,
+      title: "Karta úlovku",
+      desc: "Pridaj fotku, váhu, nástrahu a lokáciu za 20 sekúnd. Navždy uložené v cloude.",
+    },
+    {
+      icon: <BarChart2 size={22} />,
+      title: "Štatistiky a grafy",
+      desc: "Sleduj trendy, najlepšie nástrahy a podmienky. Dáta, nie dohady.",
+    },
+    {
+      icon: <MapPin size={22} />,
+      title: "GPS lokality",
+      desc: "Ukladaj tajné miesta na mape. Naviguj sa späť aj o rok.",
+    },
+    {
+      icon: <Waves size={22} />,
+      title: "Počasie & tlak",
+      desc: "7-dňová predpoveď a tlakový index aktivity rýb pri plánovaní výpravy.",
+    },
+    {
+      icon: <Zap size={22} />,
+      title: "Fishing Battle",
+      desc: "Vyzvi kamarátov na súboj. Leaderboard v reálnom čase.",
+    },
+    {
+      icon: <Shield size={22} />,
+      title: "Bezpečné úložisko",
+      desc: "Tvoje spomienky sú šifrované a zálohované. Nestratíš ich nikdy.",
+    },
+  ];
+
+  const freeFeatures = [
+    "50 úlovkov",
+    "1 fotografia na úlovok",
+    "História výprav (posledné 3)",
+    "Prijímanie výziev v Battle",
+  ];
+
+  const premiumFeatures = [
+    "Neobmedzené výpravy a úlovky",
+    "Neobmedzené fotografie",
+    "Pokročilé štatistiky a grafy",
+    "Tvorba vlastných Fishing Battles",
+    "Interaktívne mapy a GPS lokality",
+    "Predpoveď počasia a tlak",
+    "Offline režim pri vode",
+  ];
+
+  const lockedFree = [
+    "GPS lokality",
+    "Vlastné Battles",
+    "Neobmedzená história",
+    "Predpoveď počasia",
+  ];
+
+  const faqItems = [
+    {
+      q: "Je PriVode zadarmo?",
+      a: "Áno, základná verzia je bezplatná. Môžeš si zadarmo ukladať až 50 úlovkov, 1 fotku na úlovok a posledné 3 výpravy. Žiadna kreditná karta nie je potrebná.",
+    },
+    {
+      q: "Čo odomkne Premium?",
+      a: "Premium ti odomkne neobmedzené výpravy a úlovky, neobmedzené fotografie, pokročilé štatistiky, GPS mapy, Fishing Battles, predpoveď počasia a offline režim.",
+    },
+    {
+      q: "Sú moje dáta a fotky v bezpečí?",
+      a: "Áno. Všetky záznamy a fotky sú uložené v šifrovanom cloude. Tvoje spomienky sú v bezpečí aj keď zmeníš telefón.",
+    },
+    {
+      q: "Čo je Fishing Battle?",
+      a: "Battle je priateľský súboj s kamarátmi — kto chytí najťažšiu rybu, celkovú najväčšiu váhu alebo najviac rýb. Výsledky vidíš v reálnom čase.",
+    },
+  ];
+
   return (
-    <div className="bg-[#050810] min-h-screen text-slate-300 overflow-x-hidden">
-
-      {/* Navigation */}
-      <nav className="relative z-50 px-4 md:px-20 pt-[45px]">
-        <div className="max-w-[1440px] mx-auto flex items-center justify-between">
-
-          {/* Logo */}
+    <div
+      className="min-h-screen text-white overflow-x-hidden"
+      style={{ backgroundColor: PRIMARY, fontFamily: "'Space Grotesk', 'Inter', sans-serif" }}
+    >
+      {/* ── NAVIGATION ── */}
+      <nav className="relative z-50 px-5 md:px-12 pt-6 pb-4">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
           <Link href="/">
-            <img src={contestioLogo} alt="Contestio" className="h-[37px] w-auto" />
+            <span className="flex items-center gap-2 cursor-pointer select-none">
+              <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                <circle cx="16" cy="16" r="16" fill={TEAL} />
+                <path d="M8 16 C8 12, 12 9, 16 10 C20 11, 24 12, 24 16 C24 20, 20 23, 16 22 C12 21, 8 20, 8 16Z" fill="white" fillOpacity="0.9" />
+                <circle cx="19" cy="14" r="1.5" fill={PRIMARY} />
+                <path d="M7 18 C5 19, 4 21, 5 22" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+                <path d="M7 20 C5 22, 5 24, 6 25" stroke="white" strokeWidth="1.5" strokeLinecap="round" opacity="0.6" />
+              </svg>
+              <span className="text-xl font-bold tracking-tight">
+                Pri<span style={{ color: TEAL }}>Vode</span>
+              </span>
+            </span>
           </Link>
 
-          {/* Desktop Nav Pill */}
-          <div className="hidden lg:flex items-center gap-6 px-6 py-3 rounded-full border border-white/10 bg-gradient-to-r from-[#08101a]/80 via-[#0e2331]/60 to-[#08121c]/80 backdrop-blur-[12px]">
+          <div className="hidden md:flex items-center gap-8">
             {navItems.map((item) => (
               <Link key={item.href} href={item.href}>
-                <span className="text-white text-sm font-normal cursor-pointer hover:opacity-80 transition-opacity whitespace-nowrap">
-                  {item.label}
-                </span>
+                <span className="text-sm text-white/60 hover:text-white transition-colors cursor-pointer">{item.label}</span>
               </Link>
             ))}
           </div>
 
-          {/* CTA Buttons */}
-          <div className="hidden lg:flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-3">
             <Link href="/auth/login">
-              <div className="bg-[#fb923c] px-5 py-2.5 rounded-full flex items-center justify-center cursor-pointer hover:bg-[#f97316] transition-colors">
-                <span className="text-[#08101b] text-sm font-medium">
-                  Prihlásiť sa
-                </span>
-              </div>
+              <span className="text-sm text-white/70 hover:text-white transition-colors cursor-pointer px-4 py-2">
+                Prihlásiť sa
+              </span>
             </Link>
             <Link href="/auth/register">
-              <div className="backdrop-blur-[12px] border border-white/10 px-5 py-2.5 rounded-full flex items-center justify-center cursor-pointer hover:bg-white/5 transition-colors">
-                <span className="text-white text-sm font-normal whitespace-nowrap">
-                  Zaregistrovať sa
-                </span>
-              </div>
+              <span
+                className="text-sm font-semibold px-5 py-2.5 rounded-xl cursor-pointer transition-opacity hover:opacity-90"
+                style={{ backgroundColor: TEAL, color: PRIMARY }}
+              >
+                Začať zadarmo
+              </span>
             </Link>
           </div>
 
-          {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="lg:hidden text-white p-2"
+            className="md:hidden text-white/70 hover:text-white p-2"
           >
-            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {isMobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
         </div>
 
-        {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden mt-4 p-6 rounded-2xl bg-[#0e1a26]/95 backdrop-blur-xl border border-white/10">
-            <div className="space-y-3">
+          <div
+            className="md:hidden mt-3 rounded-2xl p-5 border border-white/10"
+            style={{ backgroundColor: "#0F2135" }}
+          >
+            <div className="space-y-1 mb-4">
               {navItems.map((item) => (
                 <Link key={item.href} href={item.href}>
                   <div
-                    className="px-4 py-3 text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
+                    className="px-3 py-2.5 text-white/70 hover:text-white hover:bg-white/5 rounded-lg text-sm cursor-pointer transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     {item.label}
                   </div>
                 </Link>
               ))}
-              <div className="pt-4 border-t border-white/10 space-y-2">
-                <Link href="/auth/login">
-                  <div className="w-full bg-[#fb923c] text-[#08101b] font-medium py-3 rounded-full text-center cursor-pointer">
-                    Prihlásiť sa
-                  </div>
-                </Link>
-                <Link href="/auth/register">
-                  <div className="w-full border border-white/10 text-white py-3 rounded-full text-center cursor-pointer">
-                    Zaregistrovať sa
-                  </div>
-                </Link>
-              </div>
+            </div>
+            <div className="border-t border-white/10 pt-4 space-y-2">
+              <Link href="/auth/login">
+                <div className="w-full border border-white/20 text-white/80 py-2.5 rounded-xl text-sm text-center cursor-pointer hover:bg-white/5">
+                  Prihlásiť sa
+                </div>
+              </Link>
+              <Link href="/auth/register">
+                <div
+                  className="w-full py-2.5 rounded-xl text-sm text-center font-semibold cursor-pointer"
+                  style={{ backgroundColor: TEAL, color: PRIMARY }}
+                >
+                  Začať zadarmo
+                </div>
+              </Link>
             </div>
           </div>
         )}
       </nav>
 
-      {/* 1. HERO SECTION */}
-      <section className="relative flex items-center pt-12 pb-16 border-b border-white/5">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1506598822606-2580ec19b0de?q=80&w=2940&auto=format&fit=crop')] bg-cover bg-center" />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#050810]/80 via-[#050810]/50 to-[#050810]" />
+      {/* ── HERO ── */}
+      <section className="px-5 md:px-12 pt-16 pb-24 max-w-6xl mx-auto">
+        <div className="text-center mb-16">
+          <div
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-8 border"
+            style={{ borderColor: TEAL + "40", color: TEAL, backgroundColor: TEAL + "15" }}
+          >
+            <Fish size={12} /> Tvoj rybársky denník
+          </div>
+          <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 leading-[1.08]">
+            Každý úlovok má
+            <br />
+            <span style={{ color: TEAL }}>svoj príbeh.</span>
+            <br />
+            Ulož si ho navždy.
+          </h1>
+          <p className="text-lg text-white/50 max-w-xl mx-auto mb-10 leading-relaxed">
+            Zabudni na rozhádzané fotky a zabudnuté detaily. PriVode je denník, ktorý premení každú výpravu na trvalú spomienku.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Link href="/auth/register">
+              <span
+                className="px-8 py-3.5 rounded-xl font-semibold text-base cursor-pointer transition-opacity hover:opacity-90 flex items-center gap-2"
+                style={{ backgroundColor: TEAL, color: PRIMARY }}
+              >
+                Začni zadarmo <ChevronRight size={18} />
+              </span>
+            </Link>
+            <Link href="/auth/login">
+              <span className="px-8 py-3.5 rounded-xl text-base text-white/60 hover:text-white cursor-pointer transition-colors border border-white/10 hover:border-white/30">
+                Prihlásiť sa
+              </span>
+            </Link>
+          </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-6 relative z-10 w-full grid lg:grid-cols-2 gap-16 items-center">
+        {/* Phone mockups */}
+        <div className="flex items-end justify-center gap-4 md:gap-6 overflow-x-auto pb-4" style={{ scrollbarWidth: "none" }}>
+          <div className="hidden sm:block" style={{ transform: "translateY(30px) rotate(-4deg)" }}>
+            <PhoneFrame>
+              <AppScreenTrip />
+            </PhoneFrame>
+          </div>
+          <div style={{ transform: "translateY(0px)" }}>
+            <PhoneFrame>
+              <AppScreenCatch />
+            </PhoneFrame>
+          </div>
+          <div className="hidden sm:block" style={{ transform: "translateY(30px) rotate(4deg)" }}>
+            <PhoneFrame>
+              <AppScreenStats />
+            </PhoneFrame>
+          </div>
+        </div>
+      </section>
+
+      {/* ── FEATURE 1: Tisíc fotiek ── */}
+      <section className="px-5 md:px-12 py-24" style={{ backgroundColor: "#071525" }}>
+        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
           <div>
-            <div className="inline-flex items-center gap-2 bg-teal-500/10 border border-teal-500/20 px-4 py-2 rounded-full text-xs font-black text-teal-400 mb-8 uppercase tracking-widest backdrop-blur-md">
-              <Activity size={14} /> Analytický denník. Bez výhovoriek.
+            <div className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: TEAL }}>
+              Problém
             </div>
-
-            <h1 className="text-5xl md:text-7xl font-black text-white mb-6 tracking-tighter leading-[1.05]">
-              Maj úlovky <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-emerald-600">pod kontrolou.</span>
-            </h1>
-
-            <p className="text-lg md:text-xl text-slate-300/80 mb-10 leading-relaxed max-w-lg font-medium">
-              Zabudni na stratené fotky a zabudnuté tlaky vzduchu. Contestio je analytický denník, ktorý premení tvoje pocity pri vode na tvrdé dáta.
+            <h2 className="text-4xl md:text-5xl font-bold leading-tight mb-6">
+              Tisíc fotiek v galérii.
+              <br />
+              <span className="text-white/40">A žiadna spomienka.</span>
+            </h2>
+            <p className="text-white/50 text-lg leading-relaxed mb-8">
+              Fotky sa strácajú medzi selfies a screenshotmi. Pamätáš si, kde si chytil tú päťku? Na čo brala? Pri akom tlaku?
             </p>
-
-            <div className="flex flex-col gap-3">
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Link href="/auth/login">
-                  <div className="bg-teal-500 text-[#050810] px-8 py-4 rounded-xl font-black text-lg hover:bg-teal-400 hover:-translate-y-1 transition-all flex items-center justify-center gap-2 shadow-[0_0_30px_rgba(20,184,166,0.3)] cursor-pointer">
-                    Spustiť denník <ChevronRight size={20} />
-                  </div>
-                </Link>
-              </div>
-              <p className="text-xs text-slate-500">Nečakaj a začni si ukladať spomienky.</p>
+            <div className="space-y-3">
+              {["Stratené detaily o montáži a lokácii", "Chaos v galérii telefónu", "Zabudnuté podmienky a počasie", "Stále začínaš od nuly"].map((t, i) => (
+                <div key={i} className="flex items-center gap-3 text-white/50 text-sm">
+                  <X size={14} className="text-red-400 flex-shrink-0" />
+                  {t}
+                </div>
+              ))}
             </div>
           </div>
-
-          {/* App Mockup Card */}
-          <div className="relative hidden lg:block">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-teal-500/20 blur-[100px] rounded-full pointer-events-none" />
-            <div className="relative bg-[#0A101C]/80 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl p-6 rotate-[-2deg] hover:rotate-0 transition-transform duration-500">
-              <div className="flex justify-between items-center border-b border-white/5 pb-4 mb-4">
-                <div className="font-bold text-white flex items-center gap-2">
-                  <MapIcon size={16} className="text-teal-500" /> Posledná výprava
-                </div>
-                <div className="text-xs bg-teal-500/20 text-teal-400 px-2 py-1 rounded">Aktívne</div>
-              </div>
-              <div className="space-y-4">
-                <div className="h-32 bg-white/5 rounded-xl border border-white/5 flex items-end p-4">
-                  <div className="w-full flex items-end justify-between gap-2 opacity-50">
-                    {[40, 70, 45, 90, 60, 100].map((h, i) => (
-                      <div key={i} className="w-full bg-gradient-to-t from-teal-500/40 to-transparent rounded-t-sm" style={{ height: `${h}px` }} />
-                    ))}
-                  </div>
-                </div>
-                <div className="flex gap-4">
-                  <div className="flex-1 bg-white/5 rounded-xl p-4 border border-white/5">
-                    <div className="text-xs text-slate-500 mb-1">Naj. nástraha</div>
-                    <div className="text-sm font-bold text-white">Krill 20mm</div>
-                  </div>
-                  <div className="flex-1 bg-white/5 rounded-xl p-4 border border-white/5">
-                    <div className="text-xs text-slate-500 mb-1">Tlak vzduchu</div>
-                    <div className="text-sm font-bold text-white">1012 hPa</div>
-                  </div>
-                </div>
-              </div>
+          <div className="flex justify-center">
+            <div className="relative">
+              <div
+                className="absolute -inset-8 rounded-full blur-3xl opacity-20"
+                style={{ backgroundColor: TEAL }}
+              />
+              <PhoneFrame className="relative">
+                <AppScreenCatch />
+              </PhoneFrame>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 2. PAIN SECTION */}
-      <section className="py-24 relative bg-[#030508] overflow-hidden">
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-rose-600/10 blur-[150px] rounded-full pointer-events-none" />
-
-        <div className="max-w-7xl mx-auto px-6 relative z-10 flex flex-col md:flex-row gap-16 items-center">
-          <div className="w-full md:w-1/2">
-            <AlertCircle size={40} className="text-rose-500 mb-6" />
-            <h2 className="text-3xl md:text-5xl font-black text-white mb-6 tracking-tight">
-              Chytíš rybu... <br />
-              <span className="text-rose-500">a o týždeň nevieš nič.</span>
-            </h2>
-            <p className="text-slate-400 text-lg mb-8 leading-relaxed">
-              Nepamätáš si, na čo brala. Fotky máš rozhádzané v mobile medzi screenshotmi memeečok. Nečítaš vodu, len dúfaš.
-            </p>
-            <div className="inline-flex border border-rose-500/30 bg-rose-500/10 text-rose-400 px-5 py-3 rounded-xl font-bold uppercase tracking-wider text-sm shadow-[0_0_20px_rgba(244,63,94,0.1)]">
-              Stále začínaš od nuly.
+      {/* ── FEATURE 2: 20 sekúnd ── */}
+      <section className="px-5 md:px-12 py-24">
+        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
+          <div className="order-2 md:order-1 flex justify-center">
+            <div className="relative">
+              <div
+                className="absolute -inset-8 rounded-full blur-3xl opacity-15"
+                style={{ backgroundColor: "#38bdf8" }}
+              />
+              <PhoneFrame className="relative">
+                <AppScreenTrip />
+              </PhoneFrame>
             </div>
           </div>
+          <div className="order-1 md:order-2">
+            <div className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: TEAL }}>
+              Riešenie
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold leading-tight mb-6">
+              Zapíšeš úlovok za 20 sekúnd.
+              <br />
+              <span style={{ color: TEAL }}>Spomienku si na 20 rokov.</span>
+            </h2>
+            <p className="text-white/50 text-lg leading-relaxed mb-8">
+              Fotka, váha, nástraha, lokácia. Uložené v cloude. Vždy po ruke — aj za 10 rokov, aj keď zmeníš telefón.
+            </p>
+            <div className="space-y-3">
+              {["Úlovok uložený za menej ako 20 sekúnd", "Fotky bezpečne v cloude", "Podmienky a počasie automaticky", "História výprav na dosah ruky"].map((t, i) => (
+                <div key={i} className="flex items-center gap-3 text-white/70 text-sm">
+                  <Check size={14} className="flex-shrink-0" style={{ color: TEAL }} />
+                  {t}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
 
-          <div className="w-full md:w-1/2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {/* ── BIG STATEMENT ── */}
+      <section className="px-5 md:px-12 py-32" style={{ backgroundColor: "#071525" }}>
+        <div className="max-w-4xl mx-auto text-center">
+          <p className="text-4xl md:text-6xl font-bold leading-[1.15] tracking-tight">
+            O dvadsať rokov si otvoríš telefón.{" "}
+            <span style={{ color: TEAL }}>A budeš tam ty.</span>{" "}
+            Pri vode.{" "}
+            <span style={{ color: TEAL }}>Pri každej rybe,</span>{" "}
+            ktorú si chytil.
+          </p>
+          <p className="mt-10 text-white/40 text-lg max-w-xl mx-auto">
+            PriVode nie je len appka. Je to archív tvojho rybárskeho života.
+          </p>
+        </div>
+      </section>
+
+      {/* ── STATS ── */}
+      <section className="px-5 md:px-12 py-16">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
-              { title: "Stratené detaily", desc: "Zabudnuté montáže a lokácie." },
-              { title: "Chaos v galérii", desc: "Kedy a kde sa to chytilo?" },
-              { title: "Slepé spoliehanie", desc: "Hádanie počasia z okna." },
-              { title: "Žiadny posun", desc: "Rovnaké chyby, menšie ryby." },
-            ].map((item, i) => (
-              <div key={i} className="bg-[#0A101C] p-6 rounded-2xl border border-white/5 hover:border-rose-500/30 transition-colors">
-                <X size={20} className="text-rose-500 mb-4" />
-                <h4 className="text-white font-bold mb-1">{item.title}</h4>
-                <p className="text-xs text-slate-500">{item.desc}</p>
+              { val: "50+", label: "Aktívnych rybárov" },
+              { val: "500+", label: "Úlovkov uložených" },
+              { val: "20s", label: "Čas zápisu úlovku" },
+              { val: "100%", label: "Spomienok zachovaných" },
+            ].map((s, i) => (
+              <div
+                key={i}
+                className="rounded-2xl p-6 border border-white/5 text-center"
+                style={{ backgroundColor: "#0F2135" }}
+              >
+                <div className="text-3xl font-bold mb-1" style={{ color: TEAL }}>{s.val}</div>
+                <div className="text-sm text-white/40">{s.label}</div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* 3. FEATURES SECTION */}
-      <section className="py-32 relative bg-[#09111C]">
-        <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: topoPattern }} />
-        <div className="absolute left-1/2 top-0 -translate-x-1/2 w-[800px] h-full bg-gradient-to-b from-teal-500/5 via-teal-500/10 to-transparent pointer-events-none" />
-
-        <div className="max-w-7xl mx-auto px-6 relative z-10">
-          <div className="text-center mb-20">
-            <h2 className="text-4xl md:text-6xl font-black text-white mb-6 tracking-tight">
-              Konečne v tom máš <span className="text-teal-400">systém.</span>
+      {/* ── FEATURES GRID ── */}
+      <section className="px-5 md:px-12 py-24">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+              Na funkcie. Presne, že máš{" "}
+              <span style={{ color: TEAL }}>všetko pod kontrolou.</span>
             </h2>
-            <p className="text-slate-400 text-lg max-w-2xl mx-auto">
-              Vymeň hádanie za tvrdé dáta. Každá výprava ťa posúva o level vyššie.
+            <p className="text-white/40 text-lg max-w-xl mx-auto">
+              Vymeň hádanie za tvrdé dáta. Každá výprava ťa posúva ďalej.
             </p>
           </div>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="bg-[#050810]/80 backdrop-blur-xl border border-teal-500/20 p-8 rounded-[2rem] hover:-translate-y-2 transition-transform duration-300 shadow-[0_10px_40px_rgba(20,184,166,0.1)]">
-              <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-400 mb-8 border border-teal-500/20">
-                <Fish size={28} />
-              </div>
-              <h3 className="text-2xl font-bold text-white mb-4">Karta Úlovku</h3>
-              <p className="text-slate-400 mb-6 text-sm leading-relaxed">
-                Žiadne poloprázdne zápisníky. Pridaj fotku, váhu, nástrahu a lokáciu do 15 sekúnd. Tvoje dáta sú v bezpečí cloudu.
-              </p>
-              <ul className="space-y-3 border-t border-white/5 pt-6">
-                <li className="flex gap-2 items-center text-xs text-slate-300"><Check size={14} className="text-teal-500 flex-shrink-0" /> Fotky & Miery</li>
-                <li className="flex gap-2 items-center text-xs text-slate-300"><Check size={14} className="text-teal-500 flex-shrink-0" /> Presné podmienky</li>
-              </ul>
-            </div>
-
-            <div className="bg-[#050810]/80 backdrop-blur-xl border border-white/5 p-8 rounded-[2rem] hover:-translate-y-2 transition-transform duration-300 hover:border-teal-500/20">
-              <div className="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-400 mb-8 border border-blue-500/20">
-                <Calendar size={28} />
-              </div>
-              <h3 className="text-2xl font-bold text-white mb-4">História výprav</h3>
-              <p className="text-slate-400 mb-6 text-sm leading-relaxed">
-                Pripravuješ sa na známu vodu? Pozri si svoje predošlé výpravy. Presne vieš, na aký tlak rýby reagovali pred rokom.
-              </p>
-              <ul className="space-y-3 border-t border-white/5 pt-6">
-                <li className="flex gap-2 items-center text-xs text-slate-300"><Check size={14} className="text-blue-500 flex-shrink-0" /> Časové osi lovu</li>
-                <li className="flex gap-2 items-center text-xs text-slate-300"><Check size={14} className="text-blue-500 flex-shrink-0" /> Sledovanie trendov</li>
-              </ul>
-            </div>
-
-            <div className="bg-[#050810]/80 backdrop-blur-xl border border-white/5 p-8 rounded-[2rem] hover:-translate-y-2 transition-transform duration-300 hover:border-teal-500/20">
-              <div className="w-14 h-14 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-400 mb-8 border border-indigo-500/20">
-                <CloudRain size={28} />
-              </div>
-              <h3 className="text-2xl font-bold text-white mb-4">Počasie & Checky</h3>
-              <p className="text-slate-400 mb-6 text-sm leading-relaxed">
-                Plánuj dopredu. Sleduj tlakové níže, fázy mesiaca a vytvor si checklist, aby si na brehu nezistil, že nemáš zarážky.
-              </p>
-              <ul className="space-y-3 border-t border-white/5 pt-6">
-                <li className="flex gap-2 items-center text-xs text-slate-300"><Check size={14} className="text-indigo-500 flex-shrink-0" /> 7-dňová predpoveď</li>
-                <li className="flex gap-2 items-center text-xs text-slate-300"><Check size={14} className="text-indigo-500 flex-shrink-0" /> Gear checklist</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 4. FISHING BATTLE SECTION */}
-      <section className="relative py-32 bg-[#050810] overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-orange-600 to-red-600 transform -skew-y-3 scale-110 origin-top-left opacity-[0.85] z-0" />
-        <div className="absolute inset-0 z-0 opacity-10 mix-blend-multiply" style={{ backgroundImage: 'url("https://www.transparenttextures.com/patterns/carbon-fibre.png")' }} />
-
-        <div className="max-w-7xl mx-auto px-6 relative z-10 grid lg:grid-cols-2 gap-16 items-center">
-          <div className="text-white">
-            <div className="inline-block bg-black/30 backdrop-blur-md px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest text-orange-200 border border-white/20 mb-6">
-              <Users size={14} className="inline mr-2" /> Fishing Battle
-            </div>
-            <h2 className="text-5xl md:text-7xl font-black mb-6 leading-none tracking-tighter drop-shadow-xl">
-              Vyzvi kamošov<br /> na súboj.
-            </h2>
-            <p className="text-orange-50 text-xl font-medium mb-10 max-w-md drop-shadow-md">
-              Koniec rečiam o tom, komu sa utrhla väčšia ryba. Tabuľka neklame. Vytvor lobby, nahadzuj úlovky a sleduj, ako kamoši v reálnom čase padajú na dno rebríčka.
-            </p>
-            <div className="bg-black/20 backdrop-blur-sm p-6 rounded-2xl border border-white/10 flex flex-col gap-4 w-fit">
-              <div className="font-bold uppercase tracking-wider text-sm opacity-80 border-b border-white/10 pb-2">Režimy Fishing Battle</div>
-              <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 font-black text-sm">
-                <div>1. Najťažšia ryba</div>
-                <div>2. Celková váha</div>
-                <div>3. Počet rýb</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Leaderboard Mockup */}
-          <div className="relative">
-            <div className="absolute inset-0 bg-black/40 blur-[50px] rounded-full" />
-            <div className="relative bg-[#0A101C]/90 backdrop-blur-xl border-2 border-white/10 rounded-[2rem] p-8 shadow-2xl transform rotate-3">
-              <div className="flex justify-between items-center mb-8 border-b border-white/10 pb-4">
-                <h3 className="font-black text-white text-xl">Kaprárska výzva 🎣</h3>
-                <div className="flex gap-1">
-                  <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div className="bg-gradient-to-r from-orange-500/20 to-transparent border border-orange-500/30 p-5 rounded-2xl flex justify-between items-center">
-                  <div className="flex items-center gap-4">
-                    <span className="text-3xl font-black text-orange-400">1</span>
-                    <div>
-                      <div className="font-bold text-white text-lg">Marek (Ty)</div>
-                      <div className="text-xs text-orange-300">Posledný úlovok pred 2h</div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-black text-2xl text-white">6.45<span className="text-sm text-slate-400"> kg</span></div>
-                  </div>
-                </div>
-
-                <div className="bg-white/5 border border-white/5 p-5 rounded-2xl flex justify-between items-center opacity-80">
-                  <div className="flex items-center gap-4">
-                    <span className="text-3xl font-black text-slate-500">2</span>
-                    <div className="font-bold text-white text-lg">Jano</div>
-                  </div>
-                  <div className="font-black text-xl text-white">4.20<span className="text-sm text-slate-500"> kg</span></div>
-                </div>
-
-                <div className="bg-white/5 border border-white/5 p-5 rounded-2xl flex justify-between items-center opacity-60">
-                  <div className="flex items-center gap-4">
-                    <span className="text-3xl font-black text-slate-600">3</span>
-                    <div className="font-bold text-slate-300 text-lg">Peto</div>
-                  </div>
-                  <div className="font-black text-xl text-slate-300">2.80<span className="text-sm text-slate-600"> kg</span></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 5. FINAL CTA SECTION */}
-      <section className="relative py-32 border-t border-white/5 flex items-center justify-center min-h-[60vh]">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1544390041-399a099a9a2a?q=80&w=2940&auto=format&fit=crop')] bg-cover bg-center opacity-40" />
-          <div className="absolute inset-0 bg-[#050810]/80 backdrop-blur-[2px]" />
-        </div>
-
-        <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
-          <Target size={48} className="text-teal-500 mx-auto mb-8" />
-          <h2 className="text-4xl md:text-6xl font-black text-white mb-6 tracking-tight">
-            Nenechávaj úspech na náhodu.
-          </h2>
-          <p className="text-slate-300 mb-10 max-w-xl mx-auto text-lg">
-            Pridaj sa do Contestio tímu, vyskúšaj si denník a ulož si svoje spomienky na jednom mieste.
-          </p>
-          <Link href="/auth/login">
-            <div className="inline-block bg-teal-500 text-[#050810] px-12 py-5 rounded-2xl font-black text-xl hover:bg-white hover:text-black transition-all shadow-[0_0_40px_rgba(20,184,166,0.3)] hover:scale-105 cursor-pointer">
-              Získať účet zdarma
-            </div>
-          </Link>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="relative z-10 px-4 md:px-16 py-16 border-t border-white/10">
-        <div className="max-w-[1440px] mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
-
-            {/* Logo */}
-            <div>
-              <img src={contestioLogo} alt="Contestio" className="h-8 mb-4" />
-              <p className="text-white/50 text-sm leading-relaxed">
-                Tvoj digitálny rybársky denník. Vždy po ruke.
-              </p>
-            </div>
-
-            {/* Product */}
-            <div>
-              <h4 className="text-white font-semibold mb-4">Product</h4>
-              <ul className="space-y-3">
-                <li><Link href="/pricing"><span className="text-white/50 hover:text-white text-sm cursor-pointer transition-colors">Cenník</span></Link></li>
-                <li><Link href="/#features"><span className="text-white/50 hover:text-white text-sm cursor-pointer transition-colors">Funkcie</span></Link></li>
-                <li><Link href="/diary"><span className="text-white/50 hover:text-white text-sm cursor-pointer transition-colors">Rybársky denník</span></Link></li>
-              </ul>
-            </div>
-
-            {/* Firma */}
-            <div>
-              <h4 className="text-white font-semibold mb-4">Firma</h4>
-              <ul className="space-y-3">
-                <li><Link href="/about-us"><span className="text-white/50 hover:text-white text-sm cursor-pointer transition-colors">O nás</span></Link></li>
-                <li><Link href="/contact"><span className="text-white/50 hover:text-white text-sm cursor-pointer transition-colors">Kontakt</span></Link></li>
-                <li><Link href="/faq"><span className="text-white/50 hover:text-white text-sm cursor-pointer transition-colors">FAQ</span></Link></li>
-              </ul>
-            </div>
-
-            {/* Social */}
-            <div>
-              <h4 className="text-white font-semibold mb-4">Social</h4>
-              <ul className="space-y-3">
-                <li><a href="#" className="text-white/50 hover:text-white text-sm transition-colors">Instagram</a></li>
-                <li><a href="#" className="text-white/50 hover:text-white text-sm transition-colors">LinkedIn</a></li>
-                <li><a href="#" className="text-white/50 hover:text-white text-sm transition-colors">YouTube</a></li>
-              </ul>
-            </div>
-          </div>
-
-          {/* Bottom Bar */}
-          <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-white/40 text-sm">Copyright © C.NTESTIO</p>
-            <div className="flex items-center gap-6">
-              <Link href="/terms"><span className="text-white/40 hover:text-white text-sm cursor-pointer transition-colors">Terms of Service</span></Link>
-              <button
-                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                className="flex items-center gap-2 text-white/40 hover:text-white text-sm transition-colors"
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {features.map((f, i) => (
+              <div
+                key={i}
+                className="rounded-2xl p-6 border border-white/5 hover:border-teal-500/30 transition-colors"
+                style={{ backgroundColor: "#0F2135" }}
               >
-                späť hore
-                <div className="w-6 h-6 rounded-full border border-white/20 flex items-center justify-center">
-                  <ChevronRight className="w-3 h-3 rotate-[-90deg]" />
+                <div
+                  className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
+                  style={{ backgroundColor: TEAL + "20", color: TEAL }}
+                >
+                  {f.icon}
                 </div>
+                <h3 className="font-semibold text-white mb-2">{f.title}</h3>
+                <p className="text-sm text-white/40 leading-relaxed">{f.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── PHONE SHOWCASE ── */}
+      <section className="px-5 md:px-12 py-24" style={{ backgroundColor: "#071525" }}>
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+              Rybári, ktorí{" "}
+              <span style={{ color: TEAL }}>vedia viac.</span>
+            </h2>
+            <p className="text-white/40 text-lg max-w-md mx-auto">
+              PriVode ti dáva prehľad, ktorý ostatní nemajú.
+            </p>
+          </div>
+          <div className="flex items-center justify-center gap-6 md:gap-10 overflow-x-auto pb-4" style={{ scrollbarWidth: "none" }}>
+            <div className="hidden md:block" style={{ transform: "translateY(24px) scale(0.9)", opacity: 0.7 }}>
+              <PhoneFrame>
+                <AppScreenStats />
+              </PhoneFrame>
+            </div>
+            <div style={{ transform: "scale(1.05)" }}>
+              <PhoneFrame>
+                <AppScreenCatch />
+              </PhoneFrame>
+            </div>
+            <div className="hidden md:block" style={{ transform: "translateY(24px) scale(0.9)", opacity: 0.7 }}>
+              <PhoneFrame>
+                <AppScreenTrip />
+              </PhoneFrame>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── PRICING ── */}
+      <section className="px-5 md:px-12 py-24">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+              Začni zadarmo.{" "}
+              <span style={{ color: TEAL }}>Pre rybárov,</span>
+              <br />
+              keď budete pripravení.
+            </h2>
+            <p className="text-white/40 text-lg mb-8">Žiadna kreditná karta nie je potrebná.</p>
+
+            {/* Toggle */}
+            <div
+              className="inline-flex items-center rounded-xl p-1 border border-white/10 gap-1"
+              style={{ backgroundColor: "#0F2135" }}
+            >
+              <button
+                onClick={() => setBillingInterval("monthly")}
+                className="px-5 py-2 rounded-lg text-sm font-semibold transition-all"
+                style={
+                  billingInterval === "monthly"
+                    ? { backgroundColor: TEAL, color: PRIMARY }
+                    : { color: "rgba(255,255,255,0.5)" }
+                }
+              >
+                Mesačne
+              </button>
+              <button
+                onClick={() => setBillingInterval("yearly")}
+                className="px-5 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2"
+                style={
+                  billingInterval === "yearly"
+                    ? { backgroundColor: TEAL, color: PRIMARY }
+                    : { color: "rgba(255,255,255,0.5)" }
+                }
+              >
+                Ročne
+                <span
+                  className="text-xs px-2 py-0.5 rounded-full font-semibold"
+                  style={{ backgroundColor: billingInterval === "yearly" ? PRIMARY + "40" : TEAL + "30", color: TEAL }}
+                >
+                  -30%
+                </span>
               </button>
             </div>
           </div>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* FREE */}
+            <div
+              className="rounded-2xl p-8 border border-white/10"
+              style={{ backgroundColor: "#0F2135" }}
+            >
+              <div className="mb-6">
+                <div className="text-xs font-semibold uppercase tracking-widest text-white/40 mb-2">Free</div>
+                <div className="flex items-end gap-1 mb-1">
+                  <span className="text-5xl font-bold text-white">0 €</span>
+                </div>
+                <div className="text-sm text-white/40">Navždy zadarmo</div>
+              </div>
+              <div className="space-y-3 mb-8">
+                {freeFeatures.map((f, i) => (
+                  <div key={i} className="flex items-center gap-3 text-sm text-white/70">
+                    <Check size={14} className="flex-shrink-0" style={{ color: TEAL }} />
+                    {f}
+                  </div>
+                ))}
+                {lockedFree.map((f, i) => (
+                  <div key={i} className="flex items-center gap-3 text-sm text-white/25">
+                    <Lock size={13} className="flex-shrink-0" />
+                    {f}
+                  </div>
+                ))}
+              </div>
+              <Link href="/auth/register">
+                <div className="w-full py-3 rounded-xl text-center text-sm font-semibold border border-white/15 text-white/70 hover:border-white/30 hover:text-white transition-colors cursor-pointer">
+                  Začať zadarmo
+                </div>
+              </Link>
+            </div>
+
+            {/* PREMIUM */}
+            <div
+              className="rounded-2xl p-8 border-2 relative"
+              style={{ backgroundColor: "#0F2135", borderColor: TEAL }}
+            >
+              <div
+                className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-xs font-semibold"
+                style={{ backgroundColor: TEAL, color: PRIMARY }}
+              >
+                Najobľúbenejší
+              </div>
+              <div className="mb-6">
+                <div className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: TEAL }}>
+                  Premium
+                </div>
+                {billingInterval === "monthly" ? (
+                  <div className="flex items-end gap-2 mb-1">
+                    <span className="text-5xl font-bold text-white">7 €</span>
+                    <span className="text-white/40 text-sm pb-1.5">/ mesiac</span>
+                    <span className="text-white/30 line-through text-sm pb-1.5">9 €</span>
+                  </div>
+                ) : (
+                  <div className="flex items-end gap-2 mb-1">
+                    <span className="text-5xl font-bold text-white">60 €</span>
+                    <span className="text-white/40 text-sm pb-1.5">/ rok</span>
+                    <span className="text-white/30 line-through text-sm pb-1.5">84 €</span>
+                  </div>
+                )}
+                <div className="text-sm text-white/40">
+                  {billingInterval === "yearly" ? "Ušetríš 24 € oproti mesačnému" : "alebo 60 €/rok (ušetríš 24 €)"}
+                </div>
+              </div>
+              <div className="space-y-3 mb-8">
+                {premiumFeatures.map((f, i) => (
+                  <div key={i} className="flex items-center gap-3 text-sm text-white/80">
+                    <Check size={14} className="flex-shrink-0" style={{ color: TEAL }} />
+                    {f}
+                  </div>
+                ))}
+              </div>
+              <Link href="/pricing">
+                <div
+                  className="w-full py-3 rounded-xl text-center text-sm font-semibold cursor-pointer transition-opacity hover:opacity-90"
+                  style={{ backgroundColor: TEAL, color: PRIMARY }}
+                >
+                  Získať Premium
+                </div>
+              </Link>
+            </div>
+          </div>
+
+          <div className="text-center mt-6">
+            <Link href="/pricing">
+              <span className="text-sm text-white/40 hover:text-white cursor-pointer transition-colors">
+                Zobraziť kompletný cenník →
+              </span>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ── FAQ PREVIEW ── */}
+      <section className="px-5 md:px-12 py-24" style={{ backgroundColor: "#071525" }}>
+        <div className="max-w-2xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold mb-3">
+              Čo sa pýtajú{" "}
+              <span style={{ color: TEAL }}>ostatní rybári.</span>
+            </h2>
+          </div>
+          <div className="space-y-3">
+            {faqItems.map((item, i) => (
+              <div
+                key={i}
+                className="rounded-xl border border-white/8 overflow-hidden"
+                style={{ backgroundColor: "#0F2135", borderColor: "rgba(255,255,255,0.07)" }}
+              >
+                <button
+                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                  className="w-full flex items-center justify-between p-5 text-left"
+                >
+                  <span className="font-semibold text-white/90 text-sm pr-4">{item.q}</span>
+                  <ChevronDown
+                    size={16}
+                    className="flex-shrink-0 text-white/40 transition-transform"
+                    style={{ transform: openFaq === i ? "rotate(180deg)" : "rotate(0)" }}
+                  />
+                </button>
+                {openFaq === i && (
+                  <div className="px-5 pb-5 text-sm text-white/50 leading-relaxed border-t border-white/5 pt-4">
+                    {item.a}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+          <div className="text-center mt-8">
+            <Link href="/faq">
+              <span className="text-sm hover:text-white cursor-pointer transition-colors" style={{ color: TEAL }}>
+                Všetky otázky a odpovede →
+              </span>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ── FOOTER CTA ── */}
+      <section className="px-5 md:px-12 py-32">
+        <div className="max-w-3xl mx-auto text-center">
+          <div
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-8 border"
+            style={{ borderColor: TEAL + "40", color: TEAL, backgroundColor: TEAL + "15" }}
+          >
+            <Star size={12} /> Zadarmo začneš hneď
+          </div>
+          <h2 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+            Tvoj ďalší úlovok si zaslúži viac,
+            <br />
+            <span style={{ color: TEAL }}>než zmiznúť v galérii.</span>
+          </h2>
+          <p className="text-white/40 text-lg mb-10 max-w-lg mx-auto">
+            Ukladaj spomienky, sleduj pokrok a vyzývaj kamarátov. Tvoj rybársky príbeh začína tu.
+          </p>
+          <Link href="/auth/register">
+            <span
+              className="inline-flex items-center gap-2 px-10 py-4 rounded-xl font-semibold text-lg cursor-pointer transition-opacity hover:opacity-90"
+              style={{ backgroundColor: TEAL, color: PRIMARY }}
+            >
+              Začni zadarmo <ChevronRight size={20} />
+            </span>
+          </Link>
+          <p className="mt-4 text-sm text-white/25">Žiadna kreditná karta. Žiadny záväzok.</p>
+        </div>
+      </section>
+
+      {/* ── FOOTER ── */}
+      <footer className="px-5 md:px-12 py-12 border-t border-white/8" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-10">
+            <div className="col-span-2 md:col-span-1">
+              <div className="flex items-center gap-2 mb-3">
+                <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+                  <circle cx="16" cy="16" r="16" fill={TEAL} />
+                  <path d="M8 16 C8 12, 12 9, 16 10 C20 11, 24 12, 24 16 C24 20, 20 23, 16 22 C12 21, 8 20, 8 16Z" fill="white" fillOpacity="0.9" />
+                  <circle cx="19" cy="14" r="1.5" fill={PRIMARY} />
+                  <path d="M7 18 C5 19, 4 21, 5 22" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+                  <path d="M7 20 C5 22, 5 24, 6 25" stroke="white" strokeWidth="1.5" strokeLinecap="round" opacity="0.6" />
+                </svg>
+                <span className="font-bold text-white">
+                  Pri<span style={{ color: TEAL }}>Vode</span>
+                </span>
+              </div>
+              <p className="text-xs text-white/30 leading-relaxed">Tvoj rybársky denník. Navždy po ruke.</p>
+            </div>
+            <div>
+              <div className="text-xs font-semibold text-white/40 uppercase tracking-widest mb-4">Produkt</div>
+              <ul className="space-y-2.5">
+                <li><Link href="/pricing"><span className="text-sm text-white/40 hover:text-white cursor-pointer transition-colors">Cenník</span></Link></li>
+                <li><Link href="/faq"><span className="text-sm text-white/40 hover:text-white cursor-pointer transition-colors">FAQ</span></Link></li>
+                <li><Link href="/diary"><span className="text-sm text-white/40 hover:text-white cursor-pointer transition-colors">Rybársky denník</span></Link></li>
+              </ul>
+            </div>
+            <div>
+              <div className="text-xs font-semibold text-white/40 uppercase tracking-widest mb-4">Firma</div>
+              <ul className="space-y-2.5">
+                <li><Link href="/about-us"><span className="text-sm text-white/40 hover:text-white cursor-pointer transition-colors">O nás</span></Link></li>
+                <li><Link href="/contact"><span className="text-sm text-white/40 hover:text-white cursor-pointer transition-colors">Kontakt</span></Link></li>
+              </ul>
+            </div>
+            <div>
+              <div className="text-xs font-semibold text-white/40 uppercase tracking-widest mb-4">Právne</div>
+              <ul className="space-y-2.5">
+                <li><Link href="/terms"><span className="text-sm text-white/40 hover:text-white cursor-pointer transition-colors">Podmienky</span></Link></li>
+                <li><Link href="/privacy"><span className="text-sm text-white/40 hover:text-white cursor-pointer transition-colors">Ochrana dát</span></Link></li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-t border-white/6 pt-6 flex flex-col md:flex-row items-center justify-between gap-3" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
+            <p className="text-xs text-white/25">© 2025 PriVode. Všetky práva vyhradené.</p>
+            <button
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              className="text-xs text-white/25 hover:text-white/50 transition-colors"
+            >
+              späť hore ↑
+            </button>
+          </div>
         </div>
       </footer>
-
     </div>
   );
 }
