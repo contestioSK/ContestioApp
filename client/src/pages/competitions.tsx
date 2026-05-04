@@ -397,7 +397,7 @@ function FooterCTA() {
         </div>
         <div className="pt-8 md:pt-12 opacity-30">
           <div className="flex items-center justify-center gap-2 font-black italic text-lg text-white">
-            <Waves size={20} /> CONTESTIO
+            <Waves size={20} /> PRIVODE
           </div>
         </div>
       </div>
