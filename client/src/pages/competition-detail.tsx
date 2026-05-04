@@ -586,7 +586,7 @@ export default function CompetitionDetail() {
   const openRegistration = () => {
     if (!isAuthenticated) {
       toast({ title: "Najprv sa prihlás", description: "Registrácia tímu je dostupná len pre prihlásených." });
-      localStorage.setItem('privode_returnTo', `/competitions/${id}?openReg=1`);
+      localStorage.setItem('contestio_returnTo', `/competitions/${id}?openReg=1`);
       navigate('/auth/login');
       return;
     }
