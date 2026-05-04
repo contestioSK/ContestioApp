@@ -1,6 +1,6 @@
 # Overview
 
-Contestio is a live fishing competition platform designed for spectators, organizers, and referees, offering real-time competition tracking, team management, catch recording, and live leaderboards. The platform is expanding with a "Fishing Diary" module for personal catch logging, including freemium tiers (FREE: 1 trip/20 catches; PREMIUM: unlimited, battles) and a battle system.
+**PriVode — Tvoj Rybársky Denník** (formerly Contestio) is a fishing diary platform for personal catch logging. Brand: PriVode, domain: www.privode.eu. Freemium tiers (FREE: 50 catches/3 trips; PREMIUM: 7€/mes or 60€/rok — unlimited, battles, GPS, weather). Landing page at `/` shows PriVode branding with teal (#1FB6A6) accent on dark (#0B1C2F) background. Competition features are disabled in production (FEATURES.competitions = false).
 
 Key capabilities include:
 - Instant catch saving with background photo uploads (new AND edit mode both use background upload).
