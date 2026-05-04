@@ -113,7 +113,7 @@ export default function Contact() {
                       <div>
                         <h3 className="font-semibold text-foreground mb-2">Adresa</h3>
                         <p className="text-muted-foreground">
-                          PriVode s.r.o.<br />
+                          Contestio s.r.o.<br />
                           Hlavná ulica 123<br />
                           010 01 Žilina<br />
                           Slovenská republika

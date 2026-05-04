@@ -305,12 +305,12 @@ class EmailService {
               </div>
               
               <p style="font-size: 14px; color: #6b7280;">V prípade otázok nás kontaktuj na<br>
-              📩 <a href="mailto:support@privode.eu" style="color: #0ea5e9;"><strong>support@privode.eu</strong></a></p>
+              📩 <a href="mailto:info@privode.eu" style="color: #0ea5e9;"><strong>info@privode.eu</strong></a></p>
             </div>
             <div class="footer">
               <p style="margin: 0 0 8px 0;">Vidíme sa na vode 🎣</p>
               <p style="margin: 0; font-weight: bold;">Tím PriVode</p>
-              <p style="margin: 16px 0 0 0; font-size: 12px; color: #9ca3af;">© 2024 PriVode. Všetky práva vyhradené.</p>
+              <p style="margin: 16px 0 0 0; font-size: 12px; color: #9ca3af;">© 2025 PriVode. Všetky práva vyhradené.</p>
             </div>
           </div>
         </body>
@@ -355,7 +355,7 @@ class EmailService {
               <p><strong>This reset link will expire in 24 hours for security reasons.</strong></p>
             </div>
             <div class="footer">
-              <p>© 2024 PriVode. All rights reserved.</p>
+              <p>© 2025 PriVode. All rights reserved.</p>
               <p>This is an automated email, please do not reply.</p>
             </div>
           </div>
