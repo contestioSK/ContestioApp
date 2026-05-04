@@ -19,7 +19,7 @@ export function ThemeProvider({ children, defaultTheme = 'dark' }: ThemeProvider
   const [theme, setTheme] = useState<Theme>(() => {
     // Try to get saved theme from localStorage
     if (typeof window !== 'undefined') {
-      const savedTheme = localStorage.getItem('privode-theme');
+      const savedTheme = localStorage.getItem('contestio-theme');
       if (savedTheme === 'light' || savedTheme === 'dark') {
         return savedTheme;
       }
@@ -42,7 +42,7 @@ export function ThemeProvider({ children, defaultTheme = 'dark' }: ThemeProvider
     root.classList.add(theme);
     
     // Save to localStorage
-    localStorage.setItem('privode-theme', theme);
+    localStorage.setItem('contestio-theme', theme);
   }, [theme]);
 
   const toggleTheme = () => {
