@@ -2166,15 +2166,17 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
         console.log(`[SECURITY] Blocked attempt by organizer ${userId} to set paymentStatus directly`);
       }
 
+      const safeBody = req.body as Record<string, unknown>;
       for (const field of allowedFields) {
-        if (req.body[field] !== undefined) {
-          if (field === 'minWeight') {
-            updateData[field] = req.body[field].toString();
-          } else if (field === 'startDate' || field === 'endDate') {
-            updateData[field] = new Date(req.body[field]);
-          } else {
-            updateData[field] = req.body[field];
-          }
+        if (!Object.prototype.hasOwnProperty.call(safeBody, field)) continue;
+        const value = safeBody[field];
+        if (value === undefined) continue;
+        if (field === 'minWeight') {
+          updateData[field] = String(value);
+        } else if (field === 'startDate' || field === 'endDate') {
+          updateData[field] = new Date(value as string);
+        } else {
+          updateData[field] = value;
         }
       }
 
