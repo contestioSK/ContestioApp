@@ -7,7 +7,7 @@ import NotificationsDropdown from "./NotificationsDropdown";
 import UserMenu from "./UserMenu";
 import MobileMenu from "./MobileMenu";
 import DiarySearch from "./DiarySearch";
-import privodeLogo from "@assets/Suleyman765_vektorizacia_TRANSPARENT_1779341042153.png";
+import privodeLogo from "@assets/privode_logo_cropped.png";
 
 export default function TopBar() {
   const { user } = useAuth();

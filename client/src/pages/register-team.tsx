@@ -16,7 +16,7 @@ import { Link, useLocation } from "wouter";
 import { COUNTRIES, getCountryFlag, getCountryDisplay, getCountryFlagEmoji } from "@/lib/countries";
 import { UserAutocomplete } from "@/components/user-autocomplete";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import logoImage from "@assets/Suleyman765_vektorizacia_TRANSPARENT_1779341042153.png";
+import logoImage from "@assets/privode_logo_cropped.png";
 
 // Team registration form schema - extended with userId for linked members
 const teamRegistrationSchema = z.object({

@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Fish, Menu, DollarSign, Bell, Sun, Moon, Info, HelpCircle, Phone, Trophy, Heart } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { NotificationCenter } from "@/components/diary/notification-center";
-import privodeLogo from "@assets/Suleyman765_vektorizacia_TRANSPARENT_1779341042153.png";
+import privodeLogo from "@assets/privode_logo_cropped.png";
 
 export default function NavigationHeader() {
   const { user, isAuthenticated } = useAuth();

@@ -7,7 +7,7 @@ import { ArrowLeft, MapPin, Calendar as CalendarIcon, Fish, Weight, Trophy, File
 import { PhotoLightbox } from "@/components/diary/PhotoLightbox";
 import { TacticalIcon } from "@/components/ui/tactical-icon";
 import html2canvas from "html2canvas";
-import privodeLogo from "@assets/Suleyman765_vektorizacia_TRANSPARENT_1779341042153.png";
+import privodeLogo from "@assets/privode_logo_cropped.png";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
