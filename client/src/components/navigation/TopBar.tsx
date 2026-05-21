@@ -11,7 +11,6 @@ import privodeLogo from "@assets/Suleyman765_vektorizacia_TRANSPARENT_1779341042
 
 export default function TopBar() {
   const { user } = useAuth();
-  const { theme } = useTheme();
   const [, setLocation] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
