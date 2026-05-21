@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "wouter";
+import privodeLogo from "@assets/Suleyman765_vektorizacia_TRANSPARENT_1779341042153.png";
 import {
   Menu, X, Check, ChevronDown, ChevronRight,
   Fish, Camera, MapPin, BarChart2, Waves, Shield,
@@ -219,17 +220,8 @@ export default function Landing() {
       <nav className="relative z-50 px-5 md:px-12 pt-6 pb-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <Link href="/">
-            <span className="flex items-center gap-2 cursor-pointer select-none">
-              <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                <circle cx="16" cy="16" r="16" fill={TEAL} />
-                <path d="M8 16 C8 12, 12 9, 16 10 C20 11, 24 12, 24 16 C24 20, 20 23, 16 22 C12 21, 8 20, 8 16Z" fill="white" fillOpacity="0.9" />
-                <circle cx="19" cy="14" r="1.5" fill={PRIMARY} />
-                <path d="M7 18 C5 19, 4 21, 5 22" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
-                <path d="M7 20 C5 22, 5 24, 6 25" stroke="white" strokeWidth="1.5" strokeLinecap="round" opacity="0.6" />
-              </svg>
-              <span className="text-xl font-bold tracking-tight">
-                Pri<span style={{ color: TEAL }}>Vode</span>
-              </span>
+            <span className="flex items-center cursor-pointer select-none">
+              <img src={privodeLogo} alt="PriVode" className="h-9" />
             </span>
           </Link>
 
@@ -759,17 +751,8 @@ export default function Landing() {
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-10">
             <div className="col-span-2 md:col-span-1">
-              <div className="flex items-center gap-2 mb-3">
-                <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
-                  <circle cx="16" cy="16" r="16" fill={TEAL} />
-                  <path d="M8 16 C8 12, 12 9, 16 10 C20 11, 24 12, 24 16 C24 20, 20 23, 16 22 C12 21, 8 20, 8 16Z" fill="white" fillOpacity="0.9" />
-                  <circle cx="19" cy="14" r="1.5" fill={PRIMARY} />
-                  <path d="M7 18 C5 19, 4 21, 5 22" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
-                  <path d="M7 20 C5 22, 5 24, 6 25" stroke="white" strokeWidth="1.5" strokeLinecap="round" opacity="0.6" />
-                </svg>
-                <span className="font-bold text-white">
-                  Pri<span style={{ color: TEAL }}>Vode</span>
-                </span>
+              <div className="mb-3">
+                <img src={privodeLogo} alt="PriVode" className="h-8" />
               </div>
               <p className="text-xs text-white/30 leading-relaxed">Tvoj rybársky denník. Navždy po ruke.</p>
             </div>
