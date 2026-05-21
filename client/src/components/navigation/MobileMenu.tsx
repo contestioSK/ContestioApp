@@ -5,8 +5,7 @@ import { FEATURES } from "@/lib/features";
 import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import contestioLogo from "@assets/contestio logo_1760283270014.png";
-import contestioLogoDark from "@assets/contestio_logo_black_1766308180088.png";
+import privodeLogo from "@assets/Suleyman765_vektorizacia_TRANSPARENT_1779341042153.png";
 import { 
   BookOpen, 
   Fish, 
@@ -108,14 +107,9 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
           <div className="flex flex-col gap-1">
             <SheetTitle className="sr-only">Menu</SheetTitle>
             <img 
-              src={contestioLogo} 
+              src={privodeLogo} 
               alt="PriVode" 
-              className="h-7 w-auto hidden dark:block" 
-            />
-            <img 
-              src={contestioLogoDark} 
-              alt="PriVode" 
-              className="h-7 w-auto dark:hidden" 
+              className="h-7 w-auto" 
             />
             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Tvoj rybársky spoločník</p>
           </div>

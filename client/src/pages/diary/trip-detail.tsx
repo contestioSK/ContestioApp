@@ -7,7 +7,7 @@ import { ArrowLeft, MapPin, Calendar as CalendarIcon, Fish, Weight, Trophy, File
 import { PhotoLightbox } from "@/components/diary/PhotoLightbox";
 import { TacticalIcon } from "@/components/ui/tactical-icon";
 import html2canvas from "html2canvas";
-import contestioLogo from "@assets/contestio logo_1760283270014.png";
+import privodeLogo from "@assets/Suleyman765_vektorizacia_TRANSPARENT_1779341042153.png";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -1032,7 +1032,7 @@ export default function TripDetail() {
               {/* Footer */}
               <div className="flex justify-center pt-8 border-t border-slate-200 dark:border-slate-700/30">
                 <img 
-                  src={contestioLogo} 
+                  src={privodeLogo} 
                   alt="PriVode" 
                   className="h-12 object-contain"
                   crossOrigin="anonymous"

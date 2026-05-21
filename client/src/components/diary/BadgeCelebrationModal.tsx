@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import html2canvas from "html2canvas";
 import { BADGE_DEFINITIONS, BadgeTier } from "@shared/badges";
-import contestioLogo from "@assets/contestio logo_1760283270014.png";
+import privodeLogo from "@assets/Suleyman765_vektorizacia_TRANSPARENT_1779341042153.png";
 
 const BADGE_ICONS: Record<string, LucideIcon> = {
   Calendar,
@@ -286,7 +286,7 @@ export function BadgeCelebrationModal({ badge, onClose }: BadgeCelebrationModalP
           {/* PriVode Branding */}
           <div className="flex items-center justify-center pt-3 border-t border-slate-800">
             <img
-              src={contestioLogo}
+              src={privodeLogo}
               alt="PriVode"
               className="h-5 opacity-70 brightness-0 invert"
               crossOrigin="anonymous"

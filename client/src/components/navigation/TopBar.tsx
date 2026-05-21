@@ -1,15 +1,13 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
-import { useTheme } from "@/contexts/ThemeContext";
 import { Button } from "@/components/ui/button";
 import { Menu, Search } from "lucide-react";
 import NotificationsDropdown from "./NotificationsDropdown";
 import UserMenu from "./UserMenu";
 import MobileMenu from "./MobileMenu";
 import DiarySearch from "./DiarySearch";
-import contestioLogo from "@assets/contestio logo_1760283270014.png";
-import contestioLogoDark from "@assets/contestio_logo_black_1766308180088.png";
+import privodeLogo from "@assets/Suleyman765_vektorizacia_TRANSPARENT_1779341042153.png";
 
 export default function TopBar() {
   const { user } = useAuth();
@@ -48,7 +46,7 @@ export default function TopBar() {
               data-testid="topbar-logo"
             >
               <img 
-                src={theme === 'dark' ? contestioLogo : contestioLogoDark} 
+                src={privodeLogo} 
                 alt="PriVode" 
                 className="h-8 md:h-9" 
               />

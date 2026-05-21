@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, X, Heart } from "lucide-react";
 import { NotificationCenter } from "@/components/diary/notification-center";
 import { ModeSwitcher } from "@/components/ModeSwitcher";
-import contestioLogo from "@assets/contestio logo_1760283270014.png";
+import privodeLogo from "@assets/Suleyman765_vektorizacia_TRANSPARENT_1779341042153.png";
 
 export default function NavigationHeader() {
   const { user, isAuthenticated } = useAuth();
@@ -45,7 +45,7 @@ export default function NavigationHeader() {
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center" data-testid="link-home">
-              <img src={contestioLogo} alt="PriVode" className="h-7" />
+              <img src={privodeLogo} alt="PriVode" className="h-7" />
             </Link>
           </div>
           
