@@ -5,7 +5,7 @@ import { FEATURES } from "@/lib/features";
 import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import privodeLogo from "@assets/Suleyman765_vektorizacia_TRANSPARENT_1779341042153.png";
+import privodeLogo from "@assets/privode_logo_cropped.png";
 import { 
   BookOpen, 
   Fish, 

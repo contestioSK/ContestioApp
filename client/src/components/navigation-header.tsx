@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, X, Heart } from "lucide-react";
 import { NotificationCenter } from "@/components/diary/notification-center";
 import { ModeSwitcher } from "@/components/ModeSwitcher";
-import privodeLogo from "@assets/Suleyman765_vektorizacia_TRANSPARENT_1779341042153.png";
+import privodeLogo from "@assets/privode_logo_cropped.png";
 
 export default function NavigationHeader() {
   const { user, isAuthenticated } = useAuth();

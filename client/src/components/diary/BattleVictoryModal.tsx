@@ -11,7 +11,7 @@ import {
   Lock
 } from "lucide-react";
 import html2canvas from "html2canvas";
-import privodeLogo from "@assets/Suleyman765_vektorizacia_TRANSPARENT_1779341042153.png";
+import privodeLogo from "@assets/privode_logo_cropped.png";
 
 export interface BattleVictoryStats {
   rank: number;

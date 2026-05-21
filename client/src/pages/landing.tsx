@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import privodeLogo from "@assets/Suleyman765_vektorizacia_TRANSPARENT_1779341042153.png";
+import privodeLogo from "@assets/privode_logo_cropped.png";
 import {
   Menu, X, Check, ChevronDown, ChevronRight,
   Fish, Camera, MapPin, BarChart2, Waves, Shield,
