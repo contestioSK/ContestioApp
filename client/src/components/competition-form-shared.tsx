@@ -16,7 +16,7 @@ export function StepIndicator({ currentStep, steps }: { currentStep: number; ste
     <div className="flex items-center justify-between mb-8 relative max-w-3xl mx-auto px-2 mt-8">
       <div className="absolute left-0 right-0 top-[20px] h-0.5 bg-slate-800 -z-10" />
       <motion.div
-        className="absolute left-0 top-[20px] h-0.5 bg-orange-500 -z-10"
+        className="absolute left-0 top-[20px] h-0.5 bg-cyan-500 -z-10"
         initial={{ width: "0%" }}
         animate={{ width: `${steps.length > 1 ? ((currentStep - 1) / (steps.length - 1)) * 100 : 0}%` }}
         transition={{ duration: 0.5, ease: "easeInOut" }}
@@ -30,8 +30,8 @@ export function StepIndicator({ currentStep, steps }: { currentStep: number; ste
               initial={false}
               animate={{
                 scale: isActive ? 1.1 : 1,
-                backgroundColor: isActive ? "#F97316" : isCompleted ? "#10B981" : "#0F172A",
-                borderColor: isActive ? "#F97316" : isCompleted ? "#10B981" : "#334155"
+                backgroundColor: isActive ? "#28C6CE" : isCompleted ? "#10B981" : "#0F172A",
+                borderColor: isActive ? "#28C6CE" : isCompleted ? "#10B981" : "#334155"
               }}
               className={`w-10 h-10 rounded-xl flex items-center justify-center border-2 shadow-lg z-10 transition-colors duration-300 ${isActive ? 'shadow-orange-500/30' : ''}`}
             >
@@ -55,13 +55,13 @@ export function PrizeInput({ rank, value, onChange, placeholder }: { rank: strin
       <div className={`absolute -left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black border-2 z-10 shadow-lg transform group-hover:scale-110 transition-transform
         ${rank === '1' ? 'bg-yellow-500 border-yellow-400 text-black shadow-yellow-500/20' :
           rank === '2' ? 'bg-slate-300 border-slate-200 text-black shadow-slate-500/20' :
-          'bg-orange-700 border-orange-600 text-white shadow-orange-900/20'}`}>
+          'bg-cyan-700 border-cyan-600 text-white shadow-orange-900/20'}`}>
         {rank}
       </div>
       <Input
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="pl-8 bg-slate-950 border-slate-800 focus:border-orange-500 text-white placeholder:text-slate-600 h-12 rounded-xl transition-all hover:border-slate-700"
+        className="pl-8 bg-slate-950 border-slate-800 focus:border-cyan-500 text-white placeholder:text-slate-600 h-12 rounded-xl transition-all hover:border-slate-700"
         placeholder={placeholder}
       />
     </div>
@@ -77,7 +77,7 @@ export function LogoUpload({ logoPreview, onSelect, onRemove }: { logoPreview: s
       </label>
       <div className="relative group">
         {logoPreview ? (
-          <div className="aspect-square rounded-2xl border-2 border-dashed border-orange-500/50 overflow-hidden relative">
+          <div className="aspect-square rounded-2xl border-2 border-dashed border-cyan-500/50 overflow-hidden relative">
             <img src={logoPreview} className="w-full h-full object-cover" alt="Logo" />
             <button onClick={onRemove} className="absolute top-2 right-2 bg-black/50 p-2 rounded-full text-white hover:bg-red-500 transition-colors">
               <Trash2 size={16} />
@@ -133,7 +133,7 @@ export function SectorGrid({
         </div>
         <h3 className="text-xl font-bold text-white mb-2">Sektory sú zamknuté</h3>
         <p className="text-slate-400 text-sm max-w-md">
-          Pre oddelené poradie sektorov potrebujete balík <strong className="text-orange-500">PRO</strong> alebo vyšší.
+          Pre oddelené poradie sektorov potrebujete balík <strong className="text-cyan-500">PRO</strong> alebo vyšší.
         </p>
       </div>
     );
@@ -182,14 +182,14 @@ export function SectorGrid({
                       <button onClick={() => onRemovePlace(sIdx, pIdx)} className="text-slate-600 hover:text-red-500 px-1 opacity-0 group-hover:opacity-100 transition-opacity"><X size={12} /></button>
                     </div>
                   ))}
-                  <Button variant="outline" size="sm" onClick={() => onAddPlace(sIdx)} className="h-8 border-dashed border-slate-800 text-slate-500 text-xs hover:text-orange-500 hover:border-orange-500/50 rounded-lg">
+                  <Button variant="outline" size="sm" onClick={() => onAddPlace(sIdx)} className="h-8 border-dashed border-slate-800 text-slate-500 text-xs hover:text-cyan-500 hover:border-cyan-500/50 rounded-lg">
                     <Plus size={12} className="mr-1" /> Stanovište
                   </Button>
                 </div>
               </div>
             ))}
 
-            <Button variant="outline" onClick={onAddSector} className="h-full min-h-[150px] border-dashed border-slate-800 text-slate-500 hover:text-orange-500 hover:border-orange-500/50 bg-transparent flex flex-col gap-2 rounded-2xl">
+            <Button variant="outline" onClick={onAddSector} className="h-full min-h-[150px] border-dashed border-slate-800 text-slate-500 hover:text-cyan-500 hover:border-cyan-500/50 bg-transparent flex flex-col gap-2 rounded-2xl">
               <Plus size={24} />
               <span className="uppercase font-bold text-xs">Pridať sektor</span>
             </Button>
@@ -234,7 +234,7 @@ export function SideCompetitionsSection({
         </div>
         <h3 className="text-xl font-bold text-white mb-2">Špeciálne súťaže sú zamknuté</h3>
         <p className="text-slate-400 text-sm max-w-md">
-          Pre doplnkové kategórie potrebujete balík <strong className="text-orange-500">PRO</strong> alebo vyšší.
+          Pre doplnkové kategórie potrebujete balík <strong className="text-cyan-500">PRO</strong> alebo vyšší.
         </p>
       </div>
     );
@@ -244,7 +244,7 @@ export function SideCompetitionsSection({
     <div className="space-y-12">
       <section className="space-y-4">
         <h3 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
-          <Medal size={16} className="text-orange-500" />
+          <Medal size={16} className="text-cyan-500" />
           Hlavné Trofeje
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -254,9 +254,9 @@ export function SideCompetitionsSection({
               <div
                 key={comp}
                 onClick={() => onToggle(comp)}
-                className={`p-5 rounded-2xl border cursor-pointer transition-all flex items-center gap-4 ${isSelected ? 'bg-orange-500/10 border-orange-500' : 'bg-slate-950 border-slate-800 hover:border-slate-600'}`}
+                className={`p-5 rounded-2xl border cursor-pointer transition-all flex items-center gap-4 ${isSelected ? 'bg-cyan-500/10 border-cyan-500' : 'bg-slate-950 border-slate-800 hover:border-slate-600'}`}
               >
-                <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${isSelected ? 'bg-orange-500 border-orange-500' : 'border-slate-600'}`}>
+                <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${isSelected ? 'bg-cyan-500 border-cyan-500' : 'border-slate-600'}`}>
                   {isSelected && <Check size={12} className="text-white" />}
                 </div>
                 <span className={`font-bold text-sm ${isSelected ? 'text-white' : 'text-slate-400'}`}>{getLabelFn(comp)}</span>

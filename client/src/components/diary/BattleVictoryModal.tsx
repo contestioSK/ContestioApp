@@ -238,7 +238,7 @@ export function BattleVictoryModal({ stats, onClose }: BattleVictoryModalProps) 
               <div className="flex items-center justify-center gap-1.5 text-slate-500 text-[10px] font-bold uppercase tracking-wider mb-1">
                 <Weight className="w-4 h-4 text-muted-foreground" strokeWidth={1.75} /> Celkovo
               </div>
-              <div className="text-lg font-mono font-medium text-[#F97316]">
+              <div className="text-lg font-mono font-medium text-[#28C6CE]">
                 {stats.totalWeight.toFixed(2)} <span className="text-xs font-sans text-slate-600">kg</span>
               </div>
             </div>
@@ -247,7 +247,7 @@ export function BattleVictoryModal({ stats, onClose }: BattleVictoryModalProps) 
               <div className="flex items-center justify-center gap-1.5 text-slate-500 text-[10px] font-bold uppercase tracking-wider mb-1">
                 <Fish className="w-4 h-4 text-muted-foreground" strokeWidth={1.75} /> Počet
               </div>
-              <div className="text-lg font-mono font-medium text-[#F97316]">
+              <div className="text-lg font-mono font-medium text-[#28C6CE]">
                 {stats.fishCount} <span className="text-xs font-sans text-slate-600">ks</span>
               </div>
             </div>

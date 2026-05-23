@@ -227,7 +227,7 @@ export function QRShareDialog({
                     <>
                       {participants !== undefined && (
                         <div className="flex items-center gap-2 text-slate-400 text-xs font-medium">
-                          <Users className="w-4 h-4 text-muted-foreground" strokeWidth={1.75} /> <span className="font-mono font-medium text-[#F97316]">{participants}</span> rybárov v battle
+                          <Users className="w-4 h-4 text-muted-foreground" strokeWidth={1.75} /> <span className="font-mono font-medium text-[#28C6CE]">{participants}</span> rybárov v battle
                         </div>
                       )}
                       <div className="flex items-center gap-2 text-slate-400 text-xs font-medium">
@@ -243,7 +243,7 @@ export function QRShareDialog({
                     <div className="text-[10px] text-slate-500 uppercase tracking-wider font-bold">
                       {isCompetition ? "ID Súťaže" : "Battle Kód"}
                     </div>
-                    <div className="text-base font-mono font-medium tracking-widest truncate text-[#F97316]">
+                    <div className="text-base font-mono font-medium tracking-widest truncate text-[#28C6CE]">
                     {shortCode}
                   </div>
                   </div>

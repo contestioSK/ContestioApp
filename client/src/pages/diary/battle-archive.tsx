@@ -399,19 +399,19 @@ export default function BattleArchive() {
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 <div className="text-center">
-                  <div className="text-3xl font-mono font-medium text-[#F97316] mb-1">{userStats.totalBattles}</div>
+                  <div className="text-3xl font-mono font-medium text-[#28C6CE] mb-1">{userStats.totalBattles}</div>
                   <div className="text-sm text-muted-foreground">Celkovo súbojov</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-mono font-medium text-[#F97316] mb-1">{userStats.wins}</div>
+                  <div className="text-3xl font-mono font-medium text-[#28C6CE] mb-1">{userStats.wins}</div>
                   <div className="text-sm text-muted-foreground">Víťazstvá</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-mono font-medium text-[#F97316] mb-1">{userStats.podiums}</div>
+                  <div className="text-3xl font-mono font-medium text-[#28C6CE] mb-1">{userStats.podiums}</div>
                   <div className="text-sm text-muted-foreground">Pódiové umiestnenia</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-mono font-medium text-[#F97316] mb-1">{userStats.winRate}%</div>
+                  <div className="text-3xl font-mono font-medium text-[#28C6CE] mb-1">{userStats.winRate}%</div>
                   <div className="text-sm text-muted-foreground">Úspešnosť víťazstiev</div>
                 </div>
               </div>

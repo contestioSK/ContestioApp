@@ -41,7 +41,7 @@ const getHourColor = (hour: number) => {
 const getTimeOfDayIcon = (hour: number) => {
   if (hour >= 0 && hour <= 5) return <Moon className="w-6 h-6 text-blue-400" />;
   if (hour >= 6 && hour <= 11) return <Sunrise className="w-6 h-6 text-yellow-500" />;
-  if (hour >= 12 && hour <= 17) return <Sun className="w-6 h-6 text-orange-500" />;
+  if (hour >= 12 && hour <= 17) return <Sun className="w-6 h-6 text-cyan-500" />;
   return <Sunset className="w-6 h-6 text-red-400" />;
 };
 

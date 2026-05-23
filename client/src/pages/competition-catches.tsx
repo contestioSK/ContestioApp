@@ -117,7 +117,7 @@ function CatchRow({
       </div>
 
       <div className="text-right shrink-0">
-        <div className={`font-mono font-medium text-base ${isBigFish ? 'text-amber-500' : 'text-[#F97316]'}`}>
+        <div className={`font-mono font-medium text-base ${isBigFish ? 'text-amber-500' : 'text-[#28C6CE]'}`}>
           {weight.toFixed(3)}
         </div>
         <div className="text-[11px] text-muted-foreground">
@@ -440,7 +440,7 @@ export default function CompetitionCatches() {
                   placeholder="Hľadať tím, sektor, váhu..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-card border border-border rounded-lg py-2.5 pl-9 pr-8 text-sm text-foreground placeholder:text-muted-foreground/50 focus:ring-1 focus:ring-[#F97316] focus:border-[#F97316] transition-all outline-none"
+                  className="w-full bg-card border border-border rounded-lg py-2.5 pl-9 pr-8 text-sm text-foreground placeholder:text-muted-foreground/50 focus:ring-1 focus:ring-[#28C6CE] focus:border-[#28C6CE] transition-all outline-none"
                 />
                 {searchQuery && (
                   <button 
@@ -475,7 +475,7 @@ export default function CompetitionCatches() {
                         className="w-full text-left px-4 py-2.5 text-sm text-foreground hover:bg-muted flex items-center justify-between transition-colors border-b border-border/50"
                       >
                         Všetky dni
-                        {selectedFilter === 'all' && <Check size={14} className="text-[#F97316]" />}
+                        {selectedFilter === 'all' && <Check size={14} className="text-[#28C6CE]" />}
                       </button>
                       {competitionDays.map((day) => (
                         <button
@@ -484,14 +484,14 @@ export default function CompetitionCatches() {
                           className="w-full text-left px-4 py-2.5 text-sm text-foreground hover:bg-muted flex items-center justify-between transition-colors border-b border-border/50 last:border-0"
                         >
                           {day.label}
-                          {selectedFilter === day.key && <Check size={14} className="text-[#F97316]" />}
+                          {selectedFilter === day.key && <Check size={14} className="text-[#28C6CE]" />}
                         </button>
                       ))}
                       {selectedFilter !== 'all' && (
                         <div className="bg-muted/30 p-1">
                           <button 
                             onClick={handleResetFilters}
-                            className="w-full text-left px-3 py-2 text-xs text-muted-foreground hover:text-[#F97316] font-medium flex items-center gap-2 hover:bg-muted rounded transition-colors"
+                            className="w-full text-left px-3 py-2 text-xs text-muted-foreground hover:text-[#28C6CE] font-medium flex items-center gap-2 hover:bg-muted rounded transition-colors"
                           >
                             <RotateCcw size={12} />
                             Resetovať filtre
@@ -512,7 +512,7 @@ export default function CompetitionCatches() {
         {heroCatch && (
           <div 
             onClick={() => setSelectedCatch(heroCatch)}
-            className={`mb-8 relative w-full overflow-hidden rounded-xl border bg-card shadow-lg cursor-pointer group hover:border-[#F97316]/50 transition-all
+            className={`mb-8 relative w-full overflow-hidden rounded-xl border bg-card shadow-lg cursor-pointer group hover:border-[#28C6CE]/50 transition-all
               ${safeWeight(heroCatch.weight) >= bigFishThreshold ? 'border-amber-500/30' : 'border-border'}
             `}
           >
@@ -525,7 +525,7 @@ export default function CompetitionCatches() {
                 )}
                 <div className="absolute top-3 left-3">
                   {isHeroVeryRecent ? (
-                    <span className="bg-[#F97316] text-white text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded shadow-lg flex items-center gap-1">
+                    <span className="bg-[#28C6CE] text-white text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded shadow-lg flex items-center gap-1">
                       Nový úlovok
                     </span>
                   ) : heroCatch.id === topCatchOverallId ? (
@@ -557,7 +557,7 @@ export default function CompetitionCatches() {
                 </div>
 
                 <div>
-                  <h3 className="text-xl font-bold text-foreground mb-1 group-hover:text-[#F97316] transition-colors flex items-center gap-2">
+                  <h3 className="text-xl font-bold text-foreground mb-1 group-hover:text-[#28C6CE] transition-colors flex items-center gap-2">
                     <TeamFlag country={heroCatch.team?.country} size="sm" />{heroCatch.team?.name || 'Neznámy tím'}
                     {heroCatch.id === topCatchOverallId && <Crown size={18} className="text-amber-500 fill-amber-500" />}
                     {recentCatchIds.includes(heroCatch.id) && heroCatch.id !== topCatchOverallId && <Sparkles size={18} className="text-blue-400 fill-blue-400" />}

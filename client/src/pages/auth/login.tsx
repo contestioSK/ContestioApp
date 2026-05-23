@@ -144,9 +144,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#020617] flex items-center justify-center p-4 selection:bg-orange-500/30">
+    <div className="min-h-screen bg-[#020617] flex items-center justify-center p-4 selection:bg-cyan-500/30">
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-orange-500/5 rounded-full blur-[120px]" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-cyan-500/5 rounded-full blur-[120px]" />
       </div>
 
       <motion.div
@@ -159,12 +159,12 @@ export default function LoginPage() {
           <CardHeader className="text-center pb-2 pt-5">
             <div className="flex justify-center mb-4">
               <div className="w-10 h-10 bg-slate-800 rounded-xl flex items-center justify-center border border-slate-700 shadow-inner">
-                <LogIn className="text-orange-500 w-5 h-5" />
+                <LogIn className="text-cyan-500 w-5 h-5" />
               </div>
             </div>
             
             <div className="flex justify-center mb-1">
-              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-orange-500">VSTUP DO ARÉNY</span>
+              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-cyan-500">VSTUP DO ARÉNY</span>
             </div>
 
             <CardTitle className="text-2xl font-black text-white uppercase tracking-tighter italic" data-testid="text-login-title">
@@ -214,7 +214,7 @@ export default function LoginPage() {
                           type="email"
                           placeholder="vas@email.sk"
                           disabled={loginMutation.isPending}
-                          className="bg-slate-950 border-slate-700 text-white focus:border-orange-500/50 h-11"
+                          className="bg-slate-950 border-slate-700 text-white focus:border-cyan-500/50 h-11"
                           data-testid="input-email"
                         />
                       </FormControl>
@@ -237,7 +237,7 @@ export default function LoginPage() {
                             {...field}
                             type={showPassword ? "text" : "password"}
                             disabled={loginMutation.isPending}
-                            className="bg-slate-950 border-slate-700 text-white focus:border-orange-500/50 pr-10 h-11"
+                            className="bg-slate-950 border-slate-700 text-white focus:border-cyan-500/50 pr-10 h-11"
                             data-testid="input-password"
                           />
                           <button
@@ -251,7 +251,7 @@ export default function LoginPage() {
                         </div>
                       </FormControl>
                       <div className="flex justify-end mt-1">
-                        <Link href="/auth/forgot-password" className="text-xs p-1 -mr-1 text-slate-500 hover:text-orange-500 font-medium transition-colors">
+                        <Link href="/auth/forgot-password" className="text-xs p-1 -mr-1 text-slate-500 hover:text-cyan-500 font-medium transition-colors">
                           Obnoviť heslo
                         </Link>
                       </div>
@@ -267,7 +267,7 @@ export default function LoginPage() {
 
                   <Button
                     type="submit"
-                    className="w-full bg-orange-500 hover:bg-orange-600 text-white font-black uppercase tracking-widest h-12 rounded-xl shadow-[0_4px_14px_-4px_rgba(249,115,22,0.3)] transition-all active:scale-[0.98]"
+                    className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-black uppercase tracking-widest h-12 rounded-xl shadow-[0_4px_14px_-4px_rgba(249,115,22,0.3)] transition-all active:scale-[0.98]"
                     disabled={loginMutation.isPending}
                     data-testid="button-login"
                   >
@@ -296,7 +296,7 @@ export default function LoginPage() {
                   data-testid="link-register"
                 >
                   <p className="text-xs text-slate-400 mb-0.5">Nemáš ešte účet?</p>
-                  <span className="text-sm font-bold text-orange-500 group-hover:text-orange-400 transition-colors flex items-center justify-center gap-1">
+                  <span className="text-sm font-bold text-cyan-500 group-hover:text-cyan-400 transition-colors flex items-center justify-center gap-1">
                     Zaregistruj sa za minútku <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                   </span>
                 </div>

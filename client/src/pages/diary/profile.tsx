@@ -534,8 +534,8 @@ export default function Profile() {
           <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div className="space-y-3">
               <div className="flex items-center gap-3">
-                <span className="h-px w-16 bg-[#F97316]"></span>
-                <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#F97316]">Profil</span>
+                <span className="h-px w-16 bg-[#28C6CE]"></span>
+                <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#28C6CE]">Profil</span>
               </div>
               <div className="space-y-1">
                 <div className="flex items-center gap-4">
@@ -585,7 +585,7 @@ export default function Profile() {
                 <CardTitle className="text-xl">
                   {user.firstName && user.lastName 
                     ? user.nickname
-                      ? <>{user.firstName} <span className="text-orange-500 font-mono">&ldquo;{user.nickname}&rdquo;</span> {user.lastName}</>
+                      ? <>{user.firstName} <span className="text-cyan-500 font-mono">&ldquo;{user.nickname}&rdquo;</span> {user.lastName}</>
                       : `${user.firstName} ${user.lastName}`
                     : user.email
                   }

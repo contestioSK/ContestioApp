@@ -315,7 +315,7 @@ export default function FishingRulesPage() {
                         </p>
                       </div>
                     </div>
-                    <p className="text-xl font-mono font-medium text-[#F97316] tracking-tight" data-testid={`text-size-${index}`}>
+                    <p className="text-xl font-mono font-medium text-[#28C6CE] tracking-tight" data-testid={`text-size-${index}`}>
                       {row.minMax}
                     </p>
                   </div>
@@ -350,7 +350,7 @@ export default function FishingRulesPage() {
                       <HighlightText text={row.fish} query={searchQuery} />
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <span className="font-mono font-medium text-[#F97316]" data-testid={`text-size-${index}`}>
+                      <span className="font-mono font-medium text-[#28C6CE]" data-testid={`text-size-${index}`}>
                         {row.minMax}
                       </span>
                     </td>
@@ -510,13 +510,13 @@ export default function FishingRulesPage() {
                     <div className="grid grid-cols-2 gap-6">
                       <div className="space-y-1">
                         <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest">Kaprové</p>
-                        <p className="text-sm font-mono font-medium text-[#F97316]" data-testid={`text-carp-hours-${index}`}>
+                        <p className="text-sm font-mono font-medium text-[#28C6CE]" data-testid={`text-carp-hours-${index}`}>
                           {row.carpWaters}
                         </p>
                       </div>
                       <div className="space-y-1">
                         <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest">Pstruhové</p>
-                        <p className="text-sm font-mono font-medium text-[#F97316]" data-testid={`text-trout-hours-${index}`}>
+                        <p className="text-sm font-mono font-medium text-[#28C6CE]" data-testid={`text-trout-hours-${index}`}>
                           {row.troutWaters}
                         </p>
                       </div>
@@ -568,12 +568,12 @@ export default function FishingRulesPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="font-mono font-medium text-[#F97316]" data-testid={`text-carp-hours-${index}`}>
+                        <span className="font-mono font-medium text-[#28C6CE]" data-testid={`text-carp-hours-${index}`}>
                           {row.carpWaters}
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="font-mono font-medium text-[#F97316]" data-testid={`text-trout-hours-${index}`}>
+                        <span className="font-mono font-medium text-[#28C6CE]" data-testid={`text-trout-hours-${index}`}>
                           {row.troutWaters}
                         </span>
                       </td>
@@ -594,7 +594,7 @@ export default function FishingRulesPage() {
         if (isLoadingAreas) {
           return (
             <div className="py-16 text-center">
-              <Loader2 className="h-10 w-10 animate-spin text-[#F97316] mx-auto" />
+              <Loader2 className="h-10 w-10 animate-spin text-[#28C6CE] mx-auto" />
               <p className="text-muted-foreground mt-4 font-medium uppercase tracking-widest text-[10px]">
                 Prehľadávam databázu...
               </p>
@@ -673,7 +673,7 @@ export default function FishingRulesPage() {
                     className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-colors"
                     data-testid={`row-fishing-area-${index}`}
                   >
-                    <td className="px-4 py-4 text-sm font-mono font-medium text-[#F97316]" data-testid={`text-area-number-${index}`}>
+                    <td className="px-4 py-4 text-sm font-mono font-medium text-[#28C6CE]" data-testid={`text-area-number-${index}`}>
                       <HighlightText text={area.number} query={areasSearchQuery} />
                     </td>
                     <td className="px-4 py-4 text-sm text-foreground font-semibold" data-testid={`text-area-name-${index}`}>
@@ -706,8 +706,8 @@ export default function FishingRulesPage() {
         <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="space-y-3">
             <div className="flex items-center gap-3">
-              <span className="h-px w-16 bg-[#F97316]"></span>
-              <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#F97316]">Pravidlá</span>
+              <span className="h-px w-16 bg-[#28C6CE]"></span>
+              <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#28C6CE]">Pravidlá</span>
             </div>
             <div className="space-y-1">
               <div className="flex items-center gap-4">

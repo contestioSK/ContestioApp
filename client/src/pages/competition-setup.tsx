@@ -304,7 +304,7 @@ export default function CompetitionSetup() {
         <div className="bg-[#0B1221] border border-slate-800 rounded-2xl p-8 max-w-md w-full text-center">
           <h2 className="text-xl font-bold text-white mb-2">Súťaž nenájdená</h2>
           <p className="text-slate-400 mb-6">Táto súťaž neexistuje alebo bol použitý neplatný odkaz.</p>
-          <Button onClick={() => setLocation("/")} className="bg-orange-500 hover:bg-orange-600 text-white font-bold w-full h-12 rounded-xl">
+          <Button onClick={() => setLocation("/")} className="bg-cyan-500 hover:bg-cyan-600 text-white font-bold w-full h-12 rounded-xl">
             Späť na hlavnú stránku
           </Button>
         </div>
@@ -315,13 +315,13 @@ export default function CompetitionSetup() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#020617] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+        <Loader2 className="w-8 h-8 animate-spin text-cyan-500" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#020617] text-slate-200 py-12 selection:bg-orange-500/30 font-sans">
+    <div className="min-h-screen bg-[#020617] text-slate-200 py-12 selection:bg-cyan-500/30 font-sans">
       <div className="max-w-5xl mx-auto px-6">
 
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
@@ -342,7 +342,7 @@ export default function CompetitionSetup() {
 
           <div className="flex items-center bg-slate-900/50 rounded-full border border-slate-800 p-1 pl-4 pr-4">
             <span className="text-[10px] uppercase font-bold text-slate-500 mr-2 tracking-wide">Balík</span>
-            <span className={`text-xs font-black uppercase ${selectedPlan !== 'basic' ? 'text-orange-500' : 'text-white'}`}>
+            <span className={`text-xs font-black uppercase ${selectedPlan !== 'basic' ? 'text-cyan-500' : 'text-white'}`}>
               {selectedPlan}
             </span>
           </div>
@@ -351,7 +351,7 @@ export default function CompetitionSetup() {
         <StepIndicator currentStep={currentStep} steps={STEPS} />
 
         <div className="mt-8 bg-[#0B1221] border border-slate-800/60 rounded-2xl shadow-2xl overflow-hidden relative min-h-[500px]">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 blur-[100px] pointer-events-none" />
+          <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/5 blur-[100px] pointer-events-none" />
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/5 blur-[100px] pointer-events-none" />
 
           <AnimatePresence mode="wait">
@@ -376,7 +376,7 @@ export default function CompetitionSetup() {
                           <label className="text-xs text-slate-400 font-bold ml-1">Lokalita (Revír)</label>
                           <div className="relative">
                             <MapPin size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-                            <Input {...basicsForm.register("location")} className="pl-9 bg-slate-950 border-slate-800 focus:border-orange-500 text-white h-12 rounded-xl" placeholder="Napr. Zemplínska Šírava" />
+                            <Input {...basicsForm.register("location")} className="pl-9 bg-slate-950 border-slate-800 focus:border-cyan-500 text-white h-12 rounded-xl" placeholder="Napr. Zemplínska Šírava" />
                           </div>
                           {basicsForm.formState.errors.location && <p className="text-red-500 text-[10px] pl-1">{basicsForm.formState.errors.location.message}</p>}
                         </div>
@@ -385,7 +385,7 @@ export default function CompetitionSetup() {
                           <label className="text-xs text-slate-400 font-bold ml-1">Dátum začiatku</label>
                           <div className="relative">
                             <Calendar size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
-                            <Input type="date" {...basicsForm.register("startDate")} className="pl-9 bg-slate-950 border-slate-800 focus:border-orange-500 text-white h-12 rounded-xl [color-scheme:dark]" />
+                            <Input type="date" {...basicsForm.register("startDate")} className="pl-9 bg-slate-950 border-slate-800 focus:border-cyan-500 text-white h-12 rounded-xl [color-scheme:dark]" />
                           </div>
                           {basicsForm.formState.errors.startDate && <p className="text-red-500 text-[10px] pl-1">{basicsForm.formState.errors.startDate.message}</p>}
                         </div>
@@ -394,7 +394,7 @@ export default function CompetitionSetup() {
                           <label className="text-xs text-slate-400 font-bold ml-1">Dátum konca</label>
                           <div className="relative">
                             <Calendar size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
-                            <Input type="date" {...basicsForm.register("endDate")} className="pl-9 bg-slate-950 border-slate-800 focus:border-orange-500 text-white h-12 rounded-xl [color-scheme:dark]" />
+                            <Input type="date" {...basicsForm.register("endDate")} className="pl-9 bg-slate-950 border-slate-800 focus:border-cyan-500 text-white h-12 rounded-xl [color-scheme:dark]" />
                           </div>
                           {basicsForm.formState.errors.endDate && <p className="text-red-500 text-[10px] pl-1">{basicsForm.formState.errors.endDate.message}</p>}
                         </div>
@@ -403,7 +403,7 @@ export default function CompetitionSetup() {
                           <label className="text-xs text-slate-400 font-bold ml-1">Začiatok pretekov</label>
                           <div className="relative">
                             <Clock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-                            <Input {...basicsForm.register("startTime")} className="pl-9 bg-slate-950 border-slate-800 focus:border-orange-500 text-white h-12 rounded-xl" placeholder="Napr. 12:00" />
+                            <Input {...basicsForm.register("startTime")} className="pl-9 bg-slate-950 border-slate-800 focus:border-cyan-500 text-white h-12 rounded-xl" placeholder="Napr. 12:00" />
                           </div>
                           {basicsForm.formState.errors.startTime && <p className="text-red-500 text-[10px] pl-1">{basicsForm.formState.errors.startTime.message}</p>}
                         </div>
@@ -412,7 +412,7 @@ export default function CompetitionSetup() {
                           <label className="text-xs text-slate-400 font-bold ml-1">Kontakt</label>
                           <div className="relative">
                             <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-                            <Input {...basicsForm.register("contact")} className="pl-9 bg-slate-950 border-slate-800 focus:border-orange-500 text-white h-12 rounded-xl" placeholder="+421 9xx xxx xxx" />
+                            <Input {...basicsForm.register("contact")} className="pl-9 bg-slate-950 border-slate-800 focus:border-cyan-500 text-white h-12 rounded-xl" placeholder="+421 9xx xxx xxx" />
                           </div>
                         </div>
                       </div>
@@ -420,7 +420,7 @@ export default function CompetitionSetup() {
 
                     <div className="space-y-3 pt-4 border-t border-slate-800/50">
                       <label className="text-xs font-black uppercase text-slate-500 tracking-widest">Pravidlá</label>
-                      <Textarea {...basicsForm.register("rules")} className="bg-slate-950 border-slate-800 text-white min-h-[120px] rounded-xl focus:border-orange-500 p-4 leading-relaxed font-mono text-sm" placeholder="Čo sa boduje, povolené nástrahy, povinná výbava, spôsob váženia, penalizácie..." />
+                      <Textarea {...basicsForm.register("rules")} className="bg-slate-950 border-slate-800 text-white min-h-[120px] rounded-xl focus:border-cyan-500 p-4 leading-relaxed font-mono text-sm" placeholder="Čo sa boduje, povolené nástrahy, povinná výbava, spôsob váženia, penalizácie..." />
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-slate-800/50">
@@ -437,13 +437,13 @@ export default function CompetitionSetup() {
                       </div>
                       <div className="space-y-2">
                         <label className="text-xs font-black uppercase text-slate-500 tracking-widest">Min. váha (kg)</label>
-                        <Input type="number" {...basicsForm.register("minWeight", { valueAsNumber: true })} className="bg-slate-950 border-slate-800 text-white h-12 rounded-xl focus:border-orange-500 font-mono text-lg" />
+                        <Input type="number" {...basicsForm.register("minWeight", { valueAsNumber: true })} className="bg-slate-950 border-slate-800 text-white h-12 rounded-xl focus:border-cyan-500 font-mono text-lg" />
                       </div>
                       <div className="space-y-2">
                         <label className="text-xs font-black uppercase text-slate-500 tracking-widest">Štartovné</label>
                         <div className="relative">
                           <Banknote size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-                          <Input {...basicsForm.register("entryFee")} className="pl-9 bg-slate-950 border-slate-800 text-white h-12 rounded-xl focus:border-orange-500 font-mono text-lg" placeholder="Napr. 150 €" />
+                          <Input {...basicsForm.register("entryFee")} className="pl-9 bg-slate-950 border-slate-800 text-white h-12 rounded-xl focus:border-cyan-500 font-mono text-lg" placeholder="Napr. 150 €" />
                         </div>
                         {basicsForm.formState.errors.entryFee && <p className="text-red-500 text-[10px] pl-1">{basicsForm.formState.errors.entryFee.message}</p>}
                       </div>
@@ -455,7 +455,7 @@ export default function CompetitionSetup() {
                             value={String(basicsForm.watch("teamSize") || 1)}
                             onValueChange={(val) => basicsForm.setValue("teamSize", parseInt(val))}
                           >
-                            <SelectTrigger className="pl-9 bg-slate-950 border-slate-800 text-white h-12 rounded-xl focus:border-orange-500 font-mono text-lg">
+                            <SelectTrigger className="pl-9 bg-slate-950 border-slate-800 text-white h-12 rounded-xl focus:border-cyan-500 font-mono text-lg">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -472,7 +472,7 @@ export default function CompetitionSetup() {
                     </div>
 
                     <div className="space-y-4 pt-6 border-t border-slate-800/50">
-                      <label className="text-xs font-black uppercase text-orange-500 tracking-widest flex items-center gap-2 mb-4">
+                      <label className="text-xs font-black uppercase text-cyan-500 tracking-widest flex items-center gap-2 mb-4">
                         <Gift size={14} /> Ceny pre víťazov
                       </label>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -537,7 +537,7 @@ export default function CompetitionSetup() {
 
             <div className="flex gap-4">
               {currentStep < 3 ? (
-                <Button onClick={() => setCurrentStep(p => p + 1)} className="bg-orange-500 hover:bg-orange-600 text-white font-black uppercase tracking-widest h-12 px-8 rounded-xl transition-transform active:scale-95">
+                <Button onClick={() => setCurrentStep(p => p + 1)} className="bg-cyan-500 hover:bg-cyan-600 text-white font-black uppercase tracking-widest h-12 px-8 rounded-xl transition-transform active:scale-95">
                   Ďalej <ArrowRight size={16} className="ml-2" />
                 </Button>
               ) : (

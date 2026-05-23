@@ -26,7 +26,7 @@ const StatCard = ({ label, value, unit, icon: Icon, iconColor, onClick }: {
         <Icon size={22} className={iconColor} strokeWidth={2} />
       </div>
       <div className="flex items-baseline gap-1.5 mb-2">
-        <span className="text-xl md:text-3xl font-mono font-medium text-[#F97316]">
+        <span className="text-xl md:text-3xl font-mono font-medium text-[#28C6CE]">
           {value}
         </span>
         <span className="text-xs md:text-sm font-normal text-muted-foreground">{unit}</span>
@@ -48,7 +48,7 @@ const StatCard = ({ label, value, unit, icon: Icon, iconColor, onClick }: {
       <button
         type="button"
         onClick={onClick}
-        className={`${baseClass} cursor-pointer hover:border-slate-700 hover:bg-card/80 group w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F97316] focus-visible:ring-offset-2 focus-visible:ring-offset-background`}
+        className={`${baseClass} cursor-pointer hover:border-slate-700 hover:bg-card/80 group w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#28C6CE] focus-visible:ring-offset-2 focus-visible:ring-offset-background`}
       >
         {content}
       </button>
@@ -61,7 +61,7 @@ const StatCard = ({ label, value, unit, icon: Icon, iconColor, onClick }: {
 const RankBadge = ({ rank }: { rank: number }) => {
   if (rank === 1) return <div className="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-300 to-yellow-600 flex items-center justify-center text-yellow-950 font-black text-sm shadow-[0_0_15px_rgba(234,179,8,0.4)]">1</div>;
   if (rank === 2) return <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-200 to-slate-400 flex items-center justify-center text-slate-800 font-black text-sm shadow-[0_0_15px_rgba(148,163,184,0.3)]">2</div>;
-  if (rank === 3) return <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-300 to-orange-500 flex items-center justify-center text-orange-900 font-black text-sm shadow-[0_0_15px_rgba(249,115,22,0.3)]">3</div>;
+  if (rank === 3) return <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-300 to-orange-500 flex items-center justify-center text-cyan-900 font-black text-sm shadow-[0_0_15px_rgba(249,115,22,0.3)]">3</div>;
   return <div className="w-8 h-8 rounded-full bg-slate-800 border border-border flex items-center justify-center text-muted-foreground font-bold text-sm">{rank}</div>;
 };
 
@@ -198,7 +198,7 @@ export default function SectorDetail() {
                     <Link href={`/team/${sortedTeams[1]?.id}`}>
                       <span className="font-bold text-foreground text-xs truncate px-1 hover:text-cyan-500 transition-colors flex items-center justify-center gap-1"><TeamFlag country={sortedTeams[1]?.country} size="xs" />{sortedTeams[1]?.name}</span>
                     </Link>
-                    <div className="text-lg font-mono font-medium text-[#F97316]">{parseFloat(sortedTeams[1]?.totalWeight || '0').toFixed(1)}</div>
+                    <div className="text-lg font-mono font-medium text-[#28C6CE]">{parseFloat(sortedTeams[1]?.totalWeight || '0').toFixed(1)}</div>
                     <div className="text-[10px] text-muted-foreground">{sortedTeams[1]?.fishCount ?? 0} rýb</div>
                   </div>
                 </div>
@@ -212,18 +212,18 @@ export default function SectorDetail() {
                     <Link href={`/team/${sortedTeams[0]?.id}`}>
                       <span className="font-bold text-amber-500 text-sm truncate px-1 hover:underline flex items-center justify-center gap-1"><TeamFlag country={sortedTeams[0]?.country} size="xs" />{sortedTeams[0]?.name}</span>
                     </Link>
-                    <div className="text-2xl font-mono font-medium text-[#F97316]">{parseFloat(sortedTeams[0]?.totalWeight || '0').toFixed(1)}</div>
+                    <div className="text-2xl font-mono font-medium text-[#28C6CE]">{parseFloat(sortedTeams[0]?.totalWeight || '0').toFixed(1)}</div>
                     <div className="text-xs text-muted-foreground">{sortedTeams[0]?.fishCount ?? 0} rýb</div>
                   </div>
                 </div>
 
                 <div className="flex flex-col items-center">
-                  <div className="w-9 h-9 bg-orange-800 rounded-full flex items-center justify-center font-bold text-white text-sm mb-2 border-2 border-orange-700/50">3</div>
+                  <div className="w-9 h-9 bg-cyan-800 rounded-full flex items-center justify-center font-bold text-white text-sm mb-2 border-2 border-cyan-700/50">3</div>
                   <div className="text-center w-full">
                     <Link href={`/team/${sortedTeams[2]?.id}`}>
                       <span className="font-bold text-foreground text-xs truncate px-1 hover:text-cyan-500 transition-colors flex items-center justify-center gap-1"><TeamFlag country={sortedTeams[2]?.country} size="xs" />{sortedTeams[2]?.name}</span>
                     </Link>
-                    <div className="text-lg font-mono font-medium text-[#F97316]/60">{parseFloat(sortedTeams[2]?.totalWeight || '0').toFixed(1)}</div>
+                    <div className="text-lg font-mono font-medium text-[#28C6CE]/60">{parseFloat(sortedTeams[2]?.totalWeight || '0').toFixed(1)}</div>
                     <div className="text-[10px] text-muted-foreground">{sortedTeams[2]?.fishCount ?? 0} rýb</div>
                   </div>
                 </div>
@@ -237,7 +237,7 @@ export default function SectorDetail() {
                   <Link href={`/team/${sortedTeams[1]?.id}`}>
                     <span className="font-bold text-foreground mb-1 truncate px-2 hover:text-cyan-500 transition-colors flex items-center justify-center gap-1.5"><TeamFlag country={sortedTeams[1]?.country} size="sm" />{sortedTeams[1]?.name}</span>
                   </Link>
-                  <div className="text-2xl font-mono font-medium text-[#F97316]">{parseFloat(sortedTeams[1]?.totalWeight || '0').toFixed(1)}</div>
+                  <div className="text-2xl font-mono font-medium text-[#28C6CE]">{parseFloat(sortedTeams[1]?.totalWeight || '0').toFixed(1)}</div>
                   <div className="text-xs text-muted-foreground font-mono">{sortedTeams[1]?.fishCount ?? 0} rýb</div>
                 </div>
               </div>
@@ -253,18 +253,18 @@ export default function SectorDetail() {
                   <Link href={`/team/${sortedTeams[0]?.id}`}>
                     <span className="font-bold text-amber-500 mb-1 text-lg truncate px-2 hover:underline flex items-center justify-center gap-1.5"><TeamFlag country={sortedTeams[0]?.country} size="sm" />{sortedTeams[0]?.name}</span>
                   </Link>
-                  <div className="text-4xl font-mono font-medium text-[#F97316]">{parseFloat(sortedTeams[0]?.totalWeight || '0').toFixed(1)}</div>
+                  <div className="text-4xl font-mono font-medium text-[#28C6CE]">{parseFloat(sortedTeams[0]?.totalWeight || '0').toFixed(1)}</div>
                   <div className="text-sm text-muted-foreground font-mono">{sortedTeams[0]?.fishCount ?? 0} rýb</div>
                 </div>
               </div>
 
-              <div className="bg-card border border-border hover:border-orange-800/40 rounded-xl p-4 flex flex-col items-center justify-end h-48 relative transition-all">
-                <div className="absolute -top-4 w-11 h-11 bg-orange-800 rounded-full flex items-center justify-center font-bold text-white text-lg border-4 border-background shadow-lg">3</div>
+              <div className="bg-card border border-border hover:border-cyan-800/40 rounded-xl p-4 flex flex-col items-center justify-end h-48 relative transition-all">
+                <div className="absolute -top-4 w-11 h-11 bg-cyan-800 rounded-full flex items-center justify-center font-bold text-white text-lg border-4 border-background shadow-lg">3</div>
                 <div className="text-center w-full">
                   <Link href={`/team/${sortedTeams[2]?.id}`}>
                     <span className="font-bold text-foreground mb-1 truncate px-2 hover:text-cyan-500 transition-colors flex items-center justify-center gap-1.5"><TeamFlag country={sortedTeams[2]?.country} size="sm" />{sortedTeams[2]?.name}</span>
                   </Link>
-                  <div className="text-2xl font-mono font-medium text-[#F97316]">{parseFloat(sortedTeams[2]?.totalWeight || '0').toFixed(1)}</div>
+                  <div className="text-2xl font-mono font-medium text-[#28C6CE]">{parseFloat(sortedTeams[2]?.totalWeight || '0').toFixed(1)}</div>
                   <div className="text-xs text-muted-foreground font-mono">{sortedTeams[2]?.fishCount ?? 0} rýb</div>
                 </div>
               </div>

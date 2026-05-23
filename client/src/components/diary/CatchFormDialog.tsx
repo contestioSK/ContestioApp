@@ -1179,7 +1179,7 @@ export default function CatchFormDialog({
                                 <AlertCircle className="w-5 h-5 text-red-400" />
                                 <label
                                   htmlFor={retryInputId}
-                                  className="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-[10px] font-medium px-2 py-1 rounded cursor-pointer transition-colors"
+                                  className="flex items-center gap-1 bg-cyan-500 hover:bg-cyan-600 text-white text-[10px] font-medium px-2 py-1 rounded cursor-pointer transition-colors"
                                 >
                                   <RefreshCw className="w-3 h-3" />
                                   Nahradiť
@@ -1236,7 +1236,7 @@ export default function CatchFormDialog({
 
                     {/* Premium badge */}
                     {isPremium && (
-                      <div className="absolute top-3 left-3 bg-slate-200 dark:bg-slate-700 text-[#F97316] text-[9px] font-bold px-2 py-1 rounded-lg border border-slate-300 dark:border-slate-600 uppercase tracking-wider">
+                      <div className="absolute top-3 left-3 bg-slate-200 dark:bg-slate-700 text-[#28C6CE] text-[9px] font-bold px-2 py-1 rounded-lg border border-slate-300 dark:border-slate-600 uppercase tracking-wider">
                         ∞ fotografií
                       </div>
                     )}
@@ -1453,7 +1453,7 @@ export default function CatchFormDialog({
                         <span className="text-sm text-muted-foreground">
                           {formatDateTimeDisplay(currentValue)}
                         </span>
-                        <span className="text-xs text-[#F97316] font-medium ml-auto">
+                        <span className="text-xs text-[#28C6CE] font-medium ml-auto">
                           upraviť
                         </span>
                       </div>
@@ -1491,7 +1491,7 @@ export default function CatchFormDialog({
                         <button
                           type="button"
                           onClick={() => setIsEditingDateTime(false)}
-                          className="text-xs text-[#F97316] font-medium hover:underline"
+                          className="text-xs text-[#28C6CE] font-medium hover:underline"
                         >
                           hotovo
                         </button>
@@ -1707,7 +1707,7 @@ export default function CatchFormDialog({
                                           {" – "}
                                           {fav.productLine?.name && <span className="text-muted-foreground">{fav.productLine.name} – </span>}
                                           {fav.flavor.name}
-                                          {fav.diameter && <span className="text-orange-400 font-mono text-xs ml-1">({fav.diameter.replace(/mm$/i, "")}mm)</span>}
+                                          {fav.diameter && <span className="text-cyan-400 font-mono text-xs ml-1">({fav.diameter.replace(/mm$/i, "")}mm)</span>}
                                         </span>
                                       </button>
                                     ))}
@@ -1769,7 +1769,7 @@ export default function CatchFormDialog({
                                   !userBrands.some(b => b.name.toLowerCase() === brandSearch.toLowerCase().trim()) && (
                                   <button
                                     type="button"
-                                    className="w-full text-left px-3 py-2 text-sm text-orange-400 hover:bg-muted/50 transition-colors flex items-center gap-2 border-t border-border"
+                                    className="w-full text-left px-3 py-2 text-sm text-cyan-400 hover:bg-muted/50 transition-colors flex items-center gap-2 border-t border-border"
                                     onMouseDown={(e) => e.preventDefault()}
                                     onClick={() => {
                                       createUserBrandMutation.mutate(brandSearch.trim());
@@ -1877,7 +1877,7 @@ export default function CatchFormDialog({
                                   {flavorSearch.trim() && filteredFlavorSuggestions.length === 0 && baitSource === "user" && selectedManufacturerId && (
                                     <button
                                       type="button"
-                                      className="w-full text-left px-3 py-2 text-sm text-orange-400 hover:bg-muted/50 transition-colors flex items-center gap-2"
+                                      className="w-full text-left px-3 py-2 text-sm text-cyan-400 hover:bg-muted/50 transition-colors flex items-center gap-2"
                                       onMouseDown={(e) => e.preventDefault()}
                                       onClick={() => {
                                         createUserFlavorMutation.mutate({
@@ -1898,7 +1898,7 @@ export default function CatchFormDialog({
                                   {flavorSearch.trim() && filteredFlavorSuggestions.length === 0 && baitSource === "global" && selectedManufacturer && (
                                     <button
                                       type="button"
-                                      className="w-full text-left px-3 py-2 text-sm text-orange-400 hover:bg-muted/50 transition-colors flex items-center gap-2"
+                                      className="w-full text-left px-3 py-2 text-sm text-cyan-400 hover:bg-muted/50 transition-colors flex items-center gap-2"
                                       onMouseDown={(e) => e.preventDefault()}
                                       onClick={() => {
                                         field.onChange(`${selectedManufacturer.name} - ${flavorSearch.trim()}`);
@@ -2086,7 +2086,7 @@ export default function CatchFormDialog({
                 </Button>
                 <Button
                   type="submit"
-                  className="flex-[2] bg-[#F97316] hover:bg-[#EA580C] font-bold text-xs uppercase tracking-wide"
+                  className="flex-[2] bg-[#28C6CE] hover:bg-[#1DB5BC] font-bold text-xs uppercase tracking-wide"
                   disabled={
                     createCatchMutation.isPending ||
                     updateCatchMutation.isPending

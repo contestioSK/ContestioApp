@@ -80,7 +80,7 @@ export default function RoleSwitcher() {
     switch (mode) {
       case 'referee':
       case 'organizer':
-        return 'text-orange-500';
+        return 'text-cyan-500';
       default:
         return 'text-cyan-500';
     }
@@ -95,7 +95,7 @@ export default function RoleSwitcher() {
         size="sm"
         className={cn(
           "gap-2 border-border/50",
-          activeMode !== 'user' && "border-orange-500/50 bg-orange-500/10"
+          activeMode !== 'user' && "border-cyan-500/50 bg-cyan-500/10"
         )}
         onClick={() => setIsOpen(!isOpen)}
         data-testid="role-switcher"
@@ -146,7 +146,7 @@ export default function RoleSwitcher() {
                     className={cn(
                       "w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
                       activeMode === 'referee'
-                        ? "bg-orange-500/10 text-orange-500" 
+                        ? "bg-cyan-500/10 text-cyan-500" 
                         : "text-muted-foreground hover:bg-muted hover:text-foreground"
                     )}
                   >
@@ -172,7 +172,7 @@ export default function RoleSwitcher() {
                   className={cn(
                     "w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
                     activeMode === 'organizer'
-                      ? "bg-orange-500/10 text-orange-500" 
+                      ? "bg-cyan-500/10 text-cyan-500" 
                       : "text-muted-foreground hover:bg-muted hover:text-foreground"
                   )}
                 >

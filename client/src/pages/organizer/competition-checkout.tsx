@@ -278,22 +278,22 @@ export default function CompetitionCheckout() {
                 key={plan.id}
                 className={`cursor-pointer transition-all ${
                   isSelected 
-                    ? 'border-orange-500 ring-2 ring-orange-500/20' 
-                    : 'border-slate-200 dark:border-slate-700 hover:border-orange-300'
+                    ? 'border-cyan-500 ring-2 ring-cyan-500/20' 
+                    : 'border-slate-200 dark:border-slate-700 hover:border-cyan-300'
                 } ${plan.popular ? 'relative' : ''} ${isEnterprise ? 'opacity-75' : ''}`}
                 onClick={() => !isEnterprise && setCurrentPlan(plan.id)}
                 data-testid={`card-plan-${plan.id}`}
               >
                 {plan.popular && (
-                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-500 text-white">
+                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-cyan-500 text-white">
                     Najobľúbenejší
                   </Badge>
                 )}
                 <CardHeader className="text-center pt-8 pb-4">
                   <div className={`w-12 h-12 mx-auto rounded-xl flex items-center justify-center mb-3 ${
-                    isSelected ? 'bg-orange-100 dark:bg-orange-900/30' : 'bg-slate-100 dark:bg-slate-800'
+                    isSelected ? 'bg-cyan-100 dark:bg-cyan-900/30' : 'bg-slate-100 dark:bg-slate-800'
                   }`}>
-                    <Icon className={`w-6 h-6 ${isSelected ? 'text-[#F97316]' : 'text-muted-foreground'}`} strokeWidth={1.75} />
+                    <Icon className={`w-6 h-6 ${isSelected ? 'text-[#28C6CE]' : 'text-muted-foreground'}`} strokeWidth={1.75} />
                   </div>
                   <CardTitle className="text-xl">{plan.name}</CardTitle>
                   <CardDescription>{plan.description}</CardDescription>
@@ -302,7 +302,7 @@ export default function CompetitionCheckout() {
                       <span className="text-xl font-bold text-foreground">Cena na vyžiadanie</span>
                     ) : (
                       <>
-                        <span className="text-3xl font-mono font-medium text-[#F97316]">{plan.price}€</span>
+                        <span className="text-3xl font-mono font-medium text-[#28C6CE]">{plan.price}€</span>
                         <span className="text-muted-foreground"> / súťaž</span>
                       </>
                     )}
@@ -348,7 +348,7 @@ export default function CompetitionCheckout() {
                 <p className="font-medium text-foreground">{competition.name}</p>
                 <p className="text-sm text-muted-foreground">Balík: {selectedPlan.name}</p>
               </div>
-              <p className="text-2xl font-mono font-medium text-[#F97316]">
+              <p className="text-2xl font-mono font-medium text-[#28C6CE]">
                 {selectedPlan.price ? `${selectedPlan.price}€` : 'Na vyžiadanie'}
               </p>
             </div>
@@ -356,11 +356,11 @@ export default function CompetitionCheckout() {
               <div className="border-t pt-4">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-muted-foreground">Súťaž</span>
-                  <span className="font-mono font-medium text-[#F97316]">{selectedPlan.price}€</span>
+                  <span className="font-mono font-medium text-[#28C6CE]">{selectedPlan.price}€</span>
                 </div>
                 <div className="flex items-center justify-between font-bold text-lg">
                   <span className="text-foreground">Celkom</span>
-                  <span className="font-mono font-medium text-[#F97316]">{selectedPlan.price}€</span>
+                  <span className="font-mono font-medium text-[#28C6CE]">{selectedPlan.price}€</span>
                 </div>
               </div>
             )}
@@ -384,7 +384,7 @@ export default function CompetitionCheckout() {
             <Button
               onClick={handlePayment}
               disabled={isProcessing || paymentMutation.isPending}
-              className="bg-[#F97316] hover:bg-[#EA580C] text-white order-1 sm:order-2"
+              className="bg-[#28C6CE] hover:bg-[#1DB5BC] text-white order-1 sm:order-2"
               data-testid="button-pay"
             >
               {isProcessing || paymentMutation.isPending ? (

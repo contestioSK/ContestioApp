@@ -843,8 +843,8 @@ export default function DiaryTrips() {
           <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-2">
             <div className="space-y-3">
               <div className="flex items-center gap-3">
-                <span className="h-px w-16 bg-[#F97316]"></span>
-                <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#F97316]">Výpravy</span>
+                <span className="h-px w-16 bg-[#28C6CE]"></span>
+                <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#28C6CE]">Výpravy</span>
               </div>
               <div className="space-y-1">
                 <div className="flex items-center gap-4">
@@ -926,7 +926,7 @@ export default function DiaryTrips() {
                 <Button 
                   onClick={() => setIsCreateDialogOpen(true)}
                   disabled={limits && !limits.canCreate}
-                  className="bg-[#F97316] hover:bg-[#EA580C] text-white font-bold px-5 md:px-6 py-3 md:py-3.5 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 h-auto"
+                  className="bg-[#28C6CE] hover:bg-[#1DB5BC] text-white font-bold px-5 md:px-6 py-3 md:py-3.5 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 h-auto"
                   data-testid="button-create-trip"
                 >
                   <Plus size={20} strokeWidth={1.75} className="mr-2" />

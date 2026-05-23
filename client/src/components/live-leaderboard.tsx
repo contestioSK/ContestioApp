@@ -153,7 +153,7 @@ export default function LiveLeaderboard({ teams, isLoading, competitionId }: Liv
             <div className="flex items-center gap-2">
               <CardTitle>Aktuálna tabuľka</CardTitle>
               {isResultsBlocked && (
-                <Badge variant="outline" className="text-xs bg-orange-100 text-orange-700 border-orange-300 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-700">
+                <Badge variant="outline" className="text-xs bg-cyan-100 text-cyan-700 border-cyan-300 dark:bg-cyan-900/30 dark:text-cyan-400 dark:border-cyan-700">
                   <EyeOff className="w-3 h-3 mr-1" />
                   Výsledky skryté
                 </Badge>
@@ -175,9 +175,9 @@ export default function LiveLeaderboard({ teams, isLoading, competitionId }: Liv
       
       <CardContent className="p-0 flex-1 flex flex-col">
         {isResultsBlocked ? (
-          <div className="text-center py-12 px-6 bg-orange-50/50 dark:bg-orange-900/10 border-t border-orange-200 dark:border-orange-800">
-            <EyeOff className="w-12 h-12 mx-auto text-orange-400 mb-4" />
-            <h3 className="text-lg font-semibold text-orange-700 dark:text-orange-400 mb-2">
+          <div className="text-center py-12 px-6 bg-cyan-50/50 dark:bg-cyan-900/10 border-t border-cyan-200 dark:border-cyan-800">
+            <EyeOff className="w-12 h-12 mx-auto text-cyan-400 mb-4" />
+            <h3 className="text-lg font-semibold text-cyan-700 dark:text-cyan-400 mb-2">
               Výsledky sú dočasne skryté
             </h3>
             <p className="text-muted-foreground max-w-md mx-auto">
@@ -236,7 +236,7 @@ export default function LiveLeaderboard({ teams, isLoading, competitionId }: Liv
                       {getSectorBadge(team)}
                     </td>
                     <td className="p-4 text-right">
-                      <div className="font-mono font-medium text-[#F97316]" data-testid={`text-weight-${team.id}`}>
+                      <div className="font-mono font-medium text-[#28C6CE]" data-testid={`text-weight-${team.id}`}>
                         {parseFloat(team.totalWeight || '0').toFixed(2)} kg
                       </div>
                       {index === 0 && parseFloat(team.totalWeight || '0') > 0 && (
@@ -244,7 +244,7 @@ export default function LiveLeaderboard({ teams, isLoading, competitionId }: Liv
                       )}
                     </td>
                     <td className="p-4 text-right">
-                      <span className="font-mono font-medium text-[#F97316]" data-testid={`text-fish-count-${team.id}`}>
+                      <span className="font-mono font-medium text-[#28C6CE]" data-testid={`text-fish-count-${team.id}`}>
                         {team.fishCount || 0}
                       </span>
                     </td>

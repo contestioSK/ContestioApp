@@ -58,7 +58,7 @@ export default function NavigationHeader() {
                   href={item.href} 
                   className={`px-4 py-1.5 text-sm font-medium transition-colors ${
                     location === item.href 
-                      ? 'text-orange-500' 
+                      ? 'text-cyan-500' 
                       : 'text-gray-300 hover:text-white'
                   }`}
                   data-testid={`nav-${item.href.slice(1) || 'home'}`}
@@ -71,7 +71,7 @@ export default function NavigationHeader() {
                   href="/diary" 
                   className={`px-4 py-1.5 text-sm font-medium transition-colors ${
                     location.startsWith('/diary') 
-                      ? 'text-orange-500' 
+                      ? 'text-cyan-500' 
                       : 'text-gray-300 hover:text-white'
                   }`}
                   data-testid="nav-diary"
@@ -92,7 +92,7 @@ export default function NavigationHeader() {
             
             {user?.role === 'admin' && (
               <Button 
-                className="bg-orange-500 text-white hover:bg-orange-600 text-sm"
+                className="bg-cyan-500 text-white hover:bg-cyan-600 text-sm"
                 onClick={() => setLocation('/admin-panel')}
                 data-testid="button-admin-panel"
               >
@@ -178,7 +178,7 @@ export default function NavigationHeader() {
                 href={item.href} 
                 className={`block py-2 text-sm font-medium transition-colors ${
                   location === item.href 
-                    ? 'text-orange-500' 
+                    ? 'text-cyan-500' 
                     : 'text-gray-300 hover:text-white'
                 }`}
                 onClick={() => setMobileMenuOpen(false)}
@@ -191,7 +191,7 @@ export default function NavigationHeader() {
                 href="/diary" 
                 className={`block py-2 text-sm font-medium transition-colors ${
                   location.startsWith('/diary') 
-                    ? 'text-orange-500' 
+                    ? 'text-cyan-500' 
                     : 'text-gray-300 hover:text-white'
                 }`}
                 onClick={() => setMobileMenuOpen(false)}

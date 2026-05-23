@@ -360,7 +360,7 @@ export default function BattleDetail() {
                                 {isCurrentUser && <Badge variant="outline">Vy</Badge>}
                                 {isLeader && <Medal className="w-4 h-4 text-yellow-500" />}
                               </div>
-                              <div className="text-lg font-mono font-medium text-[#F97316]">
+                              <div className="text-lg font-mono font-medium text-[#28C6CE]">
                                 {battle?.rules.mode === "most_fish" ? entry.score.toFixed(0) : entry.score.toFixed(2)} {battle?.rules.mode === "most_fish" ? "ks" : "kg"}
                               </div>
                             </div>
@@ -474,7 +474,7 @@ export default function BattleDetail() {
                       }, {} as Record<string, { name: string; value: number; weight: number }>);
 
                       const chartData = Object.values(fishTypeData);
-                      const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
+                      const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#28c6ce'];
 
                       return (
                         <ResponsiveContainer width="100%" height={300}>
@@ -577,7 +577,7 @@ export default function BattleDetail() {
                                   )}
                                 </div>
                                 <div className="text-right">
-                                  <div className={`font-mono font-medium ${meetsMinWeight ? 'text-[#F97316]' : 'text-muted-foreground'}`}>
+                                  <div className={`font-mono font-medium ${meetsMinWeight ? 'text-[#28C6CE]' : 'text-muted-foreground'}`}>
                                     {parseFloat(catch_.weight).toFixed(2)} kg
                                   </div>
                                   <div className="text-xs text-muted-foreground">
@@ -613,7 +613,7 @@ export default function BattleDetail() {
                         <div className="text-2xl font-bold text-foreground mb-1">
                           {leaderboardData[0]?.participant.name || "Nikto"}
                         </div>
-                        <div className="text-3xl font-mono font-medium text-[#F97316] mb-1">
+                        <div className="text-3xl font-mono font-medium text-[#28C6CE] mb-1">
                           {battle?.rules.mode === "most_fish" 
                             ? (leaderboardData[0]?.score.toFixed(0) || "0")
                             : (leaderboardData[0]?.score.toFixed(2) || "0.00")
@@ -641,7 +641,7 @@ export default function BattleDetail() {
                   </CardHeader>
                   <CardContent>
                     <div className="text-center">
-                      <div className="text-4xl font-mono font-medium text-[#F97316] mb-2">
+                      <div className="text-4xl font-mono font-medium text-[#28C6CE] mb-2">
                         {timeRemaining}
                       </div>
                       <div className="text-sm text-muted-foreground">
@@ -680,7 +680,7 @@ export default function BattleDetail() {
                       return (
                         <div className="space-y-4">
                           <div className="text-center p-4 bg-primary/5 rounded-lg">
-                            <div className="text-4xl font-mono font-medium text-[#F97316] mb-1">
+                            <div className="text-4xl font-mono font-medium text-[#28C6CE] mb-1">
                               #{userPosition}
                             </div>
                             <div className="text-sm text-muted-foreground">
@@ -691,18 +691,18 @@ export default function BattleDetail() {
                           <div className="space-y-2 text-sm">
                             <div className="flex justify-between">
                               <span className="text-muted-foreground">Tvoj výsledok:</span>
-                              <span className="font-mono font-medium text-[#F97316]">
+                              <span className="font-mono font-medium text-[#28C6CE]">
                                 {battle?.rules.mode === "most_fish" ? userResult.score.toFixed(0) : userResult.score.toFixed(2)} {battle?.rules.mode === "most_fish" ? "ks" : "kg"}
                               </span>
                             </div>
                             <div className="flex justify-between">
                               <span className="text-muted-foreground">Počet úlovkov:</span>
-                              <span className="font-mono font-medium text-[#F97316]">{userCatches.length}</span>
+                              <span className="font-mono font-medium text-[#28C6CE]">{userCatches.length}</span>
                             </div>
                             {userPosition > 1 && scoreGap > 0 && (
                               <div className="flex justify-between">
                                 <span className="text-muted-foreground">Rozdiel od víťaza:</span>
-                                <span className="font-mono font-medium text-[#F97316]">
+                                <span className="font-mono font-medium text-[#28C6CE]">
                                   -{battle?.rules.mode === "most_fish" ? scoreGap.toFixed(0) : scoreGap.toFixed(2)} {battle?.rules.mode === "most_fish" ? "ks" : "kg"}
                                 </span>
                               </div>
@@ -710,7 +710,7 @@ export default function BattleDetail() {
                             {userCatches.length > 0 && (
                               <div className="flex justify-between">
                                 <span className="text-muted-foreground">Najväčší úlovok:</span>
-                                <span className="font-mono font-medium text-[#F97316]">
+                                <span className="font-mono font-medium text-[#28C6CE]">
                                   {Math.max(...userCatches.map(c => parseFloat(c.weight))).toFixed(2)} kg
                                 </span>
                               </div>
@@ -761,7 +761,7 @@ export default function BattleDetail() {
                             <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 flex-shrink-0"></div>
                             <div className="flex-1">
                               <div className="font-medium">Celkový počet rýb</div>
-                              <div className="font-mono font-medium text-[#F97316]">{totalFish} rýb ({totalWeight.toFixed(2)} kg)</div>
+                              <div className="font-mono font-medium text-[#28C6CE]">{totalFish} rýb ({totalWeight.toFixed(2)} kg)</div>
                             </div>
                           </div>
                           
@@ -770,7 +770,7 @@ export default function BattleDetail() {
                             <div className="flex-1">
                               <div className="font-medium">Najaktívnejší rybár</div>
                               <div className="text-foreground">
-                                {mostActiveAngler[0]} (<span className="font-mono font-medium text-[#F97316]">{mostActiveAngler[1]}</span> úlovkov)
+                                {mostActiveAngler[0]} (<span className="font-mono font-medium text-[#28C6CE]">{mostActiveAngler[1]}</span> úlovkov)
                               </div>
                             </div>
                           </div>
@@ -780,7 +780,7 @@ export default function BattleDetail() {
                             <div className="flex-1">
                               <div className="font-medium">Najväčší úlovok</div>
                               <div className="text-foreground">
-                                <span className="font-mono font-medium text-[#F97316]">{parseFloat(biggest.weight).toFixed(2)} kg</span> ({getFishTypeLabel(biggest.fishType)})
+                                <span className="font-mono font-medium text-[#28C6CE]">{parseFloat(biggest.weight).toFixed(2)} kg</span> ({getFishTypeLabel(biggest.fishType)})
                               </div>
                               <div className="text-xs text-muted-foreground">
                                 Chytil: {biggest.angler.name}
@@ -795,7 +795,7 @@ export default function BattleDetail() {
                                 <div className="font-medium">
                                   {scoreGap < 2 ? "Tesný súboj! 🔥" : "Rozdiel na vedení"}
                                 </div>
-                                <div className="font-mono font-medium text-[#F97316]">
+                                <div className="font-mono font-medium text-[#28C6CE]">
                                   {battle?.rules.mode === "most_fish" ? scoreGap.toFixed(0) : scoreGap.toFixed(2)} {battle?.rules.mode === "most_fish" ? "ks" : "kg"}
                                 </div>
                               </div>
@@ -833,7 +833,7 @@ export default function BattleDetail() {
                         </div>
                       )}
                       <div className="text-center">
-                        <div className="text-2xl font-mono font-medium text-[#F97316]">
+                        <div className="text-2xl font-mono font-medium text-[#28C6CE]">
                           {parseFloat(biggestCatch.weight).toFixed(2)} kg
                         </div>
                         <div className="text-sm text-muted-foreground">
@@ -933,7 +933,7 @@ export default function BattleDetail() {
             <AlertDialogAction
               onClick={() => endBattleMutation.mutate()}
               disabled={endBattleMutation.isPending}
-              className="bg-orange-600 hover:bg-orange-700"
+              className="bg-cyan-600 hover:bg-cyan-700"
               data-testid="button-confirm-end-battle"
             >
               {endBattleMutation.isPending ? "Ukončujem..." : "Ukončiť Battle"}

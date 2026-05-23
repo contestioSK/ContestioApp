@@ -82,7 +82,7 @@ export default function FriendsList({ userId, onFindFriends }: FriendsListProps)
         {onFindFriends && (
           <Button
             onClick={onFindFriends}
-            className="bg-orange-500 hover:bg-orange-400 text-white font-bold px-6"
+            className="bg-cyan-500 hover:bg-cyan-400 text-white font-bold px-6"
             data-testid="button-find-friends"
           >
             <Users className="w-4 h-4 mr-2" />

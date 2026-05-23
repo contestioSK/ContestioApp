@@ -259,7 +259,7 @@ export function PhotoCarousel({ photos, onPhotoClick, onRetryPhoto, originalFile
                           <button
                             type="button"
                             onClick={(e) => handleRetryClick(e, photoId)}
-                            className="flex items-center gap-1.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+                            className="flex items-center gap-1.5 bg-cyan-500 hover:bg-cyan-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
                           >
                             <RefreshCw className="w-4 h-4" />
                             {hasInMemoryFile ? 'Skúsiť znovu' : 'Vybrať fotku'}

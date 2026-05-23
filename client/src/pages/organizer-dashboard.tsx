@@ -77,7 +77,7 @@ export default function OrganizerDashboard() {
             <CheckCircle className="w-3 h-3 mr-1" />Pripravená
           </Badge>
         ) : (
-          <Badge variant="secondary" className="bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300 border-orange-200 dark:border-orange-700">
+          <Badge variant="secondary" className="bg-cyan-100 text-cyan-800 dark:bg-cyan-900/50 dark:text-cyan-300 border-cyan-200 dark:border-cyan-700">
             <AlertCircle className="w-3 h-3 mr-1" />Čaká na platbu
           </Badge>
         );
@@ -111,7 +111,7 @@ export default function OrganizerDashboard() {
   if (!user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="max-w-md w-full border-orange-200 dark:border-orange-900/50">
+        <Card className="max-w-md w-full border-cyan-200 dark:border-cyan-900/50">
           <CardHeader className="text-center">
             <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-orange-500/25">
               <Trophy className="w-8 h-8 text-white" />
@@ -195,8 +195,8 @@ export default function OrganizerDashboard() {
                       <span>{heroCompetition.location}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <Timer className="w-4 h-4 text-orange-500 dark:text-orange-400" />
-                      <span className="text-orange-600 dark:text-orange-400 font-medium">
+                      <Timer className="w-4 h-4 text-cyan-500 dark:text-cyan-400" />
+                      <span className="text-cyan-600 dark:text-cyan-400 font-medium">
                         {heroCompetition.status === 'live' 
                           ? `Končí o ${formatTimeRemaining(heroCompetition.endDate, currentTime)}`
                           : `Štart o ${formatTimeRemaining(heroCompetition.startDate, currentTime)}`
@@ -215,7 +215,7 @@ export default function OrganizerDashboard() {
               
               <div className="flex gap-3">
                 <Button 
-                  className="bg-orange-500 hover:bg-orange-600 text-white shadow-sm"
+                  className="bg-cyan-500 hover:bg-cyan-600 text-white shadow-sm"
                   onClick={() => setLocation(`/organizer/competition/${heroCompetition.id}`)}
                   data-testid="button-hero-manage"
                 >
@@ -238,7 +238,7 @@ export default function OrganizerDashboard() {
       ) : (
         <div className="relative mb-8 p-6 md:p-8 rounded-2xl overflow-hidden bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 shadow-sm">
           <div className="text-center py-6">
-            <div className="w-20 h-20 rounded-2xl bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center mx-auto mb-4 border border-orange-200 dark:border-orange-800/30">
+            <div className="w-20 h-20 rounded-2xl bg-cyan-50 dark:bg-cyan-900/20 flex items-center justify-center mx-auto mb-4 border border-cyan-200 dark:border-cyan-800/30">
               <TacticalIconInline icon={Trophy} variant="amber" size="lg" />
             </div>
             <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Vytvor svoju prvú súťaž</h2>
@@ -246,7 +246,7 @@ export default function OrganizerDashboard() {
               Začni organizovať rybárske súťaže a sleduj výsledky v reálnom čase.
             </p>
             <Button 
-              className="bg-orange-500 hover:bg-orange-600 text-white shadow-sm"
+              className="bg-cyan-500 hover:bg-cyan-600 text-white shadow-sm"
               onClick={() => setLocation('/organizer/create')}
               data-testid="button-create-competition"
             >
@@ -354,7 +354,7 @@ export default function OrganizerDashboard() {
           variant="ghost" 
           size="sm"
           onClick={() => setLocation('/organizer/competitions')}
-          className="text-orange-600 dark:text-orange-400 hover:text-orange-700 hover:bg-orange-50 dark:hover:bg-orange-900/20"
+          className="text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 hover:bg-cyan-50 dark:hover:bg-cyan-900/20"
           data-testid="button-view-all-competitions"
         >
           Zobraziť všetky
@@ -421,7 +421,7 @@ export default function OrganizerDashboard() {
                       </div>
                     )}
                     <div className="min-w-0 flex-1">
-                      <CardTitle className="text-base font-bold truncate group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
+                      <CardTitle className="text-base font-bold truncate group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">
                         {competition.name}
                       </CardTitle>
                       <div className="mt-1">{getStatusBadge(competition.status, competition.paymentStatus)}</div>
@@ -443,7 +443,7 @@ export default function OrganizerDashboard() {
                   {competition.status !== 'finished' && (
                     <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
                       competition.status === 'live' 
-                        ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400'
+                        ? 'bg-cyan-100 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400'
                         : 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
                     }`}>
                       <Timer className="w-3 h-3 inline mr-1" />
@@ -518,7 +518,7 @@ export default function OrganizerDashboard() {
         <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-sm">
           <CardContent className="text-center py-12">
             <div className="flex justify-center mb-4">
-              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-orange-500/10 to-amber-600/10 flex items-center justify-center border border-orange-500/20">
+              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-orange-500/10 to-amber-600/10 flex items-center justify-center border border-cyan-500/20">
                 <TacticalIconInline icon={Trophy} variant="amber" size="lg" />
               </div>
             </div>

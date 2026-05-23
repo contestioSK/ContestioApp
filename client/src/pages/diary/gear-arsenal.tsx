@@ -426,8 +426,8 @@ export default function GearArsenalPage() {
         <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="space-y-3">
             <div className="flex items-center gap-3">
-              <span className="h-px w-16 bg-[#F97316]"></span>
-              <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#F97316]">Vybavenie</span>
+              <span className="h-px w-16 bg-[#28C6CE]"></span>
+              <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#28C6CE]">Vybavenie</span>
             </div>
             <div className="space-y-1">
               <div className="flex items-center gap-4">
@@ -619,10 +619,10 @@ export default function GearArsenalPage() {
 
                     {/* Bulk add option */}
                     {selectedProductLine && flavors && flavors.length > 0 && (
-                      <div className="flex items-center justify-between p-3 bg-orange-900/20 rounded-lg border border-orange-800">
+                      <div className="flex items-center justify-between p-3 bg-cyan-900/20 rounded-lg border border-cyan-800">
                         <div className="flex-1">
-                          <p className="text-sm font-medium text-orange-100">Rýchle pridanie</p>
-                          <p className="text-xs text-orange-300">
+                          <p className="text-sm font-medium text-cyan-100">Rýchle pridanie</p>
+                          <p className="text-xs text-cyan-300">
                             Pridať všetky príchute ({flavors.length}) z tohto radu naraz
                           </p>
                         </div>
@@ -630,7 +630,7 @@ export default function GearArsenalPage() {
                           onClick={() => setBulkDialogOpen(true)}
                           variant="outline"
                           size="sm"
-                          className="ml-2 border-orange-700 text-orange-300"
+                          className="ml-2 border-cyan-700 text-cyan-300"
                           data-testid="button-bulk-add"
                         >
                           <TacticalIconInline icon={Package} variant="amber" size="sm" className="mr-2" />
@@ -646,7 +646,7 @@ export default function GearArsenalPage() {
                       <Button
                         onClick={handleAddBait}
                         disabled={!selectedBaitManufacturer || !selectedProductLine || !selectedFlavor || addBaitMutation.isPending}
-                        className="bg-orange-500 hover:bg-orange-400"
+                        className="bg-cyan-500 hover:bg-cyan-400"
                         data-testid="button-save-bait"
                       >
                         {addBaitMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

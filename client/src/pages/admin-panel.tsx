@@ -1982,7 +1982,7 @@ export default function AdminPanel() {
                     <p className="text-sm font-medium">Registrácie</p>
                   </div>
                   {dashboardStats?.pendingRegistrations && dashboardStats.pendingRegistrations > 0 && (
-                    <Badge variant="secondary" className="bg-orange-500/20 text-orange-500 border-orange-500/30">
+                    <Badge variant="secondary" className="bg-cyan-500/20 text-cyan-500 border-cyan-500/30">
                       {dashboardStats.pendingRegistrations}
                     </Badge>
                   )}
@@ -2194,8 +2194,8 @@ export default function AdminPanel() {
                                 label: dashboardStats?.pendingRegistrations === 0 ? "Všetko vybavené ✓" : ""
                               }}
                               icon={Clock}
-                              iconColor="text-orange-500"
-                              iconBgColor="bg-orange-500/10"
+                              iconColor="text-cyan-500"
+                              iconBgColor="bg-cyan-500/10"
                             />
                           </div>
 
@@ -2209,7 +2209,7 @@ export default function AdminPanel() {
                                       item.role === 'referee' ? 'Rozhodca' : 'Verejnosť',
                                 value: item.count,
                                 color: item.role === 'admin' ? '#ef4444' :
-                                       item.role === 'organizer' ? '#f97316' :
+                                       item.role === 'organizer' ? '#28c6ce' :
                                        item.role === 'referee' ? '#10b981' : '#3b82f6'
                               }))}
                             />
@@ -2279,7 +2279,7 @@ export default function AdminPanel() {
                                         <Badge
                                           variant="outline"
                                           className={catch_.source === 'competition'
-                                            ? 'bg-orange-500/10 text-orange-500 border-orange-500/20'
+                                            ? 'bg-cyan-500/10 text-cyan-500 border-cyan-500/20'
                                             : 'bg-blue-500/10 text-blue-500 border-blue-500/20'
                                           }
                                         >
@@ -3948,7 +3948,7 @@ export default function AdminPanel() {
                                       <Button
                                         size="sm"
                                         variant="outline"
-                                        className="border-orange-500 text-orange-600 hover:bg-orange-500 hover:text-white"
+                                        className="border-cyan-500 text-cyan-600 hover:bg-cyan-500 hover:text-white"
                                         onClick={() => {
                                           setResetCatchesCompetitionId(competition.id);
                                           setIsResetCatchesDialogOpen(true);
@@ -4838,7 +4838,7 @@ export default function AdminPanel() {
                         <DialogContent className="max-w-md">
                           <DialogHeader>
                             <DialogTitle className="flex items-center space-x-2">
-                              <RefreshCw className="w-5 h-5 text-orange-600" />
+                              <RefreshCw className="w-5 h-5 text-cyan-600" />
                               <span>Reset všetkých úlovkov</span>
                             </DialogTitle>
                             <DialogDescription>
@@ -4846,14 +4846,14 @@ export default function AdminPanel() {
                             </DialogDescription>
                           </DialogHeader>
                           <div className="py-4">
-                            <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4">
+                            <div className="bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800 rounded-lg p-4">
                               <div className="flex items-start space-x-3">
-                                <XCircle className="w-5 h-5 text-orange-600 mt-0.5" />
+                                <XCircle className="w-5 h-5 text-cyan-600 mt-0.5" />
                                 <div>
-                                  <h4 className="text-sm font-medium text-orange-800 dark:text-orange-200 mb-2">
+                                  <h4 className="text-sm font-medium text-cyan-800 dark:text-cyan-200 mb-2">
                                     Potvrdenie resetovania:
                                   </h4>
-                                  <ul className="text-sm text-orange-700 dark:text-orange-300 space-y-1">
+                                  <ul className="text-sm text-cyan-700 dark:text-cyan-300 space-y-1">
                                     <li>• Všetky úlovky budú zmazané</li>
                                     <li>• Rebríčky budú vynulované</li>
                                     <li>• Štatistiky tímov sa resetujú</li>
@@ -4873,7 +4873,7 @@ export default function AdminPanel() {
                             </Button>
                             <Button 
                               variant="destructive"
-                              className="bg-orange-600 hover:bg-orange-700"
+                              className="bg-cyan-600 hover:bg-cyan-700"
                               onClick={() => {
                                 resetCatchesMutation.mutate(resetCatchesCompetitionId);
                                 setIsResetCatchesDialogOpen(false);

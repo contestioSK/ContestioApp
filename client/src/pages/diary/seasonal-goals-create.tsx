@@ -58,7 +58,7 @@ const goalTypeConfig = {
   biggest_fish: {
     icon: Ruler,
     label: "Najväčšia ryba",
-    color: "text-orange-500",
+    color: "text-cyan-500",
     unit: "kg",
     description: "Hmotnosť alebo dĺžka najväčšej ulovenej ryby",
     placeholder: "napr. 15.2",

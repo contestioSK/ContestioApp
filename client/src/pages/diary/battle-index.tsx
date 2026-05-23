@@ -220,7 +220,7 @@ function HeroBattleCard({ battle, onEnter }: { battle: DiaryBattle; onEnter: () 
 
         <Button 
           onClick={onEnter}
-          className="w-full md:w-auto min-w-[220px] rounded-xl bg-[#F97316] hover:bg-orange-600 text-white shadow-lg border border-orange-400/10"
+          className="w-full md:w-auto min-w-[220px] rounded-xl bg-[#28C6CE] hover:bg-cyan-600 text-white shadow-lg border border-cyan-400/10"
         >
           Vstúpiť do Arény
         </Button>
@@ -267,7 +267,7 @@ function BattleRow({ battle, onClick }: { battle: DiaryBattle; onClick: () => vo
       <div className="space-y-1">
         <div className="flex items-center justify-between text-xs">
           <span className="text-muted-foreground">Priebeh</span>
-          <span className="font-mono font-medium text-[#F97316]">{progress}%</span>
+          <span className="font-mono font-medium text-[#28C6CE]">{progress}%</span>
         </div>
         <Progress value={progress} className="h-1.5" />
       </div>
@@ -459,8 +459,8 @@ export default function BattleIndex() {
         <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="space-y-3">
             <div className="flex items-center gap-3">
-              <span className="h-px w-16 bg-[#F97316]"></span>
-              <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#F97316]">PvP Battle Zone</span>
+              <span className="h-px w-16 bg-[#28C6CE]"></span>
+              <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#28C6CE]">PvP Battle Zone</span>
             </div>
             <div className="space-y-1">
               <div className="flex items-center gap-4">
@@ -484,7 +484,7 @@ export default function BattleIndex() {
             className={cn(
               "rounded-xl w-full md:w-auto",
               isPremium 
-                ? "bg-[#F97316] hover:bg-orange-600 text-white shadow-lg border border-orange-400/10"
+                ? "bg-[#28C6CE] hover:bg-cyan-600 text-white shadow-lg border border-cyan-400/10"
                 : "bg-yellow-600 hover:bg-yellow-700 text-white"
             )}
           >
@@ -535,7 +535,7 @@ export default function BattleIndex() {
                 </p>
                 <Button
                   onClick={() => setLocation(isPremium ? "/diary/battles/create" : "/diary/battles/paywall")}
-                  className="rounded-xl bg-[#F97316] hover:bg-orange-600 text-white"
+                  className="rounded-xl bg-[#28C6CE] hover:bg-cyan-600 text-white"
                 >
                   {isPremium ? <Plus className="w-4 h-4 mr-2" /> : <Lock className="w-4 h-4 mr-2" />}
                   Vytvoriť môj prvý Súboj
@@ -588,7 +588,7 @@ export default function BattleIndex() {
                               </span>
                               {' '}ťa vyzýva na súboj
                               {invitation.battle?.name && (
-                                <span className="font-bold text-[#F97316]"> "{invitation.battle.name}"</span>
+                                <span className="font-bold text-[#28C6CE]"> "{invitation.battle.name}"</span>
                               )}
                             </p>
                             
@@ -661,7 +661,7 @@ export default function BattleIndex() {
                   <div className="mt-4 pt-4 border-t border-border/30">
                     <div className="flex items-center justify-center gap-2">
                       <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Úspešnosť</span>
-                      <span className="text-sm font-mono font-bold text-[#F97316]">
+                      <span className="text-sm font-mono font-bold text-[#28C6CE]">
                         {Math.round((hallOfFameStats.totalWins / hallOfFameStats.totalBattles) * 100)}%
                       </span>
                     </div>

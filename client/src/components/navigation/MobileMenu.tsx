@@ -152,13 +152,13 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                     className={cn(
                       "relative w-full flex flex-col items-center gap-1 p-2 rounded-xl transition-all border",
                       activeMode === 'referee'
-                        ? "bg-white dark:bg-slate-900 border-orange-200 dark:border-orange-800/60 shadow-sm ring-1 ring-orange-500/20" 
+                        ? "bg-white dark:bg-slate-900 border-cyan-200 dark:border-cyan-800/60 shadow-sm ring-1 ring-cyan-500/20" 
                         : "bg-white/50 dark:bg-slate-900/40 border-transparent dark:border-slate-800/50 hover:bg-white dark:hover:bg-slate-900 hover:shadow-sm"
                     )}
                   >
                     <div className={cn(
                       "h-7 w-7 rounded-lg flex items-center justify-center transition-colors", 
-                      activeMode === 'referee' ? "bg-orange-500 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                      activeMode === 'referee' ? "bg-cyan-500 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
                     )}>
                       <Shield className="h-3.5 w-3.5" />
                     </div>
@@ -166,7 +166,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                       "text-[11px] font-bold", 
                       activeMode === 'referee' ? "text-slate-900 dark:text-slate-100" : "text-slate-500 dark:text-slate-400"
                     )}>Rozhodca</span>
-                    {activeMode === 'referee' && <div className="absolute bottom-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-orange-500 shadow-[0_0_6px_rgba(249,115,22,0.5)]" />}
+                    {activeMode === 'referee' && <div className="absolute bottom-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-cyan-500 shadow-[0_0_6px_rgba(249,115,22,0.5)]" />}
                   </button>
                 )}
 
@@ -320,7 +320,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
 
             {/* Tools Section (orange) */}
             <div>
-              <p className="text-[10px] font-bold text-orange-600 dark:text-orange-500 uppercase tracking-widest mb-2 pl-3">
+              <p className="text-[10px] font-bold text-cyan-600 dark:text-cyan-500 uppercase tracking-widest mb-2 pl-3">
                 Nástroje & Progres
               </p>
               <div className="grid grid-cols-2 gap-2 px-1">
@@ -333,21 +333,21 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                       className={cn(
                         "group flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-xl transition-all duration-200 border",
                         isActive 
-                          ? "bg-white dark:bg-slate-900 shadow-sm border-orange-200 dark:border-orange-800/50" 
+                          ? "bg-white dark:bg-slate-900 shadow-sm border-cyan-200 dark:border-cyan-800/50" 
                           : "bg-white/40 dark:bg-slate-900/40 border-transparent dark:border-slate-800/30 hover:bg-white dark:hover:bg-slate-900 hover:shadow-sm"
                       )}
                     >
                       <div className={cn(
                         "h-8 w-8 rounded-full flex items-center justify-center transition-colors",
                         isActive 
-                          ? "bg-orange-600 text-white" 
-                          : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:text-orange-500 dark:group-hover:text-orange-400 group-hover:bg-orange-500/10 dark:group-hover:bg-orange-900/20"
+                          ? "bg-cyan-600 text-white" 
+                          : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:text-cyan-500 dark:group-hover:text-cyan-400 group-hover:bg-cyan-500/10 dark:group-hover:bg-cyan-900/20"
                       )}>
                         <item.icon className="h-4 w-4" />
                       </div>
                       <span className={cn(
                         "text-xs font-medium text-center",
-                        isActive ? "text-orange-600 dark:text-orange-400 font-bold" : "text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-200"
+                        isActive ? "text-cyan-600 dark:text-cyan-400 font-bold" : "text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-200"
                       )}>
                         {item.label}
                       </span>

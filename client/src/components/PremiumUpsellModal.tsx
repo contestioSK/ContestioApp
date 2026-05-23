@@ -162,12 +162,12 @@ export function PremiumUpsellModal({ isOpen, onClose, trigger }: PremiumUpsellMo
                 {appliedDiscount ? (
                   <>
                     <p className="text-lg text-slate-500 line-through">{MONTHLY_PRICE.toFixed(2)} €</p>
-                    <p className="text-2xl font-mono font-medium text-[#F97316]">{discountedMonthly.toFixed(2)} €</p>
+                    <p className="text-2xl font-mono font-medium text-[#28C6CE]">{discountedMonthly.toFixed(2)} €</p>
                   </>
                 ) : (
                   <>
                     <p className="text-sm text-slate-500 line-through">{MONTHLY_ORIGINAL_PRICE.toFixed(2)} €</p>
-                    <p className="text-2xl font-mono font-medium text-[#F97316]">{MONTHLY_PRICE.toFixed(2)} €</p>
+                    <p className="text-2xl font-mono font-medium text-[#28C6CE]">{MONTHLY_PRICE.toFixed(2)} €</p>
                   </>
                 )}
                 <p className="text-xs text-slate-500 mt-1">Flexibilné zrušenie</p>
@@ -190,14 +190,14 @@ export function PremiumUpsellModal({ isOpen, onClose, trigger }: PremiumUpsellMo
                 {appliedDiscount ? (
                   <>
                     <p className="text-lg text-slate-500 line-through">{YEARLY_PRICE.toFixed(2)} €</p>
-                    <p className="text-2xl font-mono font-medium text-[#F97316]">{discountedYearly.toFixed(2)} €</p>
+                    <p className="text-2xl font-mono font-medium text-[#28C6CE]">{discountedYearly.toFixed(2)} €</p>
                     <p className="text-xs text-slate-400 mt-1">
                       (Len <span className="font-mono">{discountedYearlyMonthly.toFixed(2)}</span> € mesačne)
                     </p>
                   </>
                 ) : (
                   <>
-                    <p className="text-2xl font-mono font-medium text-[#F97316]">{YEARLY_PRICE.toFixed(2)} €</p>
+                    <p className="text-2xl font-mono font-medium text-[#28C6CE]">{YEARLY_PRICE.toFixed(2)} €</p>
                     <p className="text-xs text-slate-400 mt-1">
                       (Len <span className="font-mono">{YEARLY_MONTHLY_EQUIVALENT.toFixed(2)}</span> € mesačne)
                     </p>

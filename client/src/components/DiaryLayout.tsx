@@ -331,7 +331,7 @@ export default function DiaryLayout({ children, fullBleed = false }: DiaryLayout
                 </div>
                 <div className="px-3 flex items-center gap-1.5">
                   <TacticalIconInline icon={Wrench} variant="orange" size="sm" />
-                  <p className="text-xs font-bold text-orange-600 dark:text-orange-500 uppercase tracking-wider">
+                  <p className="text-xs font-bold text-cyan-600 dark:text-cyan-500 uppercase tracking-wider">
                     Nástroje & Progres
                   </p>
                 </div>
@@ -353,7 +353,7 @@ export default function DiaryLayout({ children, fullBleed = false }: DiaryLayout
                         className={`
                           w-full flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-all
                           ${isActive 
-                            ? 'bg-orange-500/10 dark:bg-orange-600/20 text-orange-600 dark:text-orange-400 border border-orange-500/30 dark:border-orange-500/40' 
+                            ? 'bg-cyan-500/10 dark:bg-cyan-600/20 text-cyan-600 dark:text-cyan-400 border border-cyan-500/30 dark:border-cyan-500/40' 
                             : 'text-sidebar-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent'
                           }
                         `}

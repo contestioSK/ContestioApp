@@ -70,7 +70,7 @@ const variantClasses: Record<TacticalIconVariant, string> = {
   rose: "text-rose-400 border-rose-500/30 bg-rose-500/10",
   cyan: "text-cyan-400 border-cyan-500/30 bg-cyan-500/10",
   emerald: "text-emerald-400 border-emerald-500/30 bg-emerald-500/10",
-  orange: "text-[#F97316] border-[#F97316]/30 bg-[#F97316]/10",
+  orange: "text-[#28C6CE] border-[#28C6CE]/30 bg-[#28C6CE]/10",
   indigo: "text-indigo-400 border-indigo-500/30 bg-indigo-500/10",
   fuchsia: "text-fuchsia-400 border-fuchsia-500/30 bg-fuchsia-500/10",
 };
@@ -88,7 +88,7 @@ const variantIconColors: Record<TacticalIconVariant, string> = {
   rose: "text-rose-400",
   cyan: "text-cyan-400",
   emerald: "text-emerald-400",
-  orange: "text-[#F97316]",
+  orange: "text-[#28C6CE]",
   indigo: "text-indigo-400",
   fuchsia: "text-fuchsia-400",
 };

@@ -37,7 +37,7 @@ const SectorTable = ({
       <div className="p-3 bg-muted/50 font-bold text-foreground text-sm flex justify-between">
         <Link
           href={`/competition/${competitionId}/sector/${sector}`}
-          className="hover:text-orange-500 transition-colors"
+          className="hover:text-cyan-500 transition-colors"
         >
           Sektor {sector}
         </Link>
@@ -58,7 +58,7 @@ const SectorTable = ({
               <td className="px-4 py-2 text-foreground font-medium">
                 <Link
                   href={`/team/${t.id}`}
-                  className="hover:text-orange-500 transition-colors cursor-pointer flex items-center gap-1.5"
+                  className="hover:text-cyan-500 transition-colors cursor-pointer flex items-center gap-1.5"
                 >
                   <TeamFlag country={t.country} size="xs" />
                   {t.name}
@@ -454,14 +454,14 @@ export default function CompetitionReport() {
                       return (
                         <div key={i} className="flex items-center justify-between">
                           <div className="flex items-center gap-2 min-w-0">
-                            <span className={`font-mono font-bold text-xs w-5 shrink-0 ${i === 0 ? 'text-amber-400' : i === 1 ? 'text-slate-400' : 'text-orange-700'}`}>
+                            <span className={`font-mono font-bold text-xs w-5 shrink-0 ${i === 0 ? 'text-amber-400' : i === 1 ? 'text-slate-400' : 'text-cyan-700'}`}>
                               #{i + 1}
                             </span>
                             <span className="text-xs text-foreground truncate">
                               {catchTeam?.name || "—"}
                             </span>
                           </div>
-                          <span className="font-mono font-medium text-xs text-[#F97316] shrink-0 ml-2">
+                          <span className="font-mono font-medium text-xs text-[#28C6CE] shrink-0 ml-2">
                             {safeWeight(c.weight).toFixed(3)} kg
                           </span>
                         </div>

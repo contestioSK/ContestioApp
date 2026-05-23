@@ -92,7 +92,7 @@ export default function SharedCatch() {
           <p className="text-slate-400">Tento link mohol expirovať alebo bol odstránený.</p>
           <Button 
             onClick={() => window.location.href = '/'}
-            className="mt-4 bg-orange-500 hover:bg-orange-600 text-white"
+            className="mt-4 bg-cyan-500 hover:bg-cyan-600 text-white"
           >
             Prejsť na PriVode
           </Button>
@@ -133,7 +133,7 @@ export default function SharedCatch() {
                   className="w-full h-full flex flex-col items-center justify-center gap-3 bg-slate-900 px-6 text-center"
                   data-testid="shared-photo-processing"
                 >
-                  <Loader2 className="w-10 h-10 text-orange-500 animate-spin" strokeWidth={1.75} />
+                  <Loader2 className="w-10 h-10 text-cyan-500 animate-spin" strokeWidth={1.75} />
                   <p className="text-white text-sm font-medium">Fotka sa ešte spracúva...</p>
                   <p className="text-slate-400 text-xs">Skús stránku načítať za chvíľu znova.</p>
                 </div>
@@ -190,7 +190,7 @@ export default function SharedCatch() {
             href="/" 
             className="inline-flex items-center gap-2 px-3 py-1.5 bg-black/30 backdrop-blur-md rounded-full text-white text-sm font-bold hover:bg-black/50 transition-colors"
           >
-            <Fish size={16} className="text-orange-500" />
+            <Fish size={16} className="text-cyan-500" />
             PriVode
           </a>
         </div>
@@ -213,7 +213,7 @@ export default function SharedCatch() {
           <div className="flex justify-center gap-12 mb-8">
             {catch_.weight && (
               <div className="text-center">
-                <div className="text-4xl font-mono font-medium text-[#F97316]">
+                <div className="text-4xl font-mono font-medium text-[#28C6CE]">
                   {Number(catch_.weight).toFixed(2)}
                 </div>
                 <div className="text-sm text-muted-foreground font-medium uppercase tracking-wider">kg</div>
@@ -221,7 +221,7 @@ export default function SharedCatch() {
             )}
             {catch_.lengthCm && (
               <div className="text-center">
-                <div className="text-4xl font-mono font-medium text-[#F97316]">
+                <div className="text-4xl font-mono font-medium text-[#28C6CE]">
                   {catch_.lengthCm}
                 </div>
                 <div className="text-sm text-muted-foreground font-medium uppercase tracking-wider">cm</div>
@@ -259,9 +259,9 @@ export default function SharedCatch() {
               </h3>
               <div className="grid grid-cols-2 gap-4">
                 {catch_.airTemp && (
-                  <div className="bg-orange-500/10 rounded-xl p-4">
+                  <div className="bg-cyan-500/10 rounded-xl p-4">
                     <div className="text-xs text-muted-foreground mb-1">Teplota vzduchu</div>
-                    <div className="text-xl font-mono font-medium text-[#F97316]">{Number(catch_.airTemp).toFixed(1)}°C</div>
+                    <div className="text-xl font-mono font-medium text-[#28C6CE]">{Number(catch_.airTemp).toFixed(1)}°C</div>
                   </div>
                 )}
                 {catch_.waterTemp && (
@@ -297,13 +297,13 @@ export default function SharedCatch() {
                   {catch_.latitude && (
                     <div>
                       <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-1">Zem. šírka</div>
-                      <div className="font-mono font-medium text-[#F97316]">{Number(catch_.latitude).toFixed(6)}°</div>
+                      <div className="font-mono font-medium text-[#28C6CE]">{Number(catch_.latitude).toFixed(6)}°</div>
                     </div>
                   )}
                   {catch_.longitude && (
                     <div>
                       <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-1">Zem. dĺžka</div>
-                      <div className="font-mono font-medium text-[#F97316]">{Number(catch_.longitude).toFixed(6)}°</div>
+                      <div className="font-mono font-medium text-[#28C6CE]">{Number(catch_.longitude).toFixed(6)}°</div>
                     </div>
                   )}
                 </div>
@@ -328,7 +328,7 @@ export default function SharedCatch() {
             </p>
             <a 
               href="/" 
-              className="inline-flex items-center gap-2 px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-xl transition-colors"
             >
               <Fish size={18} />
               Vyskúšať PriVode

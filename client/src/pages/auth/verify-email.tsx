@@ -82,9 +82,9 @@ export default function VerifyEmailPage() {
   };
 
   const pageWrapper = (children: React.ReactNode) => (
-    <div className="min-h-screen bg-[#020617] flex items-center justify-center p-4 selection:bg-orange-500/30">
+    <div className="min-h-screen bg-[#020617] flex items-center justify-center p-4 selection:bg-cyan-500/30">
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-orange-500/5 rounded-full blur-[120px]" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-cyan-500/5 rounded-full blur-[120px]" />
       </div>
       {children}
     </div>
@@ -94,7 +94,7 @@ export default function VerifyEmailPage() {
     return pageWrapper(
       <Card className="w-full max-w-md bg-slate-900/60 border-slate-800 backdrop-blur-xl shadow-2xl relative z-10">
         <CardContent className="flex flex-col items-center justify-center p-12 text-center space-y-4">
-          <Loader2 className="w-12 h-12 text-orange-500 animate-spin" />
+          <Loader2 className="w-12 h-12 text-cyan-500 animate-spin" />
           <div className="space-y-1">
             <h2 className="text-xl font-bold text-white">Aktivujeme účet...</h2>
             <p className="text-sm text-slate-400">Ešte chvíľu. Dokončujeme overenie.</p>
@@ -177,12 +177,12 @@ export default function VerifyEmailPage() {
                     placeholder="Zadaj svoj email"
                     value={resendEmail}
                     onChange={(e) => setResendEmail(e.target.value)}
-                    className="bg-slate-950 border-slate-700 text-white focus:border-orange-500/50 h-11"
+                    className="bg-slate-950 border-slate-700 text-white focus:border-cyan-500/50 h-11"
                   />
                 )}
                 <Button
                   onClick={handleResend}
-                  className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold h-12"
+                  className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold h-12"
                   disabled={resendMutation.isPending || !resendEmail}
                 >
                   {resendMutation.isPending ? (
@@ -222,7 +222,7 @@ export default function VerifyEmailPage() {
 
         <Button
           onClick={() => setLocation("/auth/login")}
-          className="w-full bg-orange-500 hover:bg-orange-600 text-white font-black uppercase tracking-widest h-12 rounded-xl shadow-[0_10px_40px_-10px_rgba(249,115,22,0.5)] transition-all active:scale-[0.98]"
+          className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-black uppercase tracking-widest h-12 rounded-xl shadow-[0_10px_40px_-10px_rgba(249,115,22,0.5)] transition-all active:scale-[0.98]"
           data-testid="button-go-to-login"
         >
           Prihlásiť sa

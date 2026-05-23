@@ -470,7 +470,7 @@ export default function SeasonalGoals() {
 
           <div className="space-y-3">
             <div className="flex items-center justify-between text-lg">
-              <span className="font-mono font-medium text-[#F97316]" data-testid={`text-goal-current-${goal.id}`}>
+              <span className="font-mono font-medium text-[#28C6CE]" data-testid={`text-goal-current-${goal.id}`}>
                 {formatNumber(goal.currentValue)} {goal.unit}
               </span>
               <span className="text-muted-foreground">/</span>
@@ -507,8 +507,8 @@ export default function SeasonalGoals() {
         <header className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-6">
           <div className="space-y-3">
             <div className="flex items-center gap-3">
-              <span className="h-px w-16 bg-[#F97316]"></span>
-              <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#F97316]">Sezónne ciele</span>
+              <span className="h-px w-16 bg-[#28C6CE]"></span>
+              <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#28C6CE]">Sezónne ciele</span>
             </div>
             <div className="space-y-1">
               <div className="flex items-center gap-4">
@@ -550,7 +550,7 @@ export default function SeasonalGoals() {
               <div className="flex flex-col items-end gap-2 w-full sm:w-auto">
                 {goalLimit && !goalLimit.isPremium && (
                   <div className="text-xs text-muted-foreground text-right">
-                    FREE účet: <span className="font-mono font-medium text-[#F97316]">{goalLimit.currentCount}</span> / {goalLimit.limit} cieľov
+                    FREE účet: <span className="font-mono font-medium text-[#28C6CE]">{goalLimit.currentCount}</span> / {goalLimit.limit} cieľov
                   </div>
                 )}
                 {goalLimit && !goalLimit.canCreate ? (
@@ -583,7 +583,7 @@ export default function SeasonalGoals() {
                   <Button 
                     onClick={() => setLocation("/diary/seasonal-goals/create")}
                     data-testid="button-create-goal"
-                    className="bg-[#F97316] hover:bg-[#EA580C] w-full sm:w-auto"
+                    className="bg-[#28C6CE] hover:bg-[#1DB5BC] w-full sm:w-auto"
                   >
                     <Plus className="w-4 h-4 mr-2" strokeWidth={1.75} />
                     <span className="sm:inline">Vytvoriť Cieľ</span>
@@ -651,7 +651,7 @@ export default function SeasonalGoals() {
                   )}
                   <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 sm:gap-3 text-base sm:text-xl">
                     <span className="font-medium text-muted-foreground">Aktuálne:</span>
-                    <span className="font-mono font-bold text-[#F97316]" data-testid="text-main-goal-current">
+                    <span className="font-mono font-bold text-[#28C6CE]" data-testid="text-main-goal-current">
                       {formatNumber(mainGoal.currentValue)} {mainGoal.unit}
                     </span>
                     <span className="text-muted-foreground">/</span>
@@ -730,7 +730,7 @@ export default function SeasonalGoals() {
                   <Button 
                     onClick={() => setLocation("/diary/seasonal-goals/create")}
                     data-testid="button-create-first-goal"
-                    className="bg-[#F97316] hover:bg-[#EA580C]"
+                    className="bg-[#28C6CE] hover:bg-[#1DB5BC]"
                   >
                     <Plus className="w-4 h-4 mr-2" strokeWidth={1.75} />
                     Vytvoriť prvý cieľ

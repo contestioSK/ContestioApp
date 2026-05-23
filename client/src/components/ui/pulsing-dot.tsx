@@ -1,7 +1,7 @@
 export function PulsingDot({ color = "green" }: { color?: "green" | "orange" | "blue" }) {
   const colorClasses = {
     green: "bg-green-500",
-    orange: "bg-orange-500",
+    orange: "bg-cyan-500",
     blue: "bg-blue-500"
   };
   

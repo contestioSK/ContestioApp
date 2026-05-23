@@ -145,7 +145,7 @@ export default function NotificationsDropdown() {
       >
         <Bell className="h-5 w-5 text-muted-foreground" strokeWidth={1.75} />
         {pendingInvitations.length > 0 && (
-          <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-[#F97316] text-white text-xs font-mono font-medium flex items-center justify-center animate-pulse">
+          <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-[#28C6CE] text-white text-xs font-mono font-medium flex items-center justify-center animate-pulse">
             {pendingInvitations.length > 9 ? '9+' : pendingInvitations.length}
           </span>
         )}
@@ -164,7 +164,7 @@ export default function NotificationsDropdown() {
             <h3 className="text-sm font-bold">
               Notifikácie
               {pendingInvitations.length > 0 && (
-                <span className="ml-2 text-xs font-mono font-medium text-[#F97316]">
+                <span className="ml-2 text-xs font-mono font-medium text-[#28C6CE]">
                   ({pendingInvitations.length})
                 </span>
               )}
@@ -187,14 +187,14 @@ export default function NotificationsDropdown() {
                 {pendingInvitations.slice(0, 10).map((invitation) => (
                   <div
                     key={invitation.id}
-                    className="p-3 rounded-lg bg-muted/50 hover:bg-muted/70 border-l-4 border-orange-500 transition-colors"
+                    className="p-3 rounded-lg bg-muted/50 hover:bg-muted/70 border-l-4 border-cyan-500 transition-colors"
                   >
                     <div className="mb-2">
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-sm font-medium">
                           {getInviterName(invitation.invitedBy)}
                         </span>
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-500">
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-500">
                           {invitation.battle ? getBattleTypeLabel(invitation.battle.type) : 'Battle'}
                         </span>
                       </div>

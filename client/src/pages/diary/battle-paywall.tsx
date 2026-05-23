@@ -37,8 +37,8 @@ export default function BattlePaywall() {
     },
     {
       icon: BarChart3,
-      color: "text-orange-400",
-      bg: "bg-orange-500/10",
+      color: "text-cyan-400",
+      bg: "bg-cyan-500/10",
       title: "Live Rebríček",
       description: "Sleduj zmeny poradia v reálnom čase. Každý gram rozhoduje."
     },
@@ -85,7 +85,7 @@ export default function BattlePaywall() {
       <div className="relative pb-32" data-testid="paywall-fishing-battle">
         
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-96 bg-amber-600/10 blur-[120px] rounded-full pointer-events-none" />
-        <div className="absolute top-40 right-0 w-64 h-64 bg-orange-500/5 blur-[80px] rounded-full pointer-events-none" />
+        <div className="absolute top-40 right-0 w-64 h-64 bg-cyan-500/5 blur-[80px] rounded-full pointer-events-none" />
 
         <div className="max-w-4xl mx-auto p-6 relative z-10">
           
@@ -124,7 +124,7 @@ export default function BattlePaywall() {
                      key={i} 
                      className={`flex items-center justify-between p-3 rounded-xl border ${
                        p.isUser 
-                         ? 'bg-orange-500/10 border-orange-500/30' 
+                         ? 'bg-cyan-500/10 border-cyan-500/30' 
                          : 'bg-muted/30 border-border'
                      } blur-[3px] group-hover:blur-[2px] transition-all duration-500`}
                    >

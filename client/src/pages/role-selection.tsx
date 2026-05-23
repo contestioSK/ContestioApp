@@ -208,9 +208,9 @@ function RoleCard({
     },
     orange: {
       bg: 'from-orange-500/20 to-amber-500/20',
-      border: 'border-orange-500/30',
-      icon: 'text-orange-400',
-      button: 'bg-orange-500 hover:bg-orange-600',
+      border: 'border-cyan-500/30',
+      icon: 'text-cyan-400',
+      button: 'bg-cyan-500 hover:bg-cyan-600',
       glow: 'hover:shadow-orange-500/20',
     },
     purple: {

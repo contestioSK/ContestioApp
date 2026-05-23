@@ -575,8 +575,8 @@ export default function WeatherForecast() {
           <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div className="space-y-3">
               <div className="flex items-center gap-3">
-                <span className="h-px w-16 bg-[#F97316]"></span>
-                <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#F97316]">Počasie</span>
+                <span className="h-px w-16 bg-[#28C6CE]"></span>
+                <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#28C6CE]">Počasie</span>
               </div>
               <div className="space-y-1">
                 <div className="flex items-center gap-4">
@@ -780,7 +780,7 @@ export default function WeatherForecast() {
                       <p className="text-sm text-muted-foreground">{getDate(day.date)}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-2xl font-mono font-medium text-[#F97316]">{Math.round(day.day.maxtemp_c)}°</p>
+                      <p className="text-2xl font-mono font-medium text-[#28C6CE]">{Math.round(day.day.maxtemp_c)}°</p>
                       <p className="text-sm font-mono text-muted-foreground">{Math.round(day.day.mintemp_c)}°</p>
                     </div>
                   </div>
@@ -929,7 +929,7 @@ export default function WeatherForecast() {
                         label={{ value: 'Zrážky (mm)', angle: 90, position: 'insideRight', fill: '#94a3b8' }}
                       />
                       {currentHourLabel && (
-                        <ReferenceLine yAxisId="left" x={currentHourLabel} stroke="#f97316" strokeDasharray="4 4" strokeWidth={1.5} label={{ value: 'Teraz', position: 'top', fill: '#f97316', fontSize: 11 }} />
+                        <ReferenceLine yAxisId="left" x={currentHourLabel} stroke="#28c6ce" strokeDasharray="4 4" strokeWidth={1.5} label={{ value: 'Teraz', position: 'top', fill: '#28c6ce', fontSize: 11 }} />
                       )}
                       <RechartsTooltip 
                         contentStyle={{ 
@@ -962,7 +962,7 @@ export default function WeatherForecast() {
                               cx={cx}
                               cy={cy}
                               r={entry.isCurrent ? 5 : 3}
-                              fill={entry.isCurrent ? '#f97316' : '#f59e0b'}
+                              fill={entry.isCurrent ? '#28c6ce' : '#f59e0b'}
                               opacity={entry.isPast ? 0.35 : 1}
                               stroke={entry.isCurrent ? '#fff' : 'none'}
                               strokeWidth={entry.isCurrent ? 2 : 0}
@@ -1029,13 +1029,13 @@ export default function WeatherForecast() {
                               </TooltipTrigger>
                               <TooltipContent side="bottom" className="max-w-[220px] space-y-1 text-xs">
                                 <p className="font-bold text-sm">{hour.condition.text}</p>
-                                <p>Pocitová teplota: <span className="font-mono font-medium text-orange-400">{Math.round(hour.feelslike_c)}°C</span></p>
-                                <p>Vlhkosť: <span className="font-mono font-medium text-orange-400">{hour.humidity}%</span></p>
-                                <p>Šanca na dážď: <span className="font-mono font-medium text-orange-400">{hour.chance_of_rain}%</span></p>
-                                <p>Oblačnosť: <span className="font-mono font-medium text-orange-400">{hour.cloud}%</span></p>
-                                <p>Vietor: <span className="font-mono font-medium text-orange-400">{convertKphToMs(hour.wind_kph)} m/s {hour.wind_dir}</span></p>
-                                <p>Nárazy: <span className="font-mono font-medium text-orange-400">{convertKphToMs(hour.gust_kph || hour.wind_kph)} m/s</span></p>
-                                <p>Tlak: <span className="font-mono font-medium text-orange-400">{hour.pressure_mb} mb</span> ({pressureInfo.trend === 'up' ? 'stúpa' : pressureInfo.trend === 'down' ? 'klesá' : 'stabilný'})</p>
+                                <p>Pocitová teplota: <span className="font-mono font-medium text-cyan-400">{Math.round(hour.feelslike_c)}°C</span></p>
+                                <p>Vlhkosť: <span className="font-mono font-medium text-cyan-400">{hour.humidity}%</span></p>
+                                <p>Šanca na dážď: <span className="font-mono font-medium text-cyan-400">{hour.chance_of_rain}%</span></p>
+                                <p>Oblačnosť: <span className="font-mono font-medium text-cyan-400">{hour.cloud}%</span></p>
+                                <p>Vietor: <span className="font-mono font-medium text-cyan-400">{convertKphToMs(hour.wind_kph)} m/s {hour.wind_dir}</span></p>
+                                <p>Nárazy: <span className="font-mono font-medium text-cyan-400">{convertKphToMs(hour.gust_kph || hour.wind_kph)} m/s</span></p>
+                                <p>Tlak: <span className="font-mono font-medium text-cyan-400">{hour.pressure_mb} mb</span> ({pressureInfo.trend === 'up' ? 'stúpa' : pressureInfo.trend === 'down' ? 'klesá' : 'stabilný'})</p>
                               </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
@@ -1181,7 +1181,7 @@ export default function WeatherForecast() {
                     tick={{ fill: '#94a3b8', fontSize: 10 }}
                   />
                   {currentHourLabel && (
-                    <ReferenceLine yAxisId="left" x={currentHourLabel} stroke="#f97316" strokeDasharray="4 4" strokeWidth={1.5} label={{ value: 'Teraz', position: 'top', fill: '#f97316', fontSize: 10 }} />
+                    <ReferenceLine yAxisId="left" x={currentHourLabel} stroke="#28c6ce" strokeDasharray="4 4" strokeWidth={1.5} label={{ value: 'Teraz', position: 'top', fill: '#28c6ce', fontSize: 10 }} />
                   )}
                   <RechartsTooltip 
                     contentStyle={{ 
@@ -1215,7 +1215,7 @@ export default function WeatherForecast() {
                           cx={cx}
                           cy={cy}
                           r={entry.isCurrent ? 4 : 2}
-                          fill={entry.isCurrent ? '#f97316' : '#f59e0b'}
+                          fill={entry.isCurrent ? '#28c6ce' : '#f59e0b'}
                           opacity={entry.isPast ? 0.35 : 1}
                           stroke={entry.isCurrent ? '#fff' : 'none'}
                           strokeWidth={entry.isCurrent ? 2 : 0}
@@ -1284,13 +1284,13 @@ export default function WeatherForecast() {
                       </PopoverTrigger>
                       <PopoverContent side="bottom" align="center" className="w-[220px] p-3 space-y-1 text-xs">
                         <p className="font-bold text-sm">{hour.condition.text}</p>
-                        <p>Pocitová teplota: <span className="font-mono font-medium text-orange-400">{Math.round(hour.feelslike_c)}°C</span></p>
-                        <p>Vlhkosť: <span className="font-mono font-medium text-orange-400">{hour.humidity}%</span></p>
-                        <p>Šanca na dážď: <span className="font-mono font-medium text-orange-400">{hour.chance_of_rain}%</span></p>
-                        <p>Oblačnosť: <span className="font-mono font-medium text-orange-400">{hour.cloud}%</span></p>
-                        <p>Vietor: <span className="font-mono font-medium text-orange-400">{convertKphToMs(hour.wind_kph)} m/s {hour.wind_dir}</span></p>
-                        <p>Nárazy: <span className="font-mono font-medium text-orange-400">{convertKphToMs(hour.gust_kph || hour.wind_kph)} m/s</span></p>
-                        <p>Tlak: <span className="font-mono font-medium text-orange-400">{hour.pressure_mb} mb</span> ({pressureInfo.trend === 'up' ? 'stúpa' : pressureInfo.trend === 'down' ? 'klesá' : 'stabilný'})</p>
+                        <p>Pocitová teplota: <span className="font-mono font-medium text-cyan-400">{Math.round(hour.feelslike_c)}°C</span></p>
+                        <p>Vlhkosť: <span className="font-mono font-medium text-cyan-400">{hour.humidity}%</span></p>
+                        <p>Šanca na dážď: <span className="font-mono font-medium text-cyan-400">{hour.chance_of_rain}%</span></p>
+                        <p>Oblačnosť: <span className="font-mono font-medium text-cyan-400">{hour.cloud}%</span></p>
+                        <p>Vietor: <span className="font-mono font-medium text-cyan-400">{convertKphToMs(hour.wind_kph)} m/s {hour.wind_dir}</span></p>
+                        <p>Nárazy: <span className="font-mono font-medium text-cyan-400">{convertKphToMs(hour.gust_kph || hour.wind_kph)} m/s</span></p>
+                        <p>Tlak: <span className="font-mono font-medium text-cyan-400">{hour.pressure_mb} mb</span> ({pressureInfo.trend === 'up' ? 'stúpa' : pressureInfo.trend === 'down' ? 'klesá' : 'stabilný'})</p>
                       </PopoverContent>
                     </Popover>
                   );
@@ -1383,7 +1383,7 @@ export default function WeatherForecast() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Sunrise className="w-4 h-4 text-orange-400" />
+                  <Sunrise className="w-4 h-4 text-cyan-400" />
                   <div>
                     <p className="text-xs text-muted-foreground">Východ</p>
                     <p className="text-sm font-semibold">{selectedDay.astro.sunrise}</p>
@@ -1391,7 +1391,7 @@ export default function WeatherForecast() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Sunset className="w-4 h-4 text-orange-600" />
+                  <Sunset className="w-4 h-4 text-cyan-600" />
                   <div>
                     <p className="text-xs text-muted-foreground">Západ</p>
                     <p className="text-sm font-semibold">{selectedDay.astro.sunset}</p>
