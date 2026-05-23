@@ -130,7 +130,7 @@ export function TripCard({ trip, catchCount = 0, biggestCatch, onClick, isLocked
         <div className="flex items-center gap-6 text-white">
           <div className="flex items-center gap-2">
             <Fish className="h-5 w-5 text-muted-foreground" strokeWidth={1.75} />
-            <span className="font-mono font-medium text-[#F97316] text-lg" data-testid={`trip-catch-count-${trip.id}`}>
+            <span className="font-mono font-medium text-[#28C6CE] text-lg" data-testid={`trip-catch-count-${trip.id}`}>
               {catchCount}
             </span>
             <span className="text-sm text-slate-300">úlovkov</span>
@@ -139,7 +139,7 @@ export function TripCard({ trip, catchCount = 0, biggestCatch, onClick, isLocked
           {biggestCatch && (
             <div className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-muted-foreground" strokeWidth={1.75} />
-              <span className="font-mono font-medium text-[#F97316] text-lg" data-testid={`trip-biggest-${trip.id}`}>
+              <span className="font-mono font-medium text-[#28C6CE] text-lg" data-testid={`trip-biggest-${trip.id}`}>
                 {biggestCatch.weight} kg
               </span>
               <span className="text-sm text-slate-300">{biggestCatch.fishType === 'mirror' ? 'Lysec' : biggestCatch.fishType === 'scaly' ? 'Šupináč' : biggestCatch.fishType}</span>

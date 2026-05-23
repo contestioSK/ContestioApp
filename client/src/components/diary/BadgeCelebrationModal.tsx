@@ -48,7 +48,7 @@ const BadgeConfetti = memo(() => {
     const left = Math.random() * 100;
     const animDelay = Math.random() * 0.5;
     const animDuration = 2 + Math.random() * 2;
-    const colors = ['#d97706', '#fbbf24', '#94a3b8', '#ea580c', '#f8fafc'];
+    const colors = ['#d97706', '#fbbf24', '#94a3b8', '#1db5bc', '#f8fafc'];
     const color = colors[Math.floor(Math.random() * colors.length)];
     const size = 5 + Math.random() * 4;
 
@@ -111,12 +111,12 @@ export function BadgeCelebrationModal({ badge, onClose }: BadgeCelebrationModalP
       hex: "#94a3b8"
     },
     bronze: {
-      text: "text-orange-400",
-      bg: "bg-orange-500",
-      border: "border-orange-500/20",
+      text: "text-cyan-400",
+      bg: "bg-cyan-500",
+      border: "border-cyan-500/20",
       gradient: "from-orange-500/20 via-transparent to-transparent",
-      ringColor: "border-orange-500/20",
-      hex: "#f97316"
+      ringColor: "border-cyan-500/20",
+      hex: "#28c6ce"
     }
   };
 
@@ -299,7 +299,7 @@ export function BadgeCelebrationModal({ badge, onClose }: BadgeCelebrationModalP
           <button
             onClick={handleShare}
             disabled={isSharing}
-            className="relative w-full h-12 rounded-xl font-bold uppercase tracking-widest text-xs shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 text-white bg-orange-500 hover:bg-orange-400 disabled:opacity-50"
+            className="relative w-full h-12 rounded-xl font-bold uppercase tracking-widest text-xs shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 text-white bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50"
             data-testid="badge-share-button"
           >
             {isSharing ? (

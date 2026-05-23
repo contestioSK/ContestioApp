@@ -295,7 +295,7 @@ export default function AdminUserProfile() {
 
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <Card className="bg-card border-border p-4 text-center">
-            <Trophy className="h-6 w-6 mx-auto mb-2 text-orange-500" />
+            <Trophy className="h-6 w-6 mx-auto mb-2 text-cyan-500" />
             <p className="text-2xl font-bold text-foreground">{statistics.totalTeams}</p>
             <p className="text-xs text-muted-foreground">Tímy</p>
           </Card>

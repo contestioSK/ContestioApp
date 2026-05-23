@@ -128,7 +128,7 @@ export default function OrganizerCompetitions() {
         </div>
         <Button 
           onClick={() => setLocation('/organizer/create')} 
-          className="bg-[#F97316] hover:bg-[#EA580C] text-white shadow-lg shadow-orange-500/25 border-0"
+          className="bg-[#28C6CE] hover:bg-[#1DB5BC] text-white shadow-lg shadow-orange-500/25 border-0"
           data-testid="button-create-competition"
         >
           <Plus className="w-4 h-4 mr-2" strokeWidth={1.75} />
@@ -217,7 +217,7 @@ export default function OrganizerCompetitions() {
                     </div>
                   )}
                   <div className="min-w-0 flex-1">
-                    <CardTitle className="text-base font-bold truncate group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
+                    <CardTitle className="text-base font-bold truncate group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">
                       {competition.name}
                     </CardTitle>
                     <div className="mt-1">{getStatusBadge(competition.status)}</div>
@@ -242,12 +242,12 @@ export default function OrganizerCompetitions() {
                     {competition.maxTeams && (
                       <div className="flex items-center text-sm text-muted-foreground">
                         <Users className="h-4 w-4 mr-1 flex-shrink-0 text-muted-foreground" strokeWidth={1.75} />
-                        <span className="text-xs">Max. <span className="font-mono font-medium text-[#F97316]">{competition.maxTeams}</span></span>
+                        <span className="text-xs">Max. <span className="font-mono font-medium text-[#28C6CE]">{competition.maxTeams}</span></span>
                       </div>
                     )}
                     <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
                       competition.status === 'live' 
-                        ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400'
+                        ? 'bg-cyan-100 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400'
                         : 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
                     }`}>
                       <Timer className="w-3 h-3 inline mr-1" />
@@ -283,7 +283,7 @@ export default function OrganizerCompetitions() {
                   </Button>
                   <Button 
                     size="sm" 
-                    className="flex-1 bg-[#F97316] hover:bg-[#EA580C] text-white border-0"
+                    className="flex-1 bg-[#28C6CE] hover:bg-[#1DB5BC] text-white border-0"
                     onClick={(e) => {
                       e.stopPropagation();
                       setLocation(`/organizer/competition/${competition.id}`);
@@ -321,7 +321,7 @@ export default function OrganizerCompetitions() {
                 </p>
                 <Button 
                   onClick={() => setLocation('/organizer/create')}
-                  className="bg-[#F97316] hover:bg-[#EA580C] text-white shadow-lg shadow-orange-500/25"
+                  className="bg-[#28C6CE] hover:bg-[#1DB5BC] text-white shadow-lg shadow-orange-500/25"
                 >
                   <Plus className="w-4 h-4 mr-2" strokeWidth={1.75} />
                   Vytvoriť súťaž

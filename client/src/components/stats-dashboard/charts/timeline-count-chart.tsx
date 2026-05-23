@@ -31,7 +31,7 @@ export function TimelineCountChart({ data }: TimelineCountChartProps) {
     return (
       <div className="bg-card border border-border/50 rounded-xl p-6">
         <div className="flex items-center gap-2 mb-1">
-          <Fish size={18} className="text-[#F97316]" />
+          <Fish size={18} className="text-[#28C6CE]" />
           <h3 className="font-bold text-foreground">Vývoj počtu úlovkov</h3>
         </div>
         <p className="text-sm text-muted-foreground mb-6">Počet ulovených rýb počas súťaže</p>
@@ -45,7 +45,7 @@ export function TimelineCountChart({ data }: TimelineCountChartProps) {
   return (
     <div className="bg-card border border-border/50 rounded-xl p-6 pb-14">
       <div className="flex items-center gap-2 mb-1">
-        <Fish size={18} className="text-[#F97316]" />
+        <Fish size={18} className="text-[#28C6CE]" />
         <h3 className="font-bold text-foreground">Vývoj počtu úlovkov</h3>
       </div>
       <p className="text-sm text-muted-foreground mb-6">Počet ulovených rýb počas súťaže</p>
@@ -59,8 +59,8 @@ export function TimelineCountChart({ data }: TimelineCountChartProps) {
           >
             <defs>
               <linearGradient id="countAreaGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#F97316" stopOpacity="0.2" />
-                <stop offset="100%" stopColor="#F97316" stopOpacity="0" />
+                <stop offset="0%" stopColor="#28C6CE" stopOpacity="0.2" />
+                <stop offset="100%" stopColor="#28C6CE" stopOpacity="0" />
               </linearGradient>
             </defs>
             <path
@@ -70,7 +70,7 @@ export function TimelineCountChart({ data }: TimelineCountChartProps) {
             <path
               d={svgPath}
               fill="none"
-              stroke="#F97316"
+              stroke="#28C6CE"
               strokeWidth="3"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -83,7 +83,7 @@ export function TimelineCountChart({ data }: TimelineCountChartProps) {
             key={i}
             className="absolute w-[10px] h-[10px] rounded-full border-2 bg-background -translate-x-1/2 -translate-y-1/2 z-10"
             style={{
-              borderColor: "#F97316",
+              borderColor: "#28C6CE",
               left: hasMultiple
                 ? `${(i / (formattedData.length - 1)) * 100}%`
                 : "50%",

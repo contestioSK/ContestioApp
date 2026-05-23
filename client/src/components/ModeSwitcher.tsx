@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 
 const modeConfig: Record<UserMode, { icon: React.ComponentType<{ className?: string }>; label: string; color: string }> = {
   user: { icon: Fish, label: "Rybár", color: "text-teal-400" },
-  referee: { icon: Scale, label: "Rozhodca", color: "text-orange-400" },
+  referee: { icon: Scale, label: "Rozhodca", color: "text-cyan-400" },
   organizer: { icon: Settings, label: "Organizátor", color: "text-purple-400" },
 };
 
@@ -105,13 +105,13 @@ export function ModeSwitcher() {
                 onClick={() => handleModeChange('referee', comp.id)}
                 className="flex items-center gap-3 cursor-pointer hover:bg-slate-800"
               >
-                <Scale className="w-4 h-4 text-orange-400" />
+                <Scale className="w-4 h-4 text-cyan-400" />
                 <div className="flex-1">
                   <p className="font-medium truncate">{comp.name}</p>
                   <p className="text-xs text-slate-400">Sektor: {comp.assignedSector}</p>
                 </div>
                 {activeMode === 'referee' && activeCompetitionId === comp.id && (
-                  <Check className="w-4 h-4 text-orange-400" />
+                  <Check className="w-4 h-4 text-cyan-400" />
                 )}
               </DropdownMenuItem>
             ))}

@@ -370,7 +370,7 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
               return (
               <FormItem>
                 <FormLabel className="text-base font-bold text-foreground">
-                  Váha (gramy) - min. <span className="font-mono font-medium text-[#F97316]">{minWeightGrams}</span> g (<span className="font-mono font-medium text-[#F97316]">{minWeightKg}</span> kg)
+                  Váha (gramy) - min. <span className="font-mono font-medium text-[#28C6CE]">{minWeightGrams}</span> g (<span className="font-mono font-medium text-[#28C6CE]">{minWeightKg}</span> kg)
                 </FormLabel>
                 <FormControl>
                   <div className="flex items-center gap-2">
@@ -396,7 +396,7 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
                         placeholder={minWeightGrams.toString()} 
                         className={`font-mono pr-8 h-14 text-xl font-bold text-center transition-colors ${
                           isUnderWeight 
-                            ? 'border-orange-500 text-orange-600 bg-orange-50 dark:bg-orange-950/20' 
+                            ? 'border-cyan-500 text-cyan-600 bg-cyan-50 dark:bg-cyan-950/20' 
                             : isValidWeight 
                               ? 'border-green-500 text-green-600 bg-green-50 dark:bg-green-950/20' 
                               : ''
@@ -406,7 +406,7 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
                         data-testid="input-weight"
                       />
                       <span className={`absolute right-3 top-1/2 transform -translate-y-1/2 text-sm font-medium ${
-                        isUnderWeight ? 'text-orange-500' : isValidWeight ? 'text-green-500' : 'text-foreground/60'
+                        isUnderWeight ? 'text-cyan-500' : isValidWeight ? 'text-green-500' : 'text-foreground/60'
                       }`}>
                         g
                       </span>
@@ -426,11 +426,11 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
                 </FormControl>
                 {/* Show kg equivalent when weight is entered */}
                 {currentWeight > 0 && (
-                  <div className={`text-center text-lg font-mono font-medium ${isValidWeight ? 'text-green-600' : 'text-orange-600'}`}>
+                  <div className={`text-center text-lg font-mono font-medium ${isValidWeight ? 'text-green-600' : 'text-cyan-600'}`}>
                     = {formatWeightDisplay(currentWeight)}
                   </div>
                 )}
-                <FormDescription className={`text-sm font-medium ${isUnderWeight ? 'text-orange-600' : 'text-muted-foreground'}`}>
+                <FormDescription className={`text-sm font-medium ${isUnderWeight ? 'text-cyan-600' : 'text-muted-foreground'}`}>
                   {isUnderWeight 
                     ? `⚠️ Váha je pod limitom ${minWeightGrams} g - nebude započítaná`
                     : `Úlovky pod ${minWeightGrams} g (${minWeightKg} kg) nebudú započítané`
@@ -923,7 +923,7 @@ export default function RefereeInterface() {
                         isOffline ? 'bg-amber-700/30' : 'bg-yellow-500/20'
                       }`}>
                         <Upload className="w-3 h-3 text-muted-foreground" strokeWidth={1.75} />
-                        <span className="font-mono font-medium text-[#F97316]">{pendingCatches.length}</span>
+                        <span className="font-mono font-medium text-[#28C6CE]">{pendingCatches.length}</span>
                       </div>
                     )}
                   </div>
@@ -992,13 +992,13 @@ export default function RefereeInterface() {
             <div className="border-t border-border p-4 bg-yellow-50 dark:bg-yellow-900/10">
               <h4 className="font-bold text-foreground mb-3 flex items-center gap-2">
                 <Upload className="w-4 h-4 text-muted-foreground" strokeWidth={1.75} />
-                Čakajúce na odoslanie (<span className="font-mono font-medium text-[#F97316]">{pendingCatches.length}</span>)
+                Čakajúce na odoslanie (<span className="font-mono font-medium text-[#28C6CE]">{pendingCatches.length}</span>)
               </h4>
               <div className="space-y-2 max-h-32 overflow-y-auto">
                 {pendingCatches.map((catch_) => (
                   <div key={catch_.id} className="flex items-center justify-between text-sm" data-testid={`pending-catch-${catch_.id}`}>
                     <span className="text-foreground">
-                      <span className="font-mono font-medium text-[#F97316]">{catch_.weight >= 1000 ? `${(catch_.weight / 1000).toFixed(3)} kg` : `${catch_.weight} g`}</span> - {catch_.fishType === 'scaly' ? 'Šupináč' : 'Lysec'}
+                      <span className="font-mono font-medium text-[#28C6CE]">{catch_.weight >= 1000 ? `${(catch_.weight / 1000).toFixed(3)} kg` : `${catch_.weight} g`}</span> - {catch_.fishType === 'scaly' ? 'Šupináč' : 'Lysec'}
                       {catch_.hasPhoto && catch_.photoMissing && (
                         <span className="text-red-500 ml-2 text-xs">(foto chýba)</span>
                       )}
@@ -1039,7 +1039,7 @@ export default function RefereeInterface() {
                 {recentCatches.slice(0, 5).map((catch_: Catch & { team: Team }) => (
                   <div key={catch_.id} className="flex items-center justify-between text-sm" data-testid={`catch-${catch_.id}`}>
                     <span className="text-muted-foreground">
-                      <span className="inline-flex items-center gap-1"><TeamFlag country={catch_.team?.country} size="xs" />{catch_.team?.name}</span> - <span className="font-mono font-medium text-[#F97316]">{catch_.weight}kg</span>
+                      <span className="inline-flex items-center gap-1"><TeamFlag country={catch_.team?.country} size="xs" />{catch_.team?.name}</span> - <span className="font-mono font-medium text-[#28C6CE]">{catch_.weight}kg</span>
                     </span>
                     <Badge className="bg-secondary text-secondary-foreground">
                       <Check className="w-3 h-3 mr-1" strokeWidth={1.75} />

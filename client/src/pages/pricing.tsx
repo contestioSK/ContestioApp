@@ -614,7 +614,7 @@ export default function Pricing() {
                           <span className="text-base text-muted-foreground line-through">
                             {diaryPremiumPlan.monthlyOriginalPrice} {diaryPremiumPlan.currency} / mesiac
                           </span>
-                          <span className="text-xs text-orange-400 font-medium">Uvádzacia cena</span>
+                          <span className="text-xs text-cyan-400 font-medium">Uvádzacia cena</span>
                         </div>
                       )}
                       {isYearly && (

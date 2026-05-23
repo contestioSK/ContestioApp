@@ -127,7 +127,7 @@ const saveTemplates = (templates: BattleTemplate[]) => {
 
 const SectionHeader = ({ number, title, subtitle }: { number: string; title: string; subtitle: string }) => (
   <div className="flex gap-3 mb-4">
-    <div className="flex-none w-8 h-8 rounded-full bg-slate-800 dark:bg-slate-800 border border-slate-700 dark:border-slate-700 flex items-center justify-center text-[10px] font-black text-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.1)]">
+    <div className="flex-none w-8 h-8 rounded-full bg-slate-800 dark:bg-slate-800 border border-slate-700 dark:border-slate-700 flex items-center justify-center text-[10px] font-black text-cyan-500 shadow-[0_0_15px_rgba(249,115,22,0.1)]">
       {number}
     </div>
     <div>
@@ -155,7 +155,7 @@ const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
           className={cn(
             "w-full bg-card/50 dark:bg-slate-900/50 border transition-all outline-none",
             error ? 'border-red-500/50' : 'border-border dark:border-slate-800',
-            "focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/20",
+            "focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20",
             "rounded-xl py-3.5 text-sm text-foreground",
             Icon ? 'pl-12 pr-4' : 'px-4',
             "placeholder:text-muted-foreground/50",
@@ -189,14 +189,14 @@ const ModeCard = ({ mode, isSelected, onClick }: ModeCardProps) => {
       className={cn(
         "group relative flex flex-col p-4 rounded-2xl border transition-all text-left",
         isSelected 
-          ? 'bg-orange-500/10 border-orange-500/50 ring-1 ring-orange-500/20' 
+          ? 'bg-cyan-500/10 border-cyan-500/50 ring-1 ring-cyan-500/20' 
           : 'bg-card/30 dark:bg-slate-900/30 border-border dark:border-slate-800 hover:border-muted-foreground/50'
       )}
     >
       <div className={cn(
         "mb-4 p-2.5 rounded-xl inline-flex w-fit transition-colors",
         isSelected 
-          ? 'bg-orange-500 text-white' 
+          ? 'bg-cyan-500 text-white' 
           : 'bg-muted dark:bg-slate-800 text-muted-foreground group-hover:text-foreground'
       )}>
         <Icon size={20} />
@@ -206,7 +206,7 @@ const ModeCard = ({ mode, isSelected, onClick }: ModeCardProps) => {
       {isSelected && (
         <motion.div 
           layoutId="active-mode" 
-          className="absolute top-3 right-3 w-1.5 h-1.5 rounded-full bg-orange-500 shadow-[0_0_10px_#f97316]" 
+          className="absolute top-3 right-3 w-1.5 h-1.5 rounded-full bg-cyan-500 shadow-[0_0_10px_#28c6ce]" 
         />
       )}
     </button>
@@ -454,9 +454,9 @@ export default function BattleCreate() {
               <AlertDialogTrigger asChild>
                 <Button 
                   variant="outline" 
-                  className="rounded-xl border-border hover:border-orange-500/50 text-[10px] font-black uppercase tracking-widest"
+                  className="rounded-xl border-border hover:border-cyan-500/50 text-[10px] font-black uppercase tracking-widest"
                 >
-                  <FolderOpen size={14} className="text-orange-500 mr-2" /> 
+                  <FolderOpen size={14} className="text-cyan-500 mr-2" /> 
                   Načítať šablónu
                 </Button>
               </AlertDialogTrigger>
@@ -469,7 +469,7 @@ export default function BattleCreate() {
                 </AlertDialogHeader>
                 <div className="space-y-2 my-4">
                   {templates.map((template) => (
-                    <div key={template.id} className="flex items-center justify-between p-3 rounded-xl border border-border hover:border-orange-500/50 transition-all">
+                    <div key={template.id} className="flex items-center justify-between p-3 rounded-xl border border-border hover:border-cyan-500/50 transition-all">
                       <button
                         type="button"
                         onClick={() => {
@@ -562,7 +562,7 @@ export default function BattleCreate() {
                   className={cn(
                     "p-5 rounded-2xl border text-left transition-all",
                     useExistingTrip 
-                      ? 'bg-orange-500 text-white border-orange-500 shadow-xl shadow-orange-500/10' 
+                      ? 'bg-cyan-500 text-white border-cyan-500 shadow-xl shadow-orange-500/10' 
                       : 'bg-card/50 dark:bg-slate-900/50 border-border dark:border-slate-800 text-muted-foreground hover:border-muted-foreground/50'
                   )}
                 >
@@ -681,7 +681,7 @@ export default function BattleCreate() {
                               key={h}
                               type="button"
                               onClick={() => setDuration(h)}
-                              className="px-3 py-1 bg-muted dark:bg-slate-900 border border-border dark:border-slate-800 rounded-lg text-[9px] font-black uppercase tracking-widest text-muted-foreground hover:text-orange-500 hover:border-orange-500/50 transition-all"
+                              className="px-3 py-1 bg-muted dark:bg-slate-900 border border-border dark:border-slate-800 rounded-lg text-[9px] font-black uppercase tracking-widest text-muted-foreground hover:text-cyan-500 hover:border-cyan-500/50 transition-all"
                             >
                               {h === 48 ? "Víkend" : `${h}h`}
                             </button>
@@ -713,14 +713,14 @@ export default function BattleCreate() {
                     <Badge 
                       key={userId} 
                       variant="secondary" 
-                      className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-500"
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-500"
                     >
                       <UserIcon className="h-3 w-3" />
                       Pozvaný súper #{index + 1}
                       <button
                         type="button"
                         onClick={() => handleRemoveUser(userId)}
-                        className="ml-1 hover:bg-orange-500/20 rounded-full p-0.5"
+                        className="ml-1 hover:bg-cyan-500/20 rounded-full p-0.5"
                       >
                         <X className="h-3 w-3" />
                       </button>
@@ -741,7 +741,7 @@ export default function BattleCreate() {
             <button
               type="button"
               onClick={() => setShowAdvanced(!showAdvanced)}
-              className="w-full flex items-center justify-between p-4 rounded-2xl border border-border dark:border-slate-800 hover:border-orange-500/50 transition-all mb-6"
+              className="w-full flex items-center justify-between p-4 rounded-2xl border border-border dark:border-slate-800 hover:border-cyan-500/50 transition-all mb-6"
             >
               <div className="flex items-center gap-3">
                 <ShieldCheck size={18} className="text-muted-foreground" />
@@ -797,11 +797,11 @@ export default function BattleCreate() {
             </AnimatePresence>
           </section>
 
-          <section className="bg-gradient-to-b from-orange-500/5 to-transparent border border-orange-500/20 rounded-xl p-5">
+          <section className="bg-gradient-to-b from-orange-500/5 to-transparent border border-cyan-500/20 rounded-xl p-5">
             <div className="text-center mb-5">
-              <div className="inline-flex items-center gap-2 bg-orange-500/10 px-4 py-2 rounded-full mb-4">
-                <Timer size={14} className="text-orange-500" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-orange-500">Mission Briefing</span>
+              <div className="inline-flex items-center gap-2 bg-cyan-500/10 px-4 py-2 rounded-full mb-4">
+                <Timer size={14} className="text-cyan-500" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-cyan-500">Mission Briefing</span>
               </div>
               <h3 className="text-xl font-black text-foreground uppercase tracking-tight">Rekapitulácia operácie</h3>
             </div>
@@ -837,7 +837,7 @@ export default function BattleCreate() {
                   type="button"
                   variant="outline"
                   onClick={handleSaveTemplate}
-                  className="rounded-xl border-border hover:border-orange-500/50"
+                  className="rounded-xl border-border hover:border-cyan-500/50"
                 >
                   <Save className="w-4 h-4" />
                 </Button>
@@ -846,7 +846,7 @@ export default function BattleCreate() {
               <Button
                 type="submit"
                 disabled={createBattleMutation.isPending}
-                className="bg-orange-500 hover:bg-orange-600 text-white font-black uppercase tracking-widest rounded-xl px-8 py-3 shadow-lg shadow-orange-500/20"
+                className="bg-cyan-500 hover:bg-cyan-600 text-white font-black uppercase tracking-widest rounded-xl px-8 py-3 shadow-lg shadow-orange-500/20"
               >
                 {createBattleMutation.isPending ? (
                   "Spúšťam misiu..."

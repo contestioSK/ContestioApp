@@ -100,14 +100,14 @@ export default function TeamOverviewContent({
             <div className="p-2 bg-cyan-500/10 rounded-lg text-muted-foreground w-fit mx-auto mb-1">
               <Fish size={16} strokeWidth={1.75} />
             </div>
-            <div className="text-xl font-mono font-medium text-[#F97316]">{stats.catchCount}</div>
+            <div className="text-xl font-mono font-medium text-[#28C6CE]">{stats.catchCount}</div>
             <div className="text-[10px] text-muted-foreground uppercase font-bold">Úlovky</div>
           </div>
           <div className="bg-muted/30 border border-border rounded-xl p-3 text-center">
             <div className="p-2 bg-emerald-500/10 rounded-lg text-muted-foreground w-fit mx-auto mb-1">
               <Trophy size={16} strokeWidth={1.75} />
             </div>
-            <div className="text-xl font-mono font-medium text-[#F97316]">{stats.totalWeight.toFixed(1)} <span className="text-xs font-sans font-normal text-muted-foreground">kg</span></div>
+            <div className="text-xl font-mono font-medium text-[#28C6CE]">{stats.totalWeight.toFixed(1)} <span className="text-xs font-sans font-normal text-muted-foreground">kg</span></div>
             <div className="text-[10px] text-muted-foreground uppercase font-bold">Celková váha</div>
           </div>
           <div 
@@ -117,20 +117,20 @@ export default function TeamOverviewContent({
             <div className="p-2 bg-amber-500/10 rounded-lg text-muted-foreground w-fit mx-auto mb-1">
               <Crown size={16} strokeWidth={1.75} />
             </div>
-            <div className="text-xl font-mono font-medium text-[#F97316]">
+            <div className="text-xl font-mono font-medium text-[#28C6CE]">
               {stats.biggestCatch ? `${parseFloat(String(stats.biggestCatch.weight)).toFixed(1)}` : '-'} 
               <span className="text-xs font-sans font-normal text-muted-foreground">kg</span>
             </div>
             <div className="text-[10px] text-muted-foreground uppercase font-bold">Najväčšia ryba</div>
             {stats.biggestCatch && onCatchClick && (
-              <div className="text-[9px] text-[#F97316] mt-0.5">Klikni pre detail</div>
+              <div className="text-[9px] text-[#28C6CE] mt-0.5">Klikni pre detail</div>
             )}
           </div>
           <div className="bg-muted/30 border border-border rounded-xl p-3 text-center">
             <div className="p-2 bg-purple-500/10 rounded-lg text-muted-foreground w-fit mx-auto mb-1">
               <MapPin size={16} strokeWidth={1.75} />
             </div>
-            <div className="text-xl font-mono font-medium text-[#F97316]">{rank || '-'}.</div>
+            <div className="text-xl font-mono font-medium text-[#28C6CE]">{rank || '-'}.</div>
             <div className="text-[10px] text-muted-foreground uppercase font-bold">Poradie</div>
           </div>
         </div>
@@ -195,7 +195,7 @@ export default function TeamOverviewContent({
                           </div>
                         </div>
                       </div>
-                      <div className="text-lg font-mono font-medium text-[#F97316]">
+                      <div className="text-lg font-mono font-medium text-[#28C6CE]">
                         {parseFloat(String(c.weight)).toFixed(1)} <span className="text-xs font-sans font-normal text-muted-foreground">kg</span>
                       </div>
                     </div>

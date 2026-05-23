@@ -78,7 +78,7 @@ const HorizontalBarChart = ({ data, competitionId }: { data: { name: string; wei
           <div className="flex justify-between text-xs mb-1">
             {competitionId && d.sector ? (
               <Link href={`/competition/${competitionId}/sector/${d.sector}`}>
-                <span className="text-foreground font-bold hover:text-[#F97316] transition-colors cursor-pointer">{d.name}</span>
+                <span className="text-foreground font-bold hover:text-[#28C6CE] transition-colors cursor-pointer">{d.name}</span>
               </Link>
             ) : (
               <span className="text-foreground font-bold">{d.name}</span>
@@ -98,7 +98,7 @@ const HOUR_COLORS = [
   '#3B82F6','#3B82F6','#2563EB','#2563EB','#1D4ED8','#3B82F6',
   '#2563EB','#3B82F6','#06B6D4','#22D3EE','#06B6D4','#14B8A6',
   '#F59E0B','#10B981','#22C55E','#84CC16','#A3E635','#EAB308',
-  '#F59E0B','#F97316','#EA580C','#F97316','#3B82F6','#3B82F6',
+  '#F59E0B','#28C6CE','#1DB5BC','#28C6CE','#3B82F6','#3B82F6',
 ];
 
 const HourlyBarChart = ({ data, onBarClick }: { data: { hour: string; val: number }[]; onBarClick?: (hour: string, val: number) => void }) => {
@@ -176,7 +176,7 @@ const SectorTable = ({ sector, leaderboard, competitionId }: { sector: string; l
   return (
     <div className="bg-card/50 rounded-xl border border-border overflow-hidden mb-4">
       <div className="p-3 bg-muted/50 font-bold text-foreground text-sm flex justify-between">
-        <Link href={`/competition/${competitionId}/sector/${sector}`} className="hover:text-orange-500 transition-colors">Sektor {sector}</Link>
+        <Link href={`/competition/${competitionId}/sector/${sector}`} className="hover:text-cyan-500 transition-colors">Sektor {sector}</Link>
         <span className="text-muted-foreground text-xs font-normal">Top 5 tímov</span>
       </div>
       <table className="w-full text-xs text-left">
@@ -192,7 +192,7 @@ const SectorTable = ({ sector, leaderboard, competitionId }: { sector: string; l
             <tr key={i} className="hover:bg-muted/30">
               <td className="px-4 py-2 font-mono text-muted-foreground">{i + 1}.</td>
               <td className="px-4 py-2 text-foreground font-medium">
-                <Link href={`/team/${t.id}`} className="hover:text-orange-500 transition-colors cursor-pointer flex items-center gap-1.5"><TeamFlag country={t.country} size="xs" />{t.name}</Link>
+                <Link href={`/team/${t.id}`} className="hover:text-cyan-500 transition-colors cursor-pointer flex items-center gap-1.5"><TeamFlag country={t.country} size="xs" />{t.name}</Link>
               </td>
               <td className="px-4 py-2 text-right text-foreground font-bold">{t.weight.toFixed(3)}</td>
             </tr>
@@ -1009,14 +1009,14 @@ export default function CompetitionDetail() {
                     <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Úlovky spolu</span>
                     <Fish size={15} strokeWidth={1.75} className="text-cyan-500/50" />
                   </div>
-                  <div className="text-2xl md:text-3xl font-mono font-medium text-[#F97316]">{liveStats.totalFish} <span className="text-xs font-normal text-muted-foreground">ks</span></div>
+                  <div className="text-2xl md:text-3xl font-mono font-medium text-[#28C6CE]">{liveStats.totalFish} <span className="text-xs font-normal text-muted-foreground">ks</span></div>
                 </div>
                 <div className="relative overflow-hidden bg-card border border-border rounded-xl p-4 flex flex-col justify-between hover:border-emerald-500/30 transition-all">
                   <div className="flex justify-between items-start mb-3">
                     <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Celková váha</span>
                     <Activity size={15} strokeWidth={1.75} className="text-emerald-500/50" />
                   </div>
-                  <div className="text-2xl md:text-3xl font-mono font-medium text-[#F97316]">{liveStats.totalWeight.toFixed(3)} <span className="text-xs font-normal text-muted-foreground">kg</span></div>
+                  <div className="text-2xl md:text-3xl font-mono font-medium text-[#28C6CE]">{liveStats.totalWeight.toFixed(3)} <span className="text-xs font-normal text-muted-foreground">kg</span></div>
                 </div>
                 <div
                   className={`relative overflow-hidden bg-card border border-border rounded-xl p-4 flex flex-col justify-between transition-all hover:border-amber-500/30 ${biggestCatchObj ? 'cursor-pointer' : ''}`}
@@ -1026,7 +1026,7 @@ export default function CompetitionDetail() {
                     <span className="text-[10px] text-amber-500 uppercase font-bold tracking-widest">Najväčšia ryba</span>
                     <Trophy size={15} strokeWidth={1.75} className="text-amber-500/50" />
                   </div>
-                  <div className="text-2xl md:text-3xl font-mono font-medium text-[#F97316]">{liveStats.biggestFish.toFixed(3)} <span className="text-xs font-normal text-muted-foreground">kg</span></div>
+                  <div className="text-2xl md:text-3xl font-mono font-medium text-[#28C6CE]">{liveStats.biggestFish.toFixed(3)} <span className="text-xs font-normal text-muted-foreground">kg</span></div>
                   {biggestCatchObj && <div className="text-[9px] text-amber-500/60 mt-1">Klikni pre detail</div>}
                 </div>
                 <div className="relative overflow-hidden bg-card border border-border rounded-xl p-4 flex flex-col justify-between hover:border-purple-500/30 transition-all">
@@ -1034,7 +1034,7 @@ export default function CompetitionDetail() {
                     <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Priemer / ks</span>
                     <TrendingUp size={15} strokeWidth={1.75} className="text-purple-500/50" />
                   </div>
-                  <div className="text-2xl md:text-3xl font-mono font-medium text-[#F97316]">{liveStats.avgWeight.toFixed(3)} <span className="text-xs font-normal text-muted-foreground">kg</span></div>
+                  <div className="text-2xl md:text-3xl font-mono font-medium text-[#28C6CE]">{liveStats.avgWeight.toFixed(3)} <span className="text-xs font-normal text-muted-foreground">kg</span></div>
                 </div>
               </div>
 
@@ -1064,7 +1064,7 @@ export default function CompetitionDetail() {
                             if (sortedLeaderboard[1]?.id) navigate(`/team/${sortedLeaderboard[1].id}`);
                           }}
                         ><span className="flex items-center justify-center gap-1"><TeamFlag country={sortedLeaderboard[1]?.country} size="xs" />{sortedLeaderboard[1]?.name}</span></button>
-                        <div className="text-lg font-mono font-medium text-[#F97316]">{sortedLeaderboard[1]?.weight?.toFixed(3) ?? '-'}</div>
+                        <div className="text-lg font-mono font-medium text-[#28C6CE]">{sortedLeaderboard[1]?.weight?.toFixed(3) ?? '-'}</div>
                         <div className="text-[10px] text-muted-foreground">{sortedLeaderboard[1]?.fish ?? 0} rýb</div>
                       </div>
                     </div>
@@ -1082,14 +1082,14 @@ export default function CompetitionDetail() {
                             if (sortedLeaderboard[0]?.id) navigate(`/team/${sortedLeaderboard[0].id}`);
                           }}
                         ><span className="flex items-center justify-center gap-1"><TeamFlag country={sortedLeaderboard[0]?.country} size="xs" />{sortedLeaderboard[0]?.name}</span></button>
-                        <div className="text-2xl font-mono font-medium text-[#F97316]">{sortedLeaderboard[0]?.weight?.toFixed(3) ?? '-'}</div>
+                        <div className="text-2xl font-mono font-medium text-[#28C6CE]">{sortedLeaderboard[0]?.weight?.toFixed(3) ?? '-'}</div>
                         <div className="text-xs text-muted-foreground">{sortedLeaderboard[0]?.fish ?? 0} rýb</div>
                       </div>
                     </div>
 
                     {/* 3rd Place - right */}
                     <div className="flex flex-col items-center">
-                      <div className="w-9 h-9 bg-orange-800 rounded-full flex items-center justify-center font-bold text-white text-sm mb-2 border-2 border-orange-700/50">3</div>
+                      <div className="w-9 h-9 bg-cyan-800 rounded-full flex items-center justify-center font-bold text-white text-sm mb-2 border-2 border-cyan-700/50">3</div>
                       <div className="text-center w-full">
                         <button
                           className="font-bold text-foreground text-xs truncate px-1 hover:text-cyan-500 transition-colors"
@@ -1097,7 +1097,7 @@ export default function CompetitionDetail() {
                             if (sortedLeaderboard[2]?.id) navigate(`/team/${sortedLeaderboard[2].id}`);
                           }}
                         ><span className="flex items-center justify-center gap-1"><TeamFlag country={sortedLeaderboard[2]?.country} size="xs" />{sortedLeaderboard[2]?.name}</span></button>
-                        <div className="text-lg font-mono font-medium text-[#F97316]/60">{sortedLeaderboard[2]?.weight?.toFixed(3) ?? '-'}</div>
+                        <div className="text-lg font-mono font-medium text-[#28C6CE]/60">{sortedLeaderboard[2]?.weight?.toFixed(3) ?? '-'}</div>
                         <div className="text-[10px] text-muted-foreground">{sortedLeaderboard[2]?.fish ?? 0} rýb</div>
                       </div>
                     </div>
@@ -1118,7 +1118,7 @@ export default function CompetitionDetail() {
                           if (sortedLeaderboard[1]?.id) navigate(`/team/${sortedLeaderboard[1].id}`);
                         }}
                       ><span className="flex items-center justify-center gap-1.5"><TeamFlag country={sortedLeaderboard[1]?.country} size="sm" />{sortedLeaderboard[1]?.name}</span></button>
-                      <div className="text-2xl font-mono font-medium text-[#F97316]">{sortedLeaderboard[1]?.weight?.toFixed(3) ?? '-'}</div>
+                      <div className="text-2xl font-mono font-medium text-[#28C6CE]">{sortedLeaderboard[1]?.weight?.toFixed(3) ?? '-'}</div>
                       <div className="text-xs text-muted-foreground font-mono">{sortedLeaderboard[1]?.fish ?? 0} rýb</div>
                     </div>
                   </div>
@@ -1138,17 +1138,17 @@ export default function CompetitionDetail() {
                           if (sortedLeaderboard[0]?.id) navigate(`/team/${sortedLeaderboard[0].id}`);
                         }}
                       ><span className="flex items-center justify-center gap-1.5"><TeamFlag country={sortedLeaderboard[0]?.country} size="sm" />{sortedLeaderboard[0]?.name}</span></button>
-                      <div className="text-4xl font-mono font-medium text-[#F97316]">{sortedLeaderboard[0]?.weight?.toFixed(3) ?? '-'}</div>
+                      <div className="text-4xl font-mono font-medium text-[#28C6CE]">{sortedLeaderboard[0]?.weight?.toFixed(3) ?? '-'}</div>
                       <div className="text-sm text-muted-foreground font-mono">{sortedLeaderboard[0]?.fish ?? 0} rýb</div>
                     </div>
-                    <Link href={`/competition/${id}/sector/${sortedLeaderboard[0]?.sector}`} className="block w-full bg-amber-500/5 border border-amber-500/10 rounded-lg py-1 text-center text-[10px] text-muted-foreground uppercase font-bold tracking-wider hover:text-orange-500 transition-colors">
+                    <Link href={`/competition/${id}/sector/${sortedLeaderboard[0]?.sector}`} className="block w-full bg-amber-500/5 border border-amber-500/10 rounded-lg py-1 text-center text-[10px] text-muted-foreground uppercase font-bold tracking-wider hover:text-cyan-500 transition-colors">
                       Lovia v sektore {sortedLeaderboard[0]?.sector}
                     </Link>
                   </div>
 
                   {/* 3rd Place */}
-                  <div className="bg-card border border-border hover:border-orange-800/40 rounded-xl p-4 flex flex-col items-center justify-end h-48 relative transition-all">
-                    <div className="absolute -top-4 w-11 h-11 bg-orange-800 rounded-full flex items-center justify-center font-bold text-white text-lg border-4 border-background shadow-lg">3</div>
+                  <div className="bg-card border border-border hover:border-cyan-800/40 rounded-xl p-4 flex flex-col items-center justify-end h-48 relative transition-all">
+                    <div className="absolute -top-4 w-11 h-11 bg-cyan-800 rounded-full flex items-center justify-center font-bold text-white text-lg border-4 border-background shadow-lg">3</div>
                     <div className="text-center w-full">
                       <button
                         className="font-bold text-foreground mb-1 truncate px-2 hover:text-cyan-500 transition-colors"
@@ -1156,7 +1156,7 @@ export default function CompetitionDetail() {
                           if (sortedLeaderboard[2]?.id) navigate(`/team/${sortedLeaderboard[2].id}`);
                         }}
                       ><span className="flex items-center justify-center gap-1.5"><TeamFlag country={sortedLeaderboard[2]?.country} size="sm" />{sortedLeaderboard[2]?.name}</span></button>
-                      <div className="text-2xl font-mono font-medium text-[#F97316]">{sortedLeaderboard[2]?.weight?.toFixed(3) ?? '-'}</div>
+                      <div className="text-2xl font-mono font-medium text-[#28C6CE]">{sortedLeaderboard[2]?.weight?.toFixed(3) ?? '-'}</div>
                       <div className="text-xs text-muted-foreground font-mono">{sortedLeaderboard[2]?.fish ?? 0} rýb</div>
                     </div>
                   </div>
@@ -1185,11 +1185,11 @@ export default function CompetitionDetail() {
                           return (
                             <tr
                               key={team.id}
-                              className={`transition-colors ${isWinner ? 'bg-orange-500/5 hover:bg-orange-500/10' : 'hover:bg-muted/20'}`}
+                              className={`transition-colors ${isWinner ? 'bg-cyan-500/5 hover:bg-cyan-500/10' : 'hover:bg-muted/20'}`}
                             >
                               <td className="px-3 md:px-6 py-3 md:py-4">
                                 {isWinner ? (
-                                  <div className="w-7 h-7 rounded bg-[#F97316] text-white font-bold flex items-center justify-center text-sm shadow-[0_0_12px_rgba(249,115,22,0.4)]">1</div>
+                                  <div className="w-7 h-7 rounded bg-[#28C6CE] text-white font-bold flex items-center justify-center text-sm shadow-[0_0_12px_rgba(249,115,22,0.4)]">1</div>
                                 ) : (
                                   <span className="font-mono font-bold text-muted-foreground">{team.rank}.</span>
                                 )}
@@ -1197,28 +1197,28 @@ export default function CompetitionDetail() {
                               <td className="px-3 md:px-6 py-3 md:py-4">
                                 <div className="flex items-center gap-1.5 flex-wrap">
                                   <button
-                                    className={`font-bold transition-colors text-left text-sm md:text-base flex items-center gap-1.5 ${isWinner ? 'text-white hover:text-[#F97316]' : 'text-foreground hover:text-cyan-500'}`}
+                                    className={`font-bold transition-colors text-left text-sm md:text-base flex items-center gap-1.5 ${isWinner ? 'text-white hover:text-[#28C6CE]' : 'text-foreground hover:text-cyan-500'}`}
                                     onClick={() => navigate(`/team/${team.id}`)}
                                   >
                                     <TeamFlag country={team.country} size="xs" />{team.name}
                                   </button>
                                   {isWinner && isEnded && (
-                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#F97316]/20 text-[#F97316] text-[9px] uppercase tracking-widest rounded font-bold">
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#28C6CE]/20 text-[#28C6CE] text-[9px] uppercase tracking-widest rounded font-bold">
                                       <Crown size={10} />Víťaz
                                     </span>
                                   )}
                                 </div>
                               </td>
                               <td className="hidden md:table-cell px-6 py-4 text-center text-muted-foreground">
-                                <Link href={`/competition/${id}/sector/${team.sector}`} className="hover:text-orange-500 transition-colors">{team.sector}</Link>
+                                <Link href={`/competition/${id}/sector/${team.sector}`} className="hover:text-cyan-500 transition-colors">{team.sector}</Link>
                               </td>
                               <td className="hidden md:table-cell px-6 py-4 text-right text-muted-foreground font-mono">{team.fish}</td>
                               <td className="px-3 md:px-6 py-3 md:py-4 text-right">
                                 <div className="flex flex-col items-end">
-                                  <span className={`font-mono font-medium text-base ${isWinner ? 'text-[#F97316]' : 'text-[#F97316]'}`}>{team.weight.toFixed(3)} <span className="text-xs text-muted-foreground font-sans">kg</span></span>
+                                  <span className={`font-mono font-medium text-base ${isWinner ? 'text-[#28C6CE]' : 'text-[#28C6CE]'}`}>{team.weight.toFixed(3)} <span className="text-xs text-muted-foreground font-sans">kg</span></span>
                                   <div className="w-20 h-0.5 bg-white/5 rounded-full mt-1 overflow-hidden">
                                     <div
-                                      className={`h-full rounded-full ${isWinner ? 'bg-[#F97316]' : 'bg-teal-500'}`}
+                                      className={`h-full rounded-full ${isWinner ? 'bg-[#28C6CE]' : 'bg-teal-500'}`}
                                       style={{ width: `${barPct}%` }}
                                     />
                                   </div>
@@ -1362,13 +1362,13 @@ export default function CompetitionDetail() {
                       onKeyDown={(e) => { if (e.key === 'Enter') setEntityModal({ view: 'catch', team: null, catch_: item.catchObj, previousView: null }); }}
                     >
                       {item.action === 'big_fish' ? (
-                        <div className="w-2 h-2 rounded-full bg-[#F97316] shadow-[0_0_8px_rgba(249,115,22,0.8)] shrink-0" />
+                        <div className="w-2 h-2 rounded-full bg-[#28C6CE] shadow-[0_0_8px_rgba(249,115,22,0.8)] shrink-0" />
                       ) : (
                         <div className="w-2 h-2 rounded-full bg-teal-500 shrink-0" />
                       )}
                       <div className="flex-1 min-w-0">
                         <div
-                          className={`text-sm font-medium truncate ${item.action === 'big_fish' ? 'text-[#F97316]' : 'text-foreground'}`}
+                          className={`text-sm font-medium truncate ${item.action === 'big_fish' ? 'text-[#28C6CE]' : 'text-foreground'}`}
                           onClick={(e) => {
                             e.stopPropagation();
                             if (item.catchObj.teamId) navigate(`/team/${item.catchObj.teamId}`);
@@ -1380,7 +1380,7 @@ export default function CompetitionDetail() {
                           {item.action === 'big_fish' ? 'Najväčší úlovok' : item.fishType === 'mirror' ? 'Lysec' : 'Kapor'} • {item.time}
                         </div>
                       </div>
-                      <span className={`font-mono font-bold text-sm shrink-0 ${item.action === 'big_fish' ? 'text-[#F97316]' : 'text-foreground'}`}>{item.weight.toFixed(3)} <span className="text-xs text-muted-foreground font-sans">kg</span></span>
+                      <span className={`font-mono font-bold text-sm shrink-0 ${item.action === 'big_fish' ? 'text-[#28C6CE]' : 'text-foreground'}`}>{item.weight.toFixed(3)} <span className="text-xs text-muted-foreground font-sans">kg</span></span>
                     </div>
                   ))}
                   {liveFeed.length === 0 && (
@@ -1542,7 +1542,7 @@ export default function CompetitionDetail() {
                       <div className="text-xs text-muted-foreground">Celková váha</div>
                     </div>
                     <div className="bg-card border border-border rounded-xl p-4 text-center">
-                      <div className="text-2xl font-mono font-medium text-[#F97316]">{lb?.rank ? `#${lb.rank}` : '-'}</div>
+                      <div className="text-2xl font-mono font-medium text-[#28C6CE]">{lb?.rank ? `#${lb.rank}` : '-'}</div>
                       <div className="text-xs text-muted-foreground">Poradie</div>
                     </div>
                   </div>

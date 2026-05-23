@@ -50,7 +50,7 @@ function Hero() {
         <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4 md:pt-6">
           <button 
             onClick={() => setLocation('/categories/live')}
-            className="px-6 md:px-8 py-3 md:py-4 bg-[#F97316] hover:bg-orange-500 text-white rounded-xl font-black uppercase tracking-[0.15em] md:tracking-[0.2em] text-xs transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 shadow-lg shadow-orange-900/20"
+            className="px-6 md:px-8 py-3 md:py-4 bg-[#28C6CE] hover:bg-cyan-500 text-white rounded-xl font-black uppercase tracking-[0.15em] md:tracking-[0.2em] text-xs transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 shadow-lg shadow-orange-900/20"
           >
             Otvoriť Live Centrum <Radio size={16} />
           </button>
@@ -137,7 +137,7 @@ function LiveTeaser() {
                   </h3>
                   <div className="flex items-center justify-center md:justify-start gap-4 text-sm text-slate-400 font-mono">
                     <span className="flex items-center gap-1.5"><Users size={14}/> Preteky</span>
-                    <span className="flex items-center gap-1.5 text-orange-400"><Timer size={14}/> Prebieha</span>
+                    <span className="flex items-center gap-1.5 text-cyan-400"><Timer size={14}/> Prebieha</span>
                   </div>
                 </>
               ) : (
@@ -162,7 +162,7 @@ function LiveTeaser() {
               <div className="space-y-2 font-mono text-sm">
                 <div className="flex justify-between text-white font-bold">
                   <span className="truncate max-w-[140px]">1. {top3[0]?.teamName ?? '---'}</span>
-                  <span className={`flex-shrink-0 ${hasLive ? 'text-[#F97316]' : 'text-slate-500'}`}>
+                  <span className={`flex-shrink-0 ${hasLive ? 'text-[#28C6CE]' : 'text-slate-500'}`}>
                     {top3[0] ? `${parseFloat(top3[0].totalWeight ?? 0).toFixed(2)}` : '---.--'}
                   </span>
                 </div>
@@ -220,14 +220,14 @@ function ModeCard({ title, description, cta, icon: Icon, variant, route, hint, i
   };
 
   const borderColors = {
-    orange: 'border-slate-800 hover:border-orange-500/50',
+    orange: 'border-slate-800 hover:border-cyan-500/50',
     blue: 'border-slate-800 hover:border-blue-500/50',
     emerald: 'border-emerald-500/30 hover:border-emerald-500',
     slate: 'border-slate-800 hover:border-slate-600',
   };
 
   const iconColors = {
-    orange: 'text-orange-500',
+    orange: 'text-cyan-500',
     blue: 'text-blue-400',
     emerald: 'text-emerald-400',
     slate: 'text-slate-400',
@@ -248,7 +248,7 @@ function ModeCard({ title, description, cta, icon: Icon, variant, route, hint, i
   };
 
   const hintColors = {
-    orange: 'text-orange-400',
+    orange: 'text-cyan-400',
     blue: 'text-blue-400',
     emerald: 'text-emerald-400',
     slate: 'text-slate-400',

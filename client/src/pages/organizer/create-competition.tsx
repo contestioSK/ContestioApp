@@ -448,7 +448,7 @@ export default function CreateCompetition() {
     return (
       <OrganizerLayout>
         <div className="min-h-screen bg-[#020617] flex items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+          <Loader2 className="w-8 h-8 animate-spin text-cyan-500" />
         </div>
       </OrganizerLayout>
     );
@@ -465,7 +465,7 @@ export default function CreateCompetition() {
             <Button onClick={() => {
               localStorage.setItem('contestio_returnTo', window.location.pathname + window.location.search);
               setLocation('/auth/login');
-            }} className="bg-orange-500 hover:bg-orange-600 text-white font-bold w-full h-12 rounded-xl">
+            }} className="bg-cyan-500 hover:bg-cyan-600 text-white font-bold w-full h-12 rounded-xl">
               Prihlásiť sa
             </Button>
           </div>
@@ -476,7 +476,7 @@ export default function CreateCompetition() {
 
   return (
     <OrganizerLayout>
-      <div className="min-h-screen bg-[#020617] text-slate-200 py-8 selection:bg-orange-500/30 font-sans -m-4 md:-m-6 lg:-m-8 p-4 md:p-6 lg:p-8">
+      <div className="min-h-screen bg-[#020617] text-slate-200 py-8 selection:bg-cyan-500/30 font-sans -m-4 md:-m-6 lg:-m-8 p-4 md:p-6 lg:p-8">
         <div className="max-w-5xl mx-auto">
 
           <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
@@ -503,7 +503,7 @@ export default function CreateCompetition() {
               )}
               <div className="flex items-center bg-slate-900/50 rounded-full border border-slate-800 p-1 pl-4 pr-4">
                 <span className="text-[10px] uppercase font-bold text-slate-500 mr-2 tracking-wide">Balík</span>
-                <span className={`text-xs font-black uppercase ${selectedPlan !== 'basic' ? 'text-orange-500' : 'text-white'}`}>
+                <span className={`text-xs font-black uppercase ${selectedPlan !== 'basic' ? 'text-cyan-500' : 'text-white'}`}>
                   {selectedPlan}
                 </span>
               </div>
@@ -513,7 +513,7 @@ export default function CreateCompetition() {
           <StepIndicator currentStep={currentStep} steps={STEPS} />
 
           <div className="mt-8 bg-[#0B1221] border border-slate-800/60 rounded-2xl shadow-2xl overflow-hidden relative min-h-[500px]">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 blur-[100px] pointer-events-none" />
+            <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/5 blur-[100px] pointer-events-none" />
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/5 blur-[100px] pointer-events-none" />
 
             <AnimatePresence mode="wait">
@@ -535,22 +535,22 @@ export default function CreateCompetition() {
                           onClick={() => setSelectedPlan(plan.id)}
                           className={`relative cursor-pointer rounded-2xl border-2 p-6 transition-all hover:scale-[1.02] active:scale-[0.98] ${
                             isSelected
-                              ? 'border-orange-500 bg-orange-500/10 shadow-[0_10px_40px_-10px_rgba(249,115,22,0.2)]'
+                              ? 'border-cyan-500 bg-cyan-500/10 shadow-[0_10px_40px_-10px_rgba(249,115,22,0.2)]'
                               : 'border-slate-800 bg-slate-950 hover:border-slate-600'
                           }`}
                         >
                           {'recommended' in plan && plan.recommended && (
-                            <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-[10px] font-black uppercase tracking-wider px-4 py-1 rounded-full shadow-lg">
+                            <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-cyan-500 text-white text-[10px] font-black uppercase tracking-wider px-4 py-1 rounded-full shadow-lg">
                               Odporúčané
                             </div>
                           )}
                           <div className="flex items-center gap-4 mb-5">
-                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${isSelected ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30' : 'bg-slate-900 text-slate-400 border border-slate-800'}`}>
+                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${isSelected ? 'bg-cyan-500 text-white shadow-lg shadow-orange-500/30' : 'bg-slate-900 text-slate-400 border border-slate-800'}`}>
                               <Icon className="w-6 h-6" />
                             </div>
                             <div>
                               <h3 className="font-black text-white uppercase tracking-wide">{plan.name}</h3>
-                              <p className="text-2xl font-mono font-medium text-orange-500">{plan.price}€</p>
+                              <p className="text-2xl font-mono font-medium text-cyan-500">{plan.price}€</p>
                             </div>
                           </div>
                           <p className="text-sm text-slate-400 mb-5">{plan.description}</p>
@@ -563,7 +563,7 @@ export default function CreateCompetition() {
                             ))}
                           </ul>
                           {isSelected && (
-                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute top-4 right-4 w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute top-4 right-4 w-6 h-6 bg-cyan-500 rounded-full flex items-center justify-center">
                               <Check size={14} className="text-white" />
                             </motion.div>
                           )}
@@ -604,7 +604,7 @@ export default function CreateCompetition() {
                             <label className="text-xs text-slate-400 font-bold ml-1">Názov súťaže *</label>
                             <div className="relative">
                               <Trophy size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-                              <Input {...form.register("name")} className="pl-9 bg-slate-950 border-slate-800 focus:border-orange-500 text-white h-12 rounded-xl" placeholder="napr. Jarný kaprový maratón 2025" />
+                              <Input {...form.register("name")} className="pl-9 bg-slate-950 border-slate-800 focus:border-cyan-500 text-white h-12 rounded-xl" placeholder="napr. Jarný kaprový maratón 2025" />
                             </div>
                             {form.formState.errors.name && <p className="text-red-500 text-[10px] pl-1">{form.formState.errors.name.message}</p>}
                           </div>
@@ -613,7 +613,7 @@ export default function CreateCompetition() {
                             <label className="text-xs text-slate-400 font-bold ml-1">Miesto konania *</label>
                             <div className="relative">
                               <MapPin size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-                              <Input {...form.register("location")} className="pl-9 bg-slate-950 border-slate-800 focus:border-orange-500 text-white h-12 rounded-xl" placeholder="napr. Vodná nádrž Domaša" />
+                              <Input {...form.register("location")} className="pl-9 bg-slate-950 border-slate-800 focus:border-cyan-500 text-white h-12 rounded-xl" placeholder="napr. Vodná nádrž Domaša" />
                             </div>
                             {form.formState.errors.location && <p className="text-red-500 text-[10px] pl-1">{form.formState.errors.location.message}</p>}
                           </div>
@@ -622,7 +622,7 @@ export default function CreateCompetition() {
                             <label className="text-xs text-slate-400 font-bold ml-1">Kontaktný telefón *</label>
                             <div className="relative">
                               <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-                              <Input type="tel" {...form.register("contactPhone")} className="pl-9 bg-slate-950 border-slate-800 focus:border-orange-500 text-white h-12 rounded-xl" placeholder="+421 900 123 456" />
+                              <Input type="tel" {...form.register("contactPhone")} className="pl-9 bg-slate-950 border-slate-800 focus:border-cyan-500 text-white h-12 rounded-xl" placeholder="+421 900 123 456" />
                             </div>
                             {form.formState.errors.contactPhone && <p className="text-red-500 text-[10px] pl-1">{form.formState.errors.contactPhone.message}</p>}
                           </div>
@@ -647,7 +647,7 @@ export default function CreateCompetition() {
                             <label className="text-xs text-slate-400 font-bold ml-1">Kontaktný email *</label>
                             <div className="relative">
                               <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-                              <Input type="email" {...form.register("contactEmail")} className="pl-9 bg-slate-950 border-slate-800 focus:border-orange-500 text-white h-12 rounded-xl" placeholder="info@vasasutaz.sk" />
+                              <Input type="email" {...form.register("contactEmail")} className="pl-9 bg-slate-950 border-slate-800 focus:border-cyan-500 text-white h-12 rounded-xl" placeholder="info@vasasutaz.sk" />
                             </div>
                             {form.formState.errors.contactEmail && <p className="text-red-500 text-[10px] pl-1">{form.formState.errors.contactEmail.message}</p>}
                           </div>
@@ -667,12 +667,12 @@ export default function CreateCompetition() {
 
                   <div className="space-y-2">
                     <label className="text-xs text-slate-400 font-bold ml-1">Popis súťaže</label>
-                    <Textarea {...form.register("description")} className="bg-slate-950 border-slate-800 text-white min-h-[100px] rounded-xl focus:border-orange-500 p-4 leading-relaxed text-sm" placeholder="Stručný popis súťaže pre účastníkov..." />
+                    <Textarea {...form.register("description")} className="bg-slate-950 border-slate-800 text-white min-h-[100px] rounded-xl focus:border-cyan-500 p-4 leading-relaxed text-sm" placeholder="Stručný popis súťaže pre účastníkov..." />
                   </div>
 
                   <div className="space-y-2">
                     <label className="text-xs text-slate-400 font-bold ml-1">Pravidlá</label>
-                    <Textarea {...form.register("rules")} className="bg-slate-950 border-slate-800 text-white min-h-[120px] rounded-xl focus:border-orange-500 p-4 leading-relaxed font-mono text-sm" placeholder="Čo sa boduje, povolené nástrahy, povinná výbava, spôsob váženia, penalizácie..." />
+                    <Textarea {...form.register("rules")} className="bg-slate-950 border-slate-800 text-white min-h-[120px] rounded-xl focus:border-cyan-500 p-4 leading-relaxed font-mono text-sm" placeholder="Čo sa boduje, povolené nástrahy, povinná výbava, spôsob váženia, penalizácie..." />
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-slate-800/50">
@@ -689,18 +689,18 @@ export default function CreateCompetition() {
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs font-black uppercase text-slate-500 tracking-widest">Min. váha (kg)</label>
-                      <Input type="number" {...form.register("minWeight", { valueAsNumber: true })} className="bg-slate-950 border-slate-800 text-white h-12 rounded-xl focus:border-orange-500 font-mono text-lg" min={1} max={15} step={0.5} />
+                      <Input type="number" {...form.register("minWeight", { valueAsNumber: true })} className="bg-slate-950 border-slate-800 text-white h-12 rounded-xl focus:border-cyan-500 font-mono text-lg" min={1} max={15} step={0.5} />
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs font-black uppercase text-slate-500 tracking-widest">Veľká ryba od (kg)</label>
-                      <Input type="number" {...form.register("bigFishThreshold", { valueAsNumber: true })} className="bg-slate-950 border-slate-800 text-white h-12 rounded-xl focus:border-orange-500 font-mono text-lg" min={1} max={50} step={0.5} />
+                      <Input type="number" {...form.register("bigFishThreshold", { valueAsNumber: true })} className="bg-slate-950 border-slate-800 text-white h-12 rounded-xl focus:border-cyan-500 font-mono text-lg" min={1} max={50} step={0.5} />
                       <p className="text-[10px] text-slate-600">Úlovky nad touto váhou budú zvýraznené v live feede</p>
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs font-black uppercase text-slate-500 tracking-widest">Štartovné</label>
                       <div className="relative">
                         <Banknote size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-                        <Input {...form.register("registrationFee")} className="pl-9 bg-slate-950 border-slate-800 text-white h-12 rounded-xl focus:border-orange-500 font-mono text-lg" placeholder="Napr. 150 €" />
+                        <Input {...form.register("registrationFee")} className="pl-9 bg-slate-950 border-slate-800 text-white h-12 rounded-xl focus:border-cyan-500 font-mono text-lg" placeholder="Napr. 150 €" />
                       </div>
                     </div>
                   </div>
@@ -727,7 +727,7 @@ export default function CreateCompetition() {
                           placeholder={currentPlanLimits.maxTeams ? `max ${currentPlanLimits.maxTeams}` : "neobmedzené"}
                           value={form.watch("maxTeams") || ''}
                           onChange={(e) => form.setValue("maxTeams", e.target.value ? parseInt(e.target.value) : undefined)}
-                          className="pl-9 bg-slate-950 border-slate-800 text-white h-12 rounded-xl focus:border-orange-500 font-mono"
+                          className="pl-9 bg-slate-950 border-slate-800 text-white h-12 rounded-xl focus:border-cyan-500 font-mono"
                         />
                       </div>
                       {currentPlanLimits.maxTeams !== null && <p className="text-[10px] text-slate-600 pl-1">Balík {currentPlanLimits.name} povoľuje max. {currentPlanLimits.maxTeams} tímov</p>}
@@ -741,7 +741,7 @@ export default function CreateCompetition() {
                           value={String(form.watch("teamSize") || 1)}
                           onValueChange={(val) => form.setValue("teamSize", parseInt(val))}
                         >
-                          <SelectTrigger className="pl-9 bg-slate-950 border-slate-800 text-white h-12 rounded-xl focus:border-orange-500 font-mono text-lg">
+                          <SelectTrigger className="pl-9 bg-slate-950 border-slate-800 text-white h-12 rounded-xl focus:border-cyan-500 font-mono text-lg">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent className="bg-slate-900 border-slate-800 text-white">
@@ -759,7 +759,7 @@ export default function CreateCompetition() {
                   </div>
 
                   <div className="space-y-4 pt-6 border-t border-slate-800/50">
-                    <label className="text-xs font-black uppercase text-orange-500 tracking-widest flex items-center gap-2 mb-4">
+                    <label className="text-xs font-black uppercase text-cyan-500 tracking-widest flex items-center gap-2 mb-4">
                       <Gift size={14} /> Ceny pre víťazov
                     </label>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -821,9 +821,9 @@ export default function CreateCompetition() {
                   </div>
 
                   <div className="space-y-6">
-                    <div className="bg-orange-500/10 border border-orange-500/30 rounded-2xl p-6 flex items-center justify-between">
+                    <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-2xl p-6 flex items-center justify-between">
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-orange-500 flex items-center justify-center shadow-lg shadow-orange-500/30">
+                        <div className="w-12 h-12 rounded-xl bg-cyan-500 flex items-center justify-center shadow-lg shadow-orange-500/30">
                           {(() => { const PlanIcon = PLANS.find(p => p.id === selectedPlan)?.icon || Star; return <PlanIcon className="w-6 h-6 text-white" />; })()}
                         </div>
                         <div>
@@ -831,7 +831,7 @@ export default function CreateCompetition() {
                           <p className="font-black text-white text-lg uppercase tracking-wide">{PLANS.find(p => p.id === selectedPlan)?.name}</p>
                         </div>
                       </div>
-                      <p className="text-3xl font-mono font-medium text-orange-500">{PLANS.find(p => p.id === selectedPlan)?.price}€</p>
+                      <p className="text-3xl font-mono font-medium text-cyan-500">{PLANS.find(p => p.id === selectedPlan)?.price}€</p>
                     </div>
 
                     <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-5 flex items-start gap-3">
@@ -904,7 +904,7 @@ export default function CreateCompetition() {
               </Button>
               <div className="flex gap-4">
                 {currentStep < STEPS.length ? (
-                  <Button onClick={handleNext} disabled={isSaving || createMutation.isPending || updateMutation.isPending} className="bg-orange-500 hover:bg-orange-600 text-white font-black uppercase tracking-widest h-12 px-8 rounded-xl transition-transform active:scale-95">
+                  <Button onClick={handleNext} disabled={isSaving || createMutation.isPending || updateMutation.isPending} className="bg-cyan-500 hover:bg-cyan-600 text-white font-black uppercase tracking-widest h-12 px-8 rounded-xl transition-transform active:scale-95">
                     {(isSaving || createMutation.isPending || updateMutation.isPending) && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                     Ďalej <ArrowRight size={16} className="ml-2" />
                   </Button>

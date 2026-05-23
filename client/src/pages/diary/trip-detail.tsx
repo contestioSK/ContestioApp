@@ -50,7 +50,7 @@ const getFishIconColor = (fishType?: string) => {
   if (fishType.includes("sumec")) return "text-purple-500";
   if (fishType.includes("amur")) return "text-emerald-500";
   if (fishType.includes("pstruh")) return "text-pink-500";
-  if (fishType.includes("zubac")) return "text-orange-500";
+  if (fishType.includes("zubac")) return "text-cyan-500";
   
   return "text-blue-500";
 };
@@ -431,12 +431,12 @@ export default function TripDetail() {
                               <div className="space-y-1">
                                 <div className="flex items-center justify-between">
                                   <span className="text-sm text-muted-foreground">Váha:</span>
-                                  <span className="font-mono font-medium text-lg text-[#F97316]">{parseFloat(catch_.weight).toFixed(2)} kg</span>
+                                  <span className="font-mono font-medium text-lg text-[#28C6CE]">{parseFloat(catch_.weight).toFixed(2)} kg</span>
                                 </div>
                                 {catch_.lengthCm && (
                                   <div className="flex items-center justify-between">
                                     <span className="text-sm text-muted-foreground">Dĺžka:</span>
-                                    <span className="font-mono font-medium text-[#F97316]">{catch_.lengthCm} cm</span>
+                                    <span className="font-mono font-medium text-[#28C6CE]">{catch_.lengthCm} cm</span>
                                   </div>
                                 )}
                               </div>
@@ -612,7 +612,7 @@ export default function TripDetail() {
                 <TacticalIcon icon={Fish} variant="cyan" size="sm" showLabel={false} />
                 <div className="flex-1">
                   <div className="text-xs md:text-sm text-muted-foreground mb-1">Počet úlovkov</div>
-                  <div className="text-xl md:text-2xl font-mono font-medium text-[#F97316]" data-testid="text-total-catches">{totalCatches} ks</div>
+                  <div className="text-xl md:text-2xl font-mono font-medium text-[#28C6CE]" data-testid="text-total-catches">{totalCatches} ks</div>
                 </div>
               </div>
             </CardContent>
@@ -624,7 +624,7 @@ export default function TripDetail() {
                 <TacticalIcon icon={Weight} variant="indigo" size="sm" showLabel={false} />
                 <div className="flex-1">
                   <div className="text-xs md:text-sm text-muted-foreground mb-1">Celková váha</div>
-                  <div className="text-xl md:text-2xl font-mono font-medium text-[#F97316]" data-testid="text-total-weight">{totalWeight.toFixed(2)} kg</div>
+                  <div className="text-xl md:text-2xl font-mono font-medium text-[#28C6CE]" data-testid="text-total-weight">{totalWeight.toFixed(2)} kg</div>
                 </div>
               </div>
             </CardContent>
@@ -636,7 +636,7 @@ export default function TripDetail() {
                 <TacticalIcon icon={Trophy} variant="amber" size="sm" showLabel={false} />
                 <div className="flex-1">
                   <div className="text-xs md:text-sm text-muted-foreground mb-1">Najväčší úlovok</div>
-                  <div className="text-xl md:text-2xl font-mono font-medium text-[#F97316]" data-testid="text-biggest-catch">
+                  <div className="text-xl md:text-2xl font-mono font-medium text-[#28C6CE]" data-testid="text-biggest-catch">
                     {biggestCatch ? `${parseFloat(biggestCatch.weight).toFixed(2)} kg` : "—"}
                   </div>
                   {biggestCatch && (
@@ -653,7 +653,7 @@ export default function TripDetail() {
                 <TacticalIcon icon={Scale} variant="purple" size="sm" showLabel={false} />
                 <div className="flex-1">
                   <div className="text-xs md:text-sm text-muted-foreground mb-1">Priemerná váha</div>
-                  <div className="text-xl md:text-2xl font-mono font-medium text-[#F97316]">{averageWeight.toFixed(2)} kg</div>
+                  <div className="text-xl md:text-2xl font-mono font-medium text-[#28C6CE]">{averageWeight.toFixed(2)} kg</div>
                 </div>
               </div>
             </CardContent>
@@ -667,7 +667,7 @@ export default function TripDetail() {
                   <div className="text-xs md:text-sm text-muted-foreground mb-1">Lysec / Šupináč</div>
                   {(lysecCount + supinacCount) > 0 ? (
                     <>
-                      <div className="text-xl md:text-2xl font-mono font-medium text-[#F97316]">{lysecCount} / {supinacCount}</div>
+                      <div className="text-xl md:text-2xl font-mono font-medium text-[#28C6CE]">{lysecCount} / {supinacCount}</div>
                       <div className="flex items-center gap-2 mt-1">
                         <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
                           <div
@@ -681,7 +681,7 @@ export default function TripDetail() {
                       </div>
                     </>
                   ) : (
-                    <div className="text-xl md:text-2xl font-mono font-medium text-[#F97316]">—</div>
+                    <div className="text-xl md:text-2xl font-mono font-medium text-[#28C6CE]">—</div>
                   )}
                 </div>
               </div>
@@ -702,12 +702,12 @@ export default function TripDetail() {
                             <span className="text-muted-foreground mr-1">{i + 1}.</span>
                             {bait}
                           </span>
-                          <span className="text-xs font-mono font-medium text-[#F97316] whitespace-nowrap">{count}×</span>
+                          <span className="text-xs font-mono font-medium text-[#28C6CE] whitespace-nowrap">{count}×</span>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <div className="text-xl md:text-2xl font-mono font-medium text-[#F97316]">—</div>
+                    <div className="text-xl md:text-2xl font-mono font-medium text-[#28C6CE]">—</div>
                   )}
                 </div>
               </div>
@@ -924,7 +924,7 @@ export default function TripDetail() {
               <AlertDialogAction
                 onClick={() => endTripMutation.mutate()}
                 disabled={endTripMutation.isPending}
-                className="bg-orange-600 hover:bg-orange-700"
+                className="bg-cyan-600 hover:bg-cyan-700"
                 data-testid="button-confirm-end-trip"
               >
                 {endTripMutation.isPending ? "Ukončujem..." : "Ukončiť výpravu"}

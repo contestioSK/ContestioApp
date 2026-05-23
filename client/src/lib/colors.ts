@@ -29,9 +29,9 @@ export interface PaletteColor {
 export const CONTESTIO_PALETTE: PaletteColor[] = [
   { 
     id: 1, 
-    name: 'Apex Orange', 
-    dark: { tailwind: 'bg-orange-500', hex: '#f97316', text: 'text-orange-500', bg: 'bg-orange-500', border: 'border-orange-500' },
-    light: { tailwind: 'bg-orange-700', hex: '#c2410c', text: 'text-orange-700', bg: 'bg-orange-700', border: 'border-orange-700' },
+    name: 'PriVode Teal', 
+    dark: { tailwind: 'bg-cyan-400', hex: '#28C6CE', text: 'text-cyan-400', bg: 'bg-cyan-400', border: 'border-cyan-400' },
+    light: { tailwind: 'bg-cyan-700', hex: '#0E9EA6', text: 'text-cyan-700', bg: 'bg-cyan-700', border: 'border-cyan-700' },
     usage: 'Brand, Primárne CTA'
   },
   { 
@@ -78,9 +78,9 @@ export const CONTESTIO_PALETTE: PaletteColor[] = [
   },
   { 
     id: 8, 
-    name: 'Energy Orange', 
-    dark: { tailwind: 'bg-orange-500', hex: '#f97316', text: 'text-orange-500', bg: 'bg-orange-500', border: 'border-orange-500' },
-    light: { tailwind: 'bg-orange-600', hex: '#ea580c', text: 'text-orange-600', bg: 'bg-orange-600', border: 'border-orange-600' },
+    name: 'Teal Action', 
+    dark: { tailwind: 'bg-cyan-400', hex: '#28C6CE', text: 'text-cyan-400', bg: 'bg-cyan-400', border: 'border-cyan-400' },
+    light: { tailwind: 'bg-cyan-600', hex: '#1DB5BC', text: 'text-cyan-600', bg: 'bg-cyan-600', border: 'border-cyan-600' },
     usage: 'Dynamika, Akcia'
   },
   { 

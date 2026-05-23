@@ -107,9 +107,9 @@ export default function RegisterPage() {
 
   if (registrationSuccess) {
     return (
-      <div className="min-h-screen bg-[#020617] flex items-center justify-center p-4 selection:bg-orange-500/30">
+      <div className="min-h-screen bg-[#020617] flex items-center justify-center p-4 selection:bg-cyan-500/30">
         <div className="fixed inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-orange-500/5 rounded-full blur-[120px]" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-cyan-500/5 rounded-full blur-[120px]" />
         </div>
         <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
           <Card className="w-full max-w-md bg-slate-900/50 border-slate-800 text-center p-8 backdrop-blur-md relative z-10">
@@ -130,7 +130,7 @@ export default function RegisterPage() {
               <div className="flex justify-between items-center pt-2">
                 <button
                   onClick={handleChangeEmail}
-                  className="text-xs text-slate-500 hover:text-orange-500 flex items-center gap-1 transition-colors"
+                  className="text-xs text-slate-500 hover:text-cyan-500 flex items-center gap-1 transition-colors"
                 >
                   <ArrowLeft size={12} /> Zmeniť email
                 </button>
@@ -153,9 +153,9 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#020617] flex items-center justify-center p-4 selection:bg-orange-500/30">
+    <div className="min-h-screen bg-[#020617] flex items-center justify-center p-4 selection:bg-cyan-500/30">
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-orange-500/5 rounded-full blur-[120px]" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-cyan-500/5 rounded-full blur-[120px]" />
       </div>
 
       <motion.div
@@ -168,7 +168,7 @@ export default function RegisterPage() {
           <CardHeader className="text-center pb-2">
             <div className="flex justify-center mb-6">
               <div className="flex items-center gap-2">
-                <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center transform -rotate-6 shadow-lg shadow-orange-500/20">
+                <div className="w-10 h-10 bg-cyan-500 rounded-lg flex items-center justify-center transform -rotate-6 shadow-lg shadow-orange-500/20">
                   <Fish className="text-white w-6 h-6" />
                 </div>
                 <span className="text-2xl font-black italic text-white tracking-tighter">PRIVODE</span>
@@ -222,13 +222,13 @@ export default function RegisterPage() {
                           onClick={() => field.onChange("fisherman")}
                           className={`cursor-pointer border rounded-xl p-3 flex flex-col items-center gap-2 transition-all duration-200 ${
                             field.value === 'fisherman'
-                              ? 'bg-orange-500/10 border-orange-500 text-white shadow-[0_0_15px_rgba(249,115,22,0.1)]'
+                              ? 'bg-cyan-500/10 border-cyan-500 text-white shadow-[0_0_15px_rgba(249,115,22,0.1)]'
                               : 'bg-slate-950/50 border-slate-800 text-slate-500 hover:border-slate-700 hover:bg-slate-900'
                           }`}
                           data-testid="option-fisherman"
                         >
                           <div className="flex items-center gap-2 mb-1">
-                            <Anchor className={field.value === 'fisherman' ? "text-orange-500" : "text-slate-600"} size={20} />
+                            <Anchor className={field.value === 'fisherman' ? "text-cyan-500" : "text-slate-600"} size={20} />
                             <span className="text-xs font-black uppercase tracking-widest">Rybár</span>
                           </div>
                           <span className={`text-[10px] text-center leading-tight ${
@@ -273,7 +273,7 @@ export default function RegisterPage() {
                           <Input
                             {...field}
                             disabled={registerMutation.isPending}
-                            className="bg-slate-950 border-slate-800 text-white focus:border-orange-500/50 h-11"
+                            className="bg-slate-950 border-slate-800 text-white focus:border-cyan-500/50 h-11"
                             data-testid="input-first-name"
                           />
                         </FormControl>
@@ -291,7 +291,7 @@ export default function RegisterPage() {
                           <Input
                             {...field}
                             disabled={registerMutation.isPending}
-                            className="bg-slate-950 border-slate-800 text-white focus:border-orange-500/50 h-11"
+                            className="bg-slate-950 border-slate-800 text-white focus:border-cyan-500/50 h-11"
                             data-testid="input-last-name"
                           />
                         </FormControl>
@@ -313,7 +313,7 @@ export default function RegisterPage() {
                           type="email"
                           placeholder="napr. peto@rybar.sk"
                           disabled={registerMutation.isPending}
-                          className="bg-slate-950 border-slate-800 text-white focus:border-orange-500/50 h-11"
+                          className="bg-slate-950 border-slate-800 text-white focus:border-cyan-500/50 h-11"
                           data-testid="input-email"
                         />
                       </FormControl>
@@ -334,7 +334,7 @@ export default function RegisterPage() {
                             {...field}
                             type={showPassword ? "text" : "password"}
                             disabled={registerMutation.isPending}
-                            className="bg-slate-950 border-slate-800 text-white focus:border-orange-500/50 pr-10 h-11"
+                            className="bg-slate-950 border-slate-800 text-white focus:border-cyan-500/50 pr-10 h-11"
                             data-testid="input-password"
                           />
                           <button
@@ -366,7 +366,7 @@ export default function RegisterPage() {
                           checked={field.value}
                           onCheckedChange={field.onChange}
                           disabled={registerMutation.isPending}
-                          className="border-slate-600 data-[state=checked]:bg-orange-500 data-[state=checked]:border-orange-500"
+                          className="border-slate-600 data-[state=checked]:bg-cyan-500 data-[state=checked]:border-cyan-500"
                           data-testid="checkbox-newsletter"
                         />
                       </FormControl>
@@ -385,7 +385,7 @@ export default function RegisterPage() {
                 <div className="space-y-3">
                   <Button
                     type="submit"
-                    className="w-full bg-orange-500 hover:bg-orange-600 text-white font-black uppercase tracking-widest h-14 rounded-xl shadow-[0_10px_40px_-10px_rgba(249,115,22,0.5)] transition-all active:scale-[0.98]"
+                    className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-black uppercase tracking-widest h-14 rounded-xl shadow-[0_10px_40px_-10px_rgba(249,115,22,0.5)] transition-all active:scale-[0.98]"
                     disabled={registerMutation.isPending || googleLoading}
                     data-testid="button-register"
                   >
@@ -414,7 +414,7 @@ export default function RegisterPage() {
                   data-testid="link-login"
                 >
                   <p className="text-xs text-slate-400 mb-0.5">Už máš účet?</p>
-                  <span className="text-sm font-bold text-orange-500 group-hover:text-orange-400 transition-colors flex items-center justify-center gap-1">
+                  <span className="text-sm font-bold text-cyan-500 group-hover:text-cyan-400 transition-colors flex items-center justify-center gap-1">
                     Prihlásiť sa <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                   </span>
                 </div>

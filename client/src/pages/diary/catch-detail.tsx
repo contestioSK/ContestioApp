@@ -432,25 +432,25 @@ export default function CatchDetail() {
                           icon={Thermometer} 
                           label="Teplota vzduchu" 
                           value={catch_.airTemp ? `${Number(catch_.airTemp).toFixed(1)}°C` : null}
-                          valueColor="font-mono text-[#F97316]"
+                          valueColor="font-mono text-[#28C6CE]"
                         />
                         <SimpleRow 
                           icon={Droplets} 
                           label="Teplota vody" 
                           value={catch_.waterTemp ? `${Number(catch_.waterTemp).toFixed(1)}°C` : null}
-                          valueColor="font-mono text-[#F97316]"
+                          valueColor="font-mono text-[#28C6CE]"
                         />
                         <SimpleRow 
                           icon={Wind} 
                           label="Rýchlosť vetra" 
                           value={catch_.windSpeed ? `${Number(catch_.windSpeed).toFixed(1)} km/h` : null}
-                          valueColor="font-mono text-[#F97316]"
+                          valueColor="font-mono text-[#28C6CE]"
                         />
                         <SimpleRow 
                           icon={Gauge} 
                           label="Tlak vzduchu" 
                           value={catch_.airPressure ? `${Number(catch_.airPressure).toFixed(0)} hPa` : null}
-                          valueColor="font-mono text-[#F97316]"
+                          valueColor="font-mono text-[#28C6CE]"
                         />
                       </div>
                     </div>
@@ -467,13 +467,13 @@ export default function CatchDetail() {
                           {catch_.latitude && (
                             <div>
                               <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-1">Zem. šírka</div>
-                              <div className="font-mono font-medium text-[#F97316]">{Number(catch_.latitude).toFixed(6)}°</div>
+                              <div className="font-mono font-medium text-[#28C6CE]">{Number(catch_.latitude).toFixed(6)}°</div>
                             </div>
                           )}
                           {catch_.longitude && (
                             <div>
                               <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-1">Zem. dĺžka</div>
-                              <div className="font-mono font-medium text-[#F97316]">{Number(catch_.longitude).toFixed(6)}°</div>
+                              <div className="font-mono font-medium text-[#28C6CE]">{Number(catch_.longitude).toFixed(6)}°</div>
                             </div>
                           )}
                         </div>

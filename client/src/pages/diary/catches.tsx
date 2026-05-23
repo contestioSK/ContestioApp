@@ -605,8 +605,8 @@ export default function DiaryCatches() {
           <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div className="space-y-3">
               <div className="flex items-center gap-3">
-                <span className="h-px w-16 bg-[#F97316]"></span>
-                <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#F97316]">Galéria</span>
+                <span className="h-px w-16 bg-[#28C6CE]"></span>
+                <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#28C6CE]">Galéria</span>
               </div>
               <div className="space-y-1">
                 <div className="flex items-center gap-4">
@@ -769,7 +769,7 @@ export default function DiaryCatches() {
                         <TacticalIcon icon={Fish} variant="cyan" size="sm" showLabel={false} />
                         <div className="flex-1">
                           <div className="text-xs md:text-sm text-muted-foreground mb-1">Úlovky</div>
-                          <div className="text-xl md:text-2xl font-mono font-medium text-[#F97316]" data-testid="text-total-count">{totalCount} ks</div>
+                          <div className="text-xl md:text-2xl font-mono font-medium text-[#28C6CE]" data-testid="text-total-count">{totalCount} ks</div>
                         </div>
                       </div>
                     </CardContent>
@@ -788,7 +788,7 @@ export default function DiaryCatches() {
                         <TacticalIcon icon={Trophy} variant="amber" size="sm" showLabel={false} />
                         <div className="flex-1">
                           <div className="text-xs md:text-sm text-muted-foreground mb-1">Najväčšia ryba</div>
-                          <div className="text-xl md:text-2xl font-mono font-medium text-[#F97316]" data-testid="text-total-biggest">{biggestFish.toFixed(2)} kg</div>
+                          <div className="text-xl md:text-2xl font-mono font-medium text-[#28C6CE]" data-testid="text-total-biggest">{biggestFish.toFixed(2)} kg</div>
                         </div>
                       </div>
                     </CardContent>
@@ -800,7 +800,7 @@ export default function DiaryCatches() {
                         <TacticalIcon icon={Weight} variant="indigo" size="sm" showLabel={false} />
                         <div className="flex-1">
                           <div className="text-xs md:text-sm text-muted-foreground mb-1">Celková váha</div>
-                          <div className="text-xl md:text-2xl font-mono font-medium text-[#F97316]" data-testid="text-total-weight">{totalWeight.toFixed(2)} kg</div>
+                          <div className="text-xl md:text-2xl font-mono font-medium text-[#28C6CE]" data-testid="text-total-weight">{totalWeight.toFixed(2)} kg</div>
                         </div>
                       </div>
                     </CardContent>
@@ -812,7 +812,7 @@ export default function DiaryCatches() {
                         <TacticalIcon icon={Target} variant="purple" size="sm" showLabel={false} />
                         <div className="flex-1">
                           <div className="text-xs md:text-sm text-muted-foreground mb-1">Váhový priemer</div>
-                          <div className="text-xl md:text-2xl font-mono font-medium text-[#F97316]" data-testid="text-total-average">{averageWeight.toFixed(2)} kg</div>
+                          <div className="text-xl md:text-2xl font-mono font-medium text-[#28C6CE]" data-testid="text-total-average">{averageWeight.toFixed(2)} kg</div>
                         </div>
                       </div>
                     </CardContent>
@@ -1404,7 +1404,7 @@ export default function DiaryCatches() {
                                 <h3 className="font-bold text-foreground dark:text-white truncate text-sm leading-tight">
                                   {catch_.fishType ? getFishTypeLabel(catch_.fishType) : 'Neznámy druh'}
                                 </h3>
-                                <span className="font-black font-mono text-[#F97316] text-sm ml-2">
+                                <span className="font-black font-mono text-[#28C6CE] text-sm ml-2">
                                   {catch_.weight ? `${catch_.weight} kg` : catch_.lengthCm ? `${catch_.lengthCm} cm` : '—'}
                                 </span>
                               </div>

@@ -40,7 +40,7 @@ const getFishTypeLabel = (type: string) => {
 
 const StatCard = ({ label, value, unit, icon: Icon }: { label: string; value: string | number; unit?: string; icon: any }) => (
   <div className="bg-card border border-border p-4 md:p-5 rounded-xl flex items-center justify-between group hover:border-slate-700 transition-colors relative overflow-hidden">
-    <div className="absolute -right-4 -bottom-4 w-20 h-20 bg-slate-800/20 rounded-full blur-2xl group-hover:bg-[#F97316]/10 transition-colors" />
+    <div className="absolute -right-4 -bottom-4 w-20 h-20 bg-slate-800/20 rounded-full blur-2xl group-hover:bg-[#28C6CE]/10 transition-colors" />
     <div className="relative z-10">
       <div className="text-[10px] uppercase tracking-[0.2em] font-bold text-muted-foreground mb-1">{label}</div>
       <div className="flex items-baseline gap-1">
@@ -48,7 +48,7 @@ const StatCard = ({ label, value, unit, icon: Icon }: { label: string; value: st
         {unit && <span className="text-xs md:text-sm font-bold text-muted-foreground uppercase">{unit}</span>}
       </div>
     </div>
-    <div className="relative z-10 w-10 h-10 rounded-full bg-background flex items-center justify-center text-muted-foreground group-hover:text-[#F97316] transition-colors border border-border shadow-sm">
+    <div className="relative z-10 w-10 h-10 rounded-full bg-background flex items-center justify-center text-muted-foreground group-hover:text-[#28C6CE] transition-colors border border-border shadow-sm">
       <Icon size={18} strokeWidth={1.75} />
     </div>
   </div>
@@ -57,7 +57,7 @@ const StatCard = ({ label, value, unit, icon: Icon }: { label: string; value: st
 const CatchGridItem = ({ data, onClick }: { data: Catch; onClick: (c: Catch) => void }) => (
   <button
     onClick={() => onClick(data)}
-    className="group relative w-full aspect-[4/3] bg-card rounded-xl overflow-hidden border border-border cursor-pointer hover:border-[#F97316]/50 transition-all hover:shadow-[0_0_20px_rgba(249,115,22,0.15)] text-left focus:outline-none focus:ring-2 focus:ring-[#F97316] focus:ring-offset-2 focus:ring-offset-background"
+    className="group relative w-full aspect-[4/3] bg-card rounded-xl overflow-hidden border border-border cursor-pointer hover:border-[#28C6CE]/50 transition-all hover:shadow-[0_0_20px_rgba(249,115,22,0.15)] text-left focus:outline-none focus:ring-2 focus:ring-[#28C6CE] focus:ring-offset-2 focus:ring-offset-background"
     aria-label={`Zobraziť detail úlovku: ${Number(data.weight || 0).toFixed(3)} kg`}
   >
     {data.photoUrl ? (
@@ -77,7 +77,7 @@ const CatchGridItem = ({ data, onClick }: { data: Catch; onClick: (c: Catch) => 
     <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent opacity-90" />
 
     <div className="absolute top-3 left-3 z-10">
-      <span className="bg-[#F97316] text-white text-xs font-black px-2 py-0.5 rounded shadow-lg flex items-center gap-1">
+      <span className="bg-[#28C6CE] text-white text-xs font-black px-2 py-0.5 rounded shadow-lg flex items-center gap-1">
         <Scale size={10} />
         {Number(data.weight).toFixed(3)}
       </span>
@@ -222,7 +222,7 @@ export default function TeamDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-20 font-sans selection:bg-orange-500/30">
+    <div className="min-h-screen bg-background text-foreground pb-20 font-sans selection:bg-cyan-500/30">
 
       <div className="border-b border-border bg-background/95 backdrop-blur sticky top-0 z-40">
         <div className="container mx-auto px-4 py-4">
@@ -258,7 +258,7 @@ export default function TeamDetail() {
                 <div className="flex flex-wrap items-center gap-3 text-sm font-medium text-muted-foreground">
                   {teamData.sector && (
                     <Badge variant="outline" className="bg-card border-border text-foreground/80">
-                      <MapPin size={12} className="mr-1 text-[#F97316]" /> Sektor {teamData.sector}
+                      <MapPin size={12} className="mr-1 text-[#28C6CE]" /> Sektor {teamData.sector}
                     </Badge>
                   )}
                   {teamData.createdAt && (
@@ -275,7 +275,7 @@ export default function TeamDetail() {
                 variant={isFavorite ? "default" : "outline"}
                 onClick={handleToggleFavorite}
                 disabled={isAdding || isRemoving}
-                className={`min-w-[140px] shadow-none ${isFavorite ? "bg-[#F97316] hover:bg-orange-600 text-white" : "border-border text-muted-foreground hover:text-foreground"}`}
+                className={`min-w-[140px] shadow-none ${isFavorite ? "bg-[#28C6CE] hover:bg-cyan-600 text-white" : "border-border text-muted-foreground hover:text-foreground"}`}
               >
                 <Heart className={`w-4 h-4 mr-2 ${isFavorite ? "fill-white" : ""}`} />
                 {isFavorite ? "Sleduješ" : "Sledovať tím"}
@@ -299,9 +299,9 @@ export default function TeamDetail() {
           <div className="order-2 lg:order-1 lg:col-span-2 space-y-6">
             <div className="flex items-center justify-between border-b border-border pb-4">
               <h2 className="text-xl font-black italic text-foreground uppercase tracking-wide flex items-center gap-2">
-                <Fish className="text-[#F97316]" size={24} /> Úlovky tímu
+                <Fish className="text-[#28C6CE]" size={24} /> Úlovky tímu
               </h2>
-              <Badge variant="secondary" className="bg-[#F97316]/10 text-[#F97316] border-[#F97316]/20 font-bold">
+              <Badge variant="secondary" className="bg-[#28C6CE]/10 text-[#28C6CE] border-[#28C6CE]/20 font-bold">
                 {catchCount} ks SPOLU
               </Badge>
             </div>
@@ -350,7 +350,7 @@ export default function TeamDetail() {
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-foreground text-sm truncate">{member.name}</span>
                       {member.role === 'captain' && (
-                        <Badge className="bg-[#F97316]/10 text-[#F97316] border-[#F97316]/20 px-1 py-0 text-[9px] h-4">C</Badge>
+                        <Badge className="bg-[#28C6CE]/10 text-[#28C6CE] border-[#28C6CE]/20 px-1 py-0 text-[9px] h-4">C</Badge>
                       )}
                     </div>
                     {member.email && (
@@ -462,7 +462,7 @@ export default function TeamDetail() {
                       {Number(selectedPhoto.weight).toFixed(3)} kg
                     </div>
                     <div className="flex items-center gap-3 text-sm font-bold text-slate-300 mt-1">
-                      <span className="bg-[#F97316] text-white px-2 py-0.5 rounded text-[10px] uppercase shadow-sm">
+                      <span className="bg-[#28C6CE] text-white px-2 py-0.5 rounded text-[10px] uppercase shadow-sm">
                         {getFishTypeLabel(selectedPhoto.fishType)}
                       </span>
                       <span className="opacity-80" id="catch-photo-description">

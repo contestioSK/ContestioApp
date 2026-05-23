@@ -34,7 +34,7 @@ const getRoleBadgeColor = (role: string) => {
     case 'admin':
       return 'bg-red-500/20 text-red-400 hover:bg-red-500/30 border-red-500/30';
     case 'organizer':
-      return 'bg-orange-500/20 text-orange-400 hover:bg-orange-500/30 border-orange-500/30';
+      return 'bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30 border-cyan-500/30';
     case 'rozhodca':
       return 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 border-emerald-500/30';
     case 'verejnost':

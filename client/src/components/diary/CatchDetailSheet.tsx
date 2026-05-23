@@ -86,7 +86,7 @@ export function CatchDetailSheet({
               <div>
                 <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-0.5">Váha</p>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-black font-mono text-[#F97316]" data-testid="detail-weight">
+                  <span className="text-4xl font-black font-mono text-[#28C6CE]" data-testid="detail-weight">
                     {catchData.weight || '—'}
                   </span>
                   {catchData.weight && <span className="text-sm text-muted-foreground">kg</span>}
@@ -168,13 +168,13 @@ export function CatchDetailSheet({
                   {(catchData.waterTemp !== null && catchData.waterTemp !== undefined) && (
                     <div className="bg-blue-50 dark:bg-blue-950/30 rounded-lg p-3">
                       <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-1">Voda</p>
-                      <p className="font-mono font-medium text-[#F97316]" data-testid="detail-water-temp">{catchData.waterTemp}°C</p>
+                      <p className="font-mono font-medium text-[#28C6CE]" data-testid="detail-water-temp">{catchData.waterTemp}°C</p>
                     </div>
                   )}
                   {(catchData.airTemp !== null && catchData.airTemp !== undefined) && (
                     <div className="bg-blue-50 dark:bg-blue-950/30 rounded-lg p-3">
                       <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-1">Vzduch</p>
-                      <p className="font-mono font-medium text-[#F97316]" data-testid="detail-air-temp">{catchData.airTemp}°C</p>
+                      <p className="font-mono font-medium text-[#28C6CE]" data-testid="detail-air-temp">{catchData.airTemp}°C</p>
                     </div>
                   )}
                   {(catchData.windSpeed !== null && catchData.windSpeed !== undefined) && (
@@ -201,13 +201,13 @@ export function CatchDetailSheet({
                   {catchData.latitude && (
                     <div>
                       <p className="text-xs text-muted-foreground">Šírka</p>
-                      <p className="font-mono font-medium text-[#F97316]">{Number(catchData.latitude).toFixed(5)}°</p>
+                      <p className="font-mono font-medium text-[#28C6CE]">{Number(catchData.latitude).toFixed(5)}°</p>
                     </div>
                   )}
                   {catchData.longitude && (
                     <div>
                       <p className="text-xs text-muted-foreground">Dĺžka</p>
-                      <p className="font-mono font-medium text-[#F97316]">{Number(catchData.longitude).toFixed(5)}°</p>
+                      <p className="font-mono font-medium text-[#28C6CE]">{Number(catchData.longitude).toFixed(5)}°</p>
                     </div>
                   )}
                 </div>

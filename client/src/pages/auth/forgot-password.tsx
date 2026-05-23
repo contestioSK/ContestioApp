@@ -91,9 +91,9 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#020617] flex items-center justify-center p-4 selection:bg-orange-500/30">
+    <div className="min-h-screen bg-[#020617] flex items-center justify-center p-4 selection:bg-cyan-500/30">
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-orange-500/5 rounded-full blur-[120px]" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-cyan-500/5 rounded-full blur-[120px]" />
       </div>
 
       <motion.div
@@ -106,7 +106,7 @@ export default function ForgotPasswordPage() {
           <CardHeader className="text-center pb-2 pt-6">
             <div className="flex justify-center mb-4">
               <div className="w-12 h-12 bg-slate-800/50 rounded-full flex items-center justify-center border border-slate-700">
-                <KeyRound className="text-orange-500 w-6 h-6" />
+                <KeyRound className="text-cyan-500 w-6 h-6" />
               </div>
             </div>
             <CardTitle className="text-2xl font-black text-white uppercase italic">
@@ -131,7 +131,7 @@ export default function ForgotPasswordPage() {
                           <Input
                             {...field}
                             placeholder="tvoj@email.sk"
-                            className="bg-slate-950 border-slate-700 text-white focus:border-orange-500/50 h-11"
+                            className="bg-slate-950 border-slate-700 text-white focus:border-cyan-500/50 h-11"
                             autoComplete="email"
                             autoFocus
                           />
@@ -147,7 +147,7 @@ export default function ForgotPasswordPage() {
 
                   <Button
                     type="submit"
-                    className="w-full bg-orange-500 hover:bg-orange-600 text-white font-black uppercase tracking-widest h-12 rounded-xl shadow-[0_4px_14px_-4px_rgba(249,115,22,0.3)] transition-all active:scale-[0.98]"
+                    className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-black uppercase tracking-widest h-12 rounded-xl shadow-[0_4px_14px_-4px_rgba(249,115,22,0.3)] transition-all active:scale-[0.98]"
                     disabled={mutation.isPending || cooldown > 0}
                   >
                     {mutation.isPending ? (

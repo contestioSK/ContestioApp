@@ -56,7 +56,7 @@ const getTierStyle = (tier: string, isActive = true) => {
     case 'silver': 
       return "text-muted-foreground bg-slate-300/10 border-slate-300/30";
     case 'bronze': 
-      return "text-muted-foreground bg-orange-500/10 border-orange-500/30";
+      return "text-muted-foreground bg-cyan-500/10 border-cyan-500/30";
     default: return "text-muted-foreground bg-muted/10";
   }
 };
@@ -65,7 +65,7 @@ const getTierAccentColor = (tier: string) => {
   switch (tier) {
     case 'gold': return "bg-amber-500";
     case 'silver': return "bg-slate-400";
-    case 'bronze': return "bg-orange-600";
+    case 'bronze': return "bg-cyan-600";
     default: return "bg-muted";
   }
 };
@@ -74,7 +74,7 @@ const getTierHeaderColor = (tier: string) => {
   switch (tier) {
     case 'gold': return "text-amber-500";
     case 'silver': return "text-slate-400";
-    case 'bronze': return "text-orange-600";
+    case 'bronze': return "text-cyan-600";
     default: return "text-muted-foreground";
   }
 };
@@ -196,8 +196,8 @@ export default function BadgesPage() {
         <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="space-y-3">
             <div className="flex items-center gap-3">
-              <span className="h-px w-16 bg-[#F97316]"></span>
-              <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#F97316]">Tvoje úspechy</span>
+              <span className="h-px w-16 bg-[#28C6CE]"></span>
+              <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#28C6CE]">Tvoje úspechy</span>
             </div>
             <div className="space-y-1">
               <div className="flex items-center gap-4">
@@ -216,15 +216,15 @@ export default function BadgesPage() {
             {/* Katalóg výziev card */}
             <button
               onClick={() => setIsCatalogOpen(true)}
-              className="flex-1 flex items-center gap-3 bg-card border border-[#F97316]/30 hover:border-[#F97316]/60 p-3 sm:p-4 rounded-xl shadow-lg transition-all group cursor-pointer text-left"
+              className="flex-1 flex items-center gap-3 bg-card border border-[#28C6CE]/30 hover:border-[#28C6CE]/60 p-3 sm:p-4 rounded-xl shadow-lg transition-all group cursor-pointer text-left"
               data-testid="button-open-catalog"
             >
-              <div className="h-10 w-10 sm:h-12 sm:w-12 bg-[#F97316]/10 rounded-2xl flex items-center justify-center text-[#F97316] border border-[#F97316]/20 shrink-0 group-hover:bg-[#F97316]/15 transition-colors">
+              <div className="h-10 w-10 sm:h-12 sm:w-12 bg-[#28C6CE]/10 rounded-2xl flex items-center justify-center text-[#28C6CE] border border-[#28C6CE]/20 shrink-0 group-hover:bg-[#28C6CE]/15 transition-colors">
                 <Sparkles size={18} strokeWidth={1.75} />
               </div>
               <div>
-                <span className="text-[9px] font-bold text-[#F97316]/70 uppercase tracking-widest block mb-0.5">Katalóg</span>
-                <span className="text-lg sm:text-2xl font-medium text-[#F97316] leading-none font-mono tracking-tighter">
+                <span className="text-[9px] font-bold text-[#28C6CE]/70 uppercase tracking-widest block mb-0.5">Katalóg</span>
+                <span className="text-lg sm:text-2xl font-medium text-[#28C6CE] leading-none font-mono tracking-tighter">
                   {badgesList.length}<span className="text-[10px] sm:text-xs text-muted-foreground font-normal ml-0.5">výziev</span>
                 </span>
                 <div className="flex items-center gap-1.5 mt-1">
@@ -237,12 +237,12 @@ export default function BadgesPage() {
             <div className="flex-1 flex items-center gap-3 bg-card border border-border p-3 sm:p-4 rounded-xl shadow-lg">
               <div className="text-right">
                 <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest block mb-0.5">Tvoj pokrok</span>
-                <span className="text-lg sm:text-2xl font-medium text-[#F97316] leading-none font-mono tracking-tighter">
+                <span className="text-lg sm:text-2xl font-medium text-[#28C6CE] leading-none font-mono tracking-tighter">
                   {userBadges.length}<span className="text-[10px] sm:text-xs text-muted-foreground font-normal">/{totalPossibleBadges}</span>
                 </span>
                 <div className="flex items-center justify-end gap-1.5 mt-1">
                   <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground">{currentStatus}</span>
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#F97316] animate-pulse" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#28C6CE] animate-pulse" />
                 </div>
               </div>
               <div className="h-10 w-10 sm:h-12 sm:w-12 bg-muted/20 rounded-2xl flex items-center justify-center text-muted-foreground border border-border shadow-inner shrink-0">
@@ -261,11 +261,11 @@ export default function BadgesPage() {
             <div className="space-y-2">
               <h3 className="text-xl font-bold italic uppercase text-foreground tracking-tight">Tvoj prvý odznak čaká</h3>
               <p className="text-sm text-muted-foreground max-w-xs mx-auto leading-relaxed">
-                Stačí pridať prvý úlovok a získaš svoj prvý <span className="text-[#F97316] font-medium">bronzový odznak</span>.
+                Stačí pridať prvý úlovok a získaš svoj prvý <span className="text-[#28C6CE] font-medium">bronzový odznak</span>.
               </p>
             </div>
             <Button
-              className="bg-[#F97316] hover:bg-[#F97316]/90 text-white font-bold px-8"
+              className="bg-[#28C6CE] hover:bg-[#28C6CE]/90 text-white font-bold px-8"
               onClick={() => setLocation('/diary')}
               data-testid="button-add-first-catch"
             >
@@ -277,7 +277,7 @@ export default function BadgesPage() {
 
         {/* NEXT GOAL CARD - Orange border for active state per design manual */}
         {nextGoal && (
-          <Card className="border-2 border-[#F97316] bg-card transition-all rounded-xl overflow-hidden shadow-2xl shadow-orange-500/10">
+          <Card className="border-2 border-[#28C6CE] bg-card transition-all rounded-xl overflow-hidden shadow-2xl shadow-orange-500/10">
             <div className="px-6 pt-6 pb-4 flex items-center justify-between border-b border-border/30">
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-muted-foreground">Tvoj najbližší míľnik</span>
@@ -296,7 +296,7 @@ export default function BadgesPage() {
                       return <IconComponent size={32} strokeWidth={1.75} className="text-muted-foreground" />;
                     })()}
                   </div>
-                  <div className="absolute -bottom-2 -right-2 bg-[#F97316] text-white text-[9px] font-bold px-2 py-1 rounded shadow-lg uppercase tracking-tighter">
+                  <div className="absolute -bottom-2 -right-2 bg-[#28C6CE] text-white text-[9px] font-bold px-2 py-1 rounded shadow-lg uppercase tracking-tighter">
                     {nextGoal.tier}
                   </div>
                 </div>
@@ -306,14 +306,14 @@ export default function BadgesPage() {
                     {nextGoal.badgeDef.name}
                   </h3>
                   <p className="text-sm text-muted-foreground font-medium">
-                    Chýba ti už len <span className="text-[#F97316] font-medium font-mono">{nextGoal.remaining} {nextGoal.badgeDef.id.includes('weight') ? 'kg' : 'ks'}</span> k odomknutiu.
+                    Chýba ti už len <span className="text-[#28C6CE] font-medium font-mono">{nextGoal.remaining} {nextGoal.badgeDef.id.includes('weight') ? 'kg' : 'ks'}</span> k odomknutiu.
                   </p>
                 </div>
 
                 <div className="w-full md:w-48 space-y-2">
                   <div className="flex justify-between items-end">
                     <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Tvoj postup</span>
-                    <span className="text-sm font-medium text-[#F97316] font-mono">{Math.round(nextGoal.progressPercent)}%</span>
+                    <span className="text-sm font-medium text-[#28C6CE] font-mono">{Math.round(nextGoal.progressPercent)}%</span>
                   </div>
                   <Progress value={nextGoal.progressPercent} className="h-1.5" />
                 </div>
@@ -429,7 +429,7 @@ export default function BadgesPage() {
                               {isUnlocked ? (
                                 <Unlock className="w-3.5 h-3.5 text-emerald-500" strokeWidth={1.75} />
                               ) : (
-                                <span className="text-[10px] text-[#F97316] font-medium font-mono">{currentValue}/{threshold}</span>
+                                <span className="text-[10px] text-[#28C6CE] font-medium font-mono">{currentValue}/{threshold}</span>
                               )}
                             </div>
                           </div>
