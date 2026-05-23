@@ -124,7 +124,7 @@ export default function FishingActionCard({
           ) : (
             <Button
               onClick={onStartFishing}
-              className="bg-[#28C6CE] hover:bg-[#1DB5BC] text-white font-bold px-5 md:px-6 py-3 md:py-3.5 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 h-auto text-sm md:text-base"
+              className="bg-[#28C6CE] hover:bg-[#1DB5BC] text-slate-900 font-bold px-5 md:px-6 py-3 md:py-3.5 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 h-auto text-sm md:text-base"
               data-testid="cta-start-fishing"
             >
               <Play className="w-4 h-4 md:w-5 md:h-5 mr-2" strokeWidth={1.75} />
