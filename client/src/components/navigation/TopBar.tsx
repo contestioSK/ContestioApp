@@ -8,6 +8,7 @@ import UserMenu from "./UserMenu";
 import MobileMenu from "./MobileMenu";
 import DiarySearch from "./DiarySearch";
 import privodeLogo from "@assets/privode_logo_cropped.png";
+import privodeIcon from "@assets/ikona_Kreslicí_plátno_1_1779516652041.png";
 
 export default function TopBar() {
   const { user } = useAuth();
@@ -41,13 +42,20 @@ export default function TopBar() {
             {/* Logo */}
             <button
               onClick={handleLogoClick}
-              className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+              className="flex items-center hover:opacity-80 transition-opacity"
               data-testid="topbar-logo"
             >
+              {/* Mobile: icon only */}
+              <img 
+                src={privodeIcon} 
+                alt="PriVode" 
+                className="h-8 w-8 md:hidden" 
+              />
+              {/* Desktop: full logo */}
               <img 
                 src={privodeLogo} 
                 alt="PriVode" 
-                className="h-8 md:h-9" 
+                className="hidden md:block h-9" 
               />
             </button>
           </div>
