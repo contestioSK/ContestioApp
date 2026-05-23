@@ -1130,7 +1130,7 @@ export default function DiaryIndex() {
             {allCatchesList.length === 0 ? (
               <Button 
                 onClick={() => setIsStartFishingOpen(true)}
-                className="bg-cyan-600 hover:bg-cyan-700 rounded-xl px-6"
+                className="bg-[#28C6CE] hover:bg-[#1DB5BC] text-slate-900 rounded-xl px-6"
               >
                 <Play className="w-4 h-4 mr-2" />
                 Začať rybačku
