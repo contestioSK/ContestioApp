@@ -49,7 +49,7 @@ export default function SeasonOverviewCard({
           <div className="relative">
             {/* Mobile: number + label on same line, Desktop: stacked */}
             <div className="flex items-baseline gap-2 md:block">
-              <span className="text-4xl md:text-6xl font-mono font-medium text-[#F97316] tracking-tighter" data-testid="text-season-total">
+              <span className="text-4xl md:text-6xl font-mono font-medium text-[#28C6CE] tracking-tighter" data-testid="text-season-total">
                 {totalCatches}
               </span>
               <span className="text-xs md:text-sm text-slate-500 dark:text-slate-400 font-medium md:block md:mt-1 md:ml-1 flex items-center gap-2">
@@ -76,7 +76,7 @@ export default function SeasonOverviewCard({
               <div className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-2 md:p-3 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer">
                 <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-0.5 md:mb-1 uppercase font-bold tracking-wider">Naj Ryba</p>
                 <div className="flex items-baseline gap-1">
-                  <span className="font-mono font-medium text-[#F97316] text-base md:text-lg" data-testid="text-season-max-weight">{maxWeight.toFixed(2)}</span>
+                  <span className="font-mono font-medium text-[#28C6CE] text-base md:text-lg" data-testid="text-season-max-weight">{maxWeight.toFixed(2)}</span>
                   <span className="text-xs text-slate-400 dark:text-slate-500">kg</span>
                 </div>
               </div>
@@ -85,7 +85,7 @@ export default function SeasonOverviewCard({
             <div className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-2 md:p-3">
               <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-0.5 md:mb-1 uppercase font-bold tracking-wider">Naj Ryba</p>
               <div className="flex items-baseline gap-1">
-                <span className="font-mono font-medium text-[#F97316] text-base md:text-lg" data-testid="text-season-max-weight">{maxWeight.toFixed(2)}</span>
+                <span className="font-mono font-medium text-[#28C6CE] text-base md:text-lg" data-testid="text-season-max-weight">{maxWeight.toFixed(2)}</span>
                 <span className="text-xs text-slate-400 dark:text-slate-500">kg</span>
               </div>
             </div>
@@ -93,7 +93,7 @@ export default function SeasonOverviewCard({
           <div className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-2 md:p-3 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
             <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-0.5 md:mb-1 uppercase font-bold tracking-wider">Dni pri vode</p>
             <div className="flex items-baseline gap-1">
-              <span className="font-mono font-medium text-[#F97316] text-base md:text-lg" data-testid="text-season-days">{daysAtWater}</span>
+              <span className="font-mono font-medium text-[#28C6CE] text-base md:text-lg" data-testid="text-season-days">{daysAtWater}</span>
               <span className="text-xs text-slate-400 dark:text-slate-500">dní</span>
             </div>
           </div>

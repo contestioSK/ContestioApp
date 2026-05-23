@@ -650,12 +650,12 @@ export default function DiaryIndex() {
         <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="space-y-3">
             <div className="flex items-center gap-3">
-              <span className="h-px w-16 bg-[#F97316]"></span>
-              <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#F97316]">Rybársky denník</span>
+              <span className="h-px w-16 bg-[#28C6CE]"></span>
+              <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#28C6CE]">Rybársky denník</span>
             </div>
             <div className="space-y-1">
               <div className="flex items-center gap-4">
-                <TacticalIcon icon={BookOpen} variant="orange" size="lg" showLabel={false} />
+                <TacticalIcon icon={BookOpen} variant="cyan" size="lg" showLabel={false} />
                 <h1 className="text-4xl md:text-5xl font-black italic tracking-tighter uppercase text-foreground leading-none">
                   {(() => {
                     const displayName = user?.nickname || user?.firstName || user?.lastName || '';
