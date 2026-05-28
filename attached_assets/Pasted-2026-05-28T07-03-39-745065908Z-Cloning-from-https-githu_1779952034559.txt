@@ -1,0 +1,82 @@
+2026-05-28T07:03:39.745065908Z ==> Cloning from https://github.com/contestioSK/privodeapp
+2026-05-28T07:03:45.323937274Z ==> Checking out commit 69f9e5ffe0097abad34f2da468942b9336c0e78f in branch main
+2026-05-28T07:03:58.848261714Z ==> Using Node.js version 24.14.1 (default)
+2026-05-28T07:03:58.848278564Z ==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+2026-05-28T07:03:58.893939153Z ==> Running build command 'npm install; npm run build'...
+2026-05-28T07:04:15.077891227Z 
+2026-05-28T07:04:15.077951549Z added 922 packages, and audited 923 packages in 16s
+2026-05-28T07:04:15.07797396Z 
+2026-05-28T07:04:15.078106973Z 109 packages are looking for funding
+2026-05-28T07:04:15.078169775Z   run `npm fund` for details
+2026-05-28T07:04:15.191748466Z 
+2026-05-28T07:04:15.191774227Z 69 vulnerabilities (4 low, 46 moderate, 15 high, 4 critical)
+2026-05-28T07:04:15.191778027Z 
+2026-05-28T07:04:15.191781507Z To address issues that do not require attention, run:
+2026-05-28T07:04:15.191784867Z   npm audit fix
+2026-05-28T07:04:15.191787917Z 
+2026-05-28T07:04:15.191791167Z To address all issues (including breaking changes), run:
+2026-05-28T07:04:15.191794847Z   npm audit fix --force
+2026-05-28T07:04:15.191797857Z 
+2026-05-28T07:04:15.191801617Z Run `npm audit` for details.
+2026-05-28T07:04:15.411357259Z 
+2026-05-28T07:04:15.411378979Z > rest-express@1.0.0 build
+2026-05-28T07:04:15.4113846Z > vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+2026-05-28T07:04:15.4113914Z 
+2026-05-28T07:04:15.583933184Z vite v5.4.19 building for production...
+2026-05-28T07:04:15.629784418Z transforming...
+2026-05-28T07:04:15.844451188Z Browserslist: browsers data (caniuse-lite) is 19 months old. Please run:
+2026-05-28T07:04:15.844473689Z   npx update-browserslist-db@latest
+2026-05-28T07:04:15.844479319Z   Why you should do it regularly: https://github.com/browserslist/update-db#readme
+2026-05-28T07:04:16.999729177Z 
+2026-05-28T07:04:16.999770569Z warn - The class `ease-[cubic-bezier(0.4,0,0.2,1)]` is ambiguous and matches multiple utilities.
+2026-05-28T07:04:16.99980303Z warn - If this is content and not a class, replace it with `ease-&lsqb;cubic-bezier(0.4,0,0.2,1)&rsqb;` to silence this warning.
+2026-05-28T07:04:27.5803475Z ✓ 4361 modules transformed.
+2026-05-28T07:04:28.06573623Z rendering chunks...
+2026-05-28T07:04:28.773634677Z [plugin:vite:reporter] [plugin vite:reporter] 
+2026-05-28T07:04:28.773671558Z (!) /opt/render/project/src/client/src/lib/photo-file-cache.ts is dynamically imported by /opt/render/project/src/client/src/components/diary/CatchFormDialog.tsx, /opt/render/project/src/client/src/pages/diary/catches.tsx, /opt/render/project/src/client/src/pages/diary/index.tsx but also statically imported by /opt/render/project/src/client/src/components/diary/CatchDetailSheet.tsx, dynamic import will not move module into another chunk.
+2026-05-28T07:04:28.773680489Z 
+2026-05-28T07:04:28.955338686Z computing gzip size...
+2026-05-28T07:04:29.338509503Z ../dist/public/index.html                                                                               3.98 kB │ gzip:   1.32 kB
+2026-05-28T07:04:29.338539854Z ../dist/public/assets/sk-CMXaYYr4.svg                                                                   4.25 kB │ gzip:   1.49 kB
+2026-05-28T07:04:29.338578165Z ../dist/public/assets/contestio_logo_black_1766308180088-n-gSI_Tk.png                                   4.84 kB
+2026-05-28T07:04:29.338597556Z ../dist/public/assets/si-Cv01WRms.svg                                                                   4.93 kB │ gzip:   1.77 kB
+2026-05-28T07:04:29.338627937Z ../dist/public/assets/hr-DgGo83NR.svg                                                                   7.91 kB │ gzip:   2.17 kB
+2026-05-28T07:04:29.338632557Z ../dist/public/assets/es-B5fxyCBv.svg                                                                  14.67 kB │ gzip:   4.10 kB
+2026-05-28T07:04:29.338670348Z ../dist/public/assets/pt-DYJ9Qtzk.svg                                                                  16.32 kB │ gzip:   3.79 kB
+2026-05-28T07:04:29.338677288Z ../dist/public/assets/contestio logo_1760283270014-BW-ArsQw.png                                        27.76 kB
+2026-05-28T07:04:29.33874015Z ../dist/public/assets/fishing_lake_sunrise_9eb3c89e-Delevgq3.jpg                                       50.27 kB
+2026-05-28T07:04:29.33874621Z ../dist/public/assets/fishing_lake_sunrise_429d3968-D97Ua2HH.jpg                                      147.55 kB
+2026-05-28T07:04:29.338755351Z ../dist/public/assets/rs-x39SvhvQ.svg                                                                 186.72 kB │ gzip:  51.01 kB
+2026-05-28T07:04:29.338763031Z ../dist/public/assets/fishing_lake_sunrise_3b7d0cf0-Dy5naJK2.jpg                                      255.55 kB
+2026-05-28T07:04:29.338817682Z ../dist/public/assets/fishing_lake_sunrise_79cd285f-Zz1QGDgb.jpg                                      262.37 kB
+2026-05-28T07:04:29.338823082Z ../dist/public/assets/fishing_lake_sunrise_b5bbcbc5-CxuoAMsU.jpg                                      333.99 kB
+2026-05-28T07:04:29.338854753Z ../dist/public/assets/fishing_lake_sunrise_e3aed74d-BDLAAySt.jpg                                      549.48 kB
+2026-05-28T07:04:29.338869464Z ../dist/public/assets/water-rays-bg-C7KTXbv5.png                                                      909.71 kB
+2026-05-28T07:04:29.338906315Z ../dist/public/assets/Gemini_Generated_Image_kur5qpkur5qpkur5-Photoroom_1769878046486-Bwbi_kBg.png  1,143.30 kB
+2026-05-28T07:04:29.338973897Z ../dist/public/assets/index-C97hvlS9.css                                                              222.16 kB │ gzip:  32.02 kB
+2026-05-28T07:04:29.343343113Z ../dist/public/assets/imageResize-D58ZKgbY.js                                                           1.01 kB │ gzip:   0.57 kB
+2026-05-28T07:04:29.343355313Z ../dist/public/assets/purify.es-C5KSVp3G.js                                                            22.74 kB │ gzip:   8.79 kB
+2026-05-28T07:04:29.343372034Z ../dist/public/assets/index.es-wzRghTuh.js                                                            150.55 kB │ gzip:  51.51 kB
+2026-05-28T07:04:29.343376374Z ../dist/public/assets/index-BxxNDn0J.js                                                             3,010.58 kB │ gzip: 802.69 kB
+2026-05-28T07:04:29.343435496Z 
+2026-05-28T07:04:29.343441776Z (!) Some chunks are larger than 500 kB after minification. Consider:
+2026-05-28T07:04:29.343444966Z - Using dynamic import() to code-split the application
+2026-05-28T07:04:29.343447626Z - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+2026-05-28T07:04:29.343450126Z - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+2026-05-28T07:04:29.343860488Z ✓ built in 13.74s
+2026-05-28T07:04:29.617998536Z 
+2026-05-28T07:04:29.618043167Z   dist/index.js  705.7kb
+2026-05-28T07:04:29.618046818Z 
+2026-05-28T07:04:29.618049698Z ⚡ Done in 43ms
+2026-05-28T07:04:30.927355286Z ==> Uploading build...
+2026-05-28T07:04:45.552430284Z ==> Uploaded in 10.1s. Compression took 4.5s
+2026-05-28T07:04:45.636802721Z ==> Build successful 🎉
+2026-05-28T07:04:49.890986438Z ==> Deploying...
+2026-05-28T07:04:50.070704265Z ==> Setting WEB_CONCURRENCY=1 by default, based on available CPUs in the instance
+2026-05-28T07:05:15.163046808Z ==> Running 'npm run start'
+2026-05-28T07:05:16.256375215Z 
+2026-05-28T07:05:16.256408536Z > rest-express@1.0.0 start
+2026-05-28T07:05:16.256415866Z > NODE_ENV=production node dist/index.js
+2026-05-28T07:05:16.256419306Z 
+2026-05-28T07:05:28.24141955Z ==> Exited with status 1
+2026-05-28T07:05:28.243681106Z ==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
