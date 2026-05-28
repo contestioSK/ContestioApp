@@ -29,7 +29,7 @@ export const BADGE_DEFINITIONS: Record<string, BadgeDefinition> = {
   
   predator_threat: {
     id: 'predator_threat',
-    name: 'Dravčia Hrozba',
+    name: 'Výzva Dravca',
     description: 'Počet ulovených dravcov (Šťuka, Zubáč, Sumec)',
     icon: 'Crosshair',
     tiers: {
