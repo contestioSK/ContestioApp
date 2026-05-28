@@ -1,61 +1,14 @@
-import * as client from "openid-client";
-import { Strategy, type VerifyFunction } from "openid-client/passport";
-
-import passport from "passport";
 import session from "express-session";
-import type { Express, RequestHandler } from "express";
-import memoize from "memoizee";
+import type { RequestHandler } from "express";
 import connectPg from "connect-pg-simple";
-import { storage } from "./storage";
-
-if (!process.env.REPLIT_DOMAINS) {
-  throw new Error("Environment variable REPLIT_DOMAINS not provided");
-}
-
-const STRATEGY_PREFIX = "replitauth";
-
-// Helper function to resolve hostname to registered strategy name
-function resolveStrategyHost(hostname: string): string {
-  const domains = process.env.REPLIT_DOMAINS!.split(",").map(d => d.trim());
-  
-  // Log for debugging
-  console.log(`[AUTH] Resolving hostname: ${hostname}`);
-  console.log(`[AUTH] Available domains:`, domains);
-  
-  // Check if hostname matches any registered domain
-  const matchedDomain = domains.find(domain => 
-    hostname === domain || hostname.endsWith(`.${domain}`)
-  );
-  
-  if (matchedDomain) {
-    console.log(`[AUTH] Matched domain: ${matchedDomain}`);
-    return `${STRATEGY_PREFIX}:${matchedDomain}`;
-  }
-  
-  // Fallback to first domain if no match found
-  const fallbackDomain = domains[0];
-  console.log(`[AUTH] No match found, using fallback domain: ${fallbackDomain}`);
-  return `${STRATEGY_PREFIX}:${fallbackDomain}`;
-}
-
-const getOidcConfig = memoize(
-  async () => {
-    return await client.discovery(
-      new URL(process.env.ISSUER_URL ?? "https://replit.com/oidc"),
-      process.env.REPL_ID!
-    );
-  },
-  { maxAge: 3600 * 1000 }
-);
 
 export function getSession() {
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
-  
-  // Use MemoryStore in development if DATABASE_URL is missing
+
   if (!process.env.DATABASE_URL && process.env.NODE_ENV === 'development') {
     console.log('[SESSION] Using MemoryStore for development (DATABASE_URL not found)');
     return session({
-      secret: process.env.SESSION_SECRET!,
+      secret: process.env.SESSION_SECRET || 'dev-secret-change-in-production',
       store: new session.MemoryStore(),
       proxy: true,
       resave: false,
@@ -68,7 +21,7 @@ export function getSession() {
       },
     });
   }
-  
+
   const pgStore = connectPg(session);
   const sessionStore = new pgStore({
     conString: process.env.DATABASE_URL,
@@ -77,6 +30,7 @@ export function getSession() {
     tableName: "sessions",
     errorLog: console.error,
   });
+
   return session({
     secret: process.env.SESSION_SECRET!,
     store: sessionStore,
@@ -92,144 +46,12 @@ export function getSession() {
   });
 }
 
-function updateUserSession(
-  user: any,
-  tokens: client.TokenEndpointResponse & client.TokenEndpointResponseHelpers
-) {
-  user.claims = tokens.claims();
-  user.access_token = tokens.access_token;
-  user.refresh_token = tokens.refresh_token;
-  user.expires_at = user.claims?.exp;
-}
-
-async function upsertUser(
-  claims: any,
-) {
-  // Check if user already exists to preserve their role
-  const existingUser = await storage.getUser(claims["sub"]);
-  
-  const roleToUse = existingUser?.role || claims["role"] || "public";
-  
-  await storage.upsertUser({
-    id: claims["sub"],
-    email: claims["email"],
-    firstName: claims["first_name"],
-    lastName: claims["last_name"],
-    profileImageUrl: claims["profile_image_url"],
-    // Preserve existing role for returning users, default to "public" for new users
-    role: roleToUse,
-  });
-}
-
-export async function setupAuth(app: Express) {
-  app.set("trust proxy", 1);
-  app.use(getSession());
-  app.use(passport.initialize());
-  app.use(passport.session());
-
-  const config = await getOidcConfig();
-
-  const verify: VerifyFunction = async (
-    tokens: client.TokenEndpointResponse & client.TokenEndpointResponseHelpers,
-    verified: passport.AuthenticateCallback
-  ) => {
-    const user = {};
-    updateUserSession(user, tokens);
-    await upsertUser(tokens.claims());
-    verified(null, user);
-  };
-
-  for (const domain of process.env
-    .REPLIT_DOMAINS!.split(",")) {
-    const strategy = new Strategy(
-      {
-        name: `${STRATEGY_PREFIX}:${domain}`,
-        config,
-        scope: "openid email profile offline_access",
-        callbackURL: `https://${domain}/api/callback`,
-      },
-      verify,
-    );
-    passport.use(strategy);
-  }
-
-  passport.serializeUser((user: Express.User, cb) => cb(null, user));
-  passport.deserializeUser((user: Express.User, cb) => cb(null, user));
-
-  app.get("/api/login", (req, res, next) => {
-    const strategyName = resolveStrategyHost(req.hostname);
-    console.log(`[AUTH] Login using strategy: ${strategyName}`);
-    
-    passport.authenticate(strategyName, {
-      prompt: "login consent",
-      scope: ["openid", "email", "profile", "offline_access"],
-    })(req, res, next);
-  });
-
-  app.get("/api/callback", (req, res, next) => {
-    const strategyName = resolveStrategyHost(req.hostname);
-    console.log(`[AUTH] Callback using strategy: ${strategyName}`);
-    
-    passport.authenticate(strategyName, {
-      successReturnToOrRedirect: "/diary",
-      failureRedirect: "/api/login",
-    })(req, res, next);
-  });
-
-  app.get("/api/logout", (req, res) => {
-    req.logout(() => {
-      res.redirect(
-        client.buildEndSessionUrl(config, {
-          client_id: process.env.REPL_ID!,
-          post_logout_redirect_uri: `${req.protocol}://${req.hostname}`,
-        }).href
-      );
-    });
-  });
-}
-
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
   const user = req.user as any;
 
-  console.log('[isAuthenticated] Check - isAuthenticated():', req.isAuthenticated(), 'user:', user ? 'exists' : 'null');
-
-  // Check if user is authenticated
   if (!req.isAuthenticated()) {
-    console.log('[isAuthenticated] FAIL - Not authenticated');
     return res.status(401).json({ message: "Unauthorized" });
   }
 
-  // If user doesn't have expires_at, it's the new auth system (email/password)
-  // Just verify they're authenticated and continue
-  if (!user.expires_at) {
-    console.log('[isAuthenticated] SUCCESS - New auth system (no expires_at)');
-    return next();
-  }
-
-  // For Replit OAuth users, check token expiration
-  const now = Math.floor(Date.now() / 1000);
-  if (now <= user.expires_at) {
-    console.log('[isAuthenticated] SUCCESS - OAuth token valid');
-    return next();
-  }
-
-  // Token expired, try to refresh
-  const refreshToken = user.refresh_token;
-  if (!refreshToken) {
-    console.log('[isAuthenticated] FAIL - Token expired, no refresh token');
-    res.status(401).json({ message: "Unauthorized" });
-    return;
-  }
-
-  try {
-    const config = await getOidcConfig();
-    const tokenResponse = await client.refreshTokenGrant(config, refreshToken);
-    updateUserSession(user, tokenResponse);
-    console.log('[isAuthenticated] SUCCESS - Token refreshed');
-    return next();
-  } catch (error) {
-    console.log('[isAuthenticated] FAIL - Token refresh failed:', error);
-    res.status(401).json({ message: "Unauthorized" });
-    return;
-  }
+  return next();
 };
