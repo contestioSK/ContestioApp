@@ -8,7 +8,7 @@ import { db } from "./db";
 import { eq, and, gt, desc, or, inArray, sql, isNotNull } from "drizzle-orm";
 import { diaryBattles, diaryCatches, diaryTrips, users, baitManufacturers, baitProductLines, baitFlavors, userArsenalBaits, userBadges, fishingAreas, friendships, equipmentManufacturers, equipmentCategories, equipmentProducts, userArsenalEquipment, insertUserArsenalEquipmentSchema, userBaitBrands, userBaitFlavors, insertUserBaitBrandSchema, insertUserBaitFlavorSchema } from "@shared/schema";
 import { deleteFromFirebase, isFirebaseConfigured, uploadToFirebase } from "./firebase-storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { isAuthenticated, getSession } from "./replitAuth";
 import { hashPassword, validatePassword, generateVerificationToken, generateTokenExpiration } from "./utils/auth";
 import { emailService } from "./utils/email";
 import {
@@ -148,12 +148,13 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     next();
   }, express.static('uploads'));
 
-  // Auth middleware
-  await setupAuth(app);
-  
-  // Load new auth system after setupAuth to override serialize/deserialize functions
+  // Session + Passport setup (email/password + Google OAuth)
+  app.set("trust proxy", 1);
+  app.use(getSession());
   const passportModule = await import("./utils/passport");
   const passport = passportModule.default;
+  app.use(passport.initialize());
+  app.use(passport.session());
 
   // Apply global rate limiting for authenticated API traffic (2000 req/15min per user)
   // This runs AFTER auth middleware so req.user is available
